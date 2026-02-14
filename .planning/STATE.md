@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 4 of 8 (Project Detection)
-Plan: 2 of 2 (complete)
+Plan: 3 of 3 (complete)
 Status: Complete
-Last activity: 2026-02-14 — Completed Plan 04-02: Project-aware TUI with colored badges, grouping, and prioritized search
+Last activity: 2026-02-14 — Completed Plan 04-03: Project picker with hostname-based auto-suggestions and persistent manual assignment. Phase 4 (Project Detection) complete.
 
-Progress: [█████████████████████████████████████████████████████████████████] 70%
+Progress: [███████████████████████████████████████████████████████████████████] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: 726.4 seconds
-- Total execution time: 1.61 hours
+- Total plans completed: 9
+- Average duration: 859.9 seconds
+- Total execution time: 2.15 hours
 
 **By Phase:**
 
@@ -30,17 +30,17 @@ Progress: [███████████████████████
 | 01    | 2     | 429s  | 214.5s   |
 | 02    | 2     | 319s  | 159.5s   |
 | 03    | 2     | 2823s | 1411.5s  |
-| 04    | 2     | 2171s | 1085.5s  |
+| 04    | 3     | 4118s | 1372.7s  |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 04    | 03   | 1947s    | 3     | 9     |
 | 04    | 02   | 1905s    | 2     | 6     |
 | 04    | 01   | 266s     | 2     | 8     |
 | 03    | 02   | 2236s    | 2     | 8     |
 | 03    | 01   | 587s     | 2     | 3     |
-| 02    | 02   | 26s      | 3     | 8     |
 
 ## Accumulated Context
 
@@ -76,6 +76,10 @@ Recent decisions affecting current work:
 - **Inline badges over section headers (04-02)**: Simpler implementation, works at any terminal width, clearer visual hierarchy
 - **Project separator in search results (04-02)**: Visual clarity between current project matches and other matches
 - **Unassigned servers at bottom (04-02)**: Encourages project assignment, keeps project-related servers prominent
+- **Levenshtein distance for hostname matching (04-03)**: Robust fuzzy matching handles typos and variations better than exact substring matching
+- **70% similarity threshold for suggestions (04-03)**: Balances useful suggestions vs noise, empirically tested
+- **Simple overlay without external library (04-03)**: Bubbletea v2 alpha compatibility concerns, fewer dependencies
+- **App config path passed explicitly to TUI (04-03)**: Avoids confusion between SSH config and app config paths, enables proper persistence
 
 ### Pending Todos
 
@@ -83,10 +87,10 @@ None yet.
 
 ### Blockers/Concerns
 
-**Phase 4 considerations:**
+**Phase 5 considerations:**
 - 1Password SDK error scenarios need discovery during implementation (network failures, corrupted vaults)
-- Git remote parsing must handle monorepos, submodules, enterprise hosting edge cases
-- Project-to-server mapping needs flexible matching (exact, prefix, regex patterns)
+- 1Password service account authentication and token management
+- Vault/item browsing performance with large vaults
 
 **Cross-platform considerations:**
 - Terminal compatibility matrix needs empirical testing (older terminals, SSH-forwarded, screen/tmux combinations)
@@ -94,5 +98,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 04-02-PLAN.md — Project-aware TUI with colored badges, grouping, and prioritized search. Phase 4 (Project Detection) complete. Ready for Phase 5 (1Password integration).
+Stopped at: Completed 04-03-PLAN.md — Project picker with hostname-based auto-suggestions and persistent manual assignment. Phase 4 (Project Detection) fully complete. All three plans delivered: git detection, project-aware TUI, and manual assignment with auto-suggestions. Ready for Phase 5 (1Password integration).
 Resume file: None
