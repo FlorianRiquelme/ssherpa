@@ -3,14 +3,22 @@ package tui
 import (
 	"fmt"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/florianriquelme/sshjesus/internal/sshconfig"
 )
+
+// badgeData represents a project badge to render inline.
+type badgeData struct {
+	name  string
+	color lipgloss.AdaptiveColor
+}
 
 // hostItem wraps an SSHHost for display in the list.
 // Implements list.Item interface.
 type hostItem struct {
 	host          sshconfig.SSHHost
-	lastConnected bool // Whether this host was recently connected
+	lastConnected bool        // Whether this host was recently connected
+	projectBadges []badgeData // Project badges to render inline
 }
 
 // FilterValue returns the value used for filtering/searching.
@@ -20,7 +28,7 @@ func (h hostItem) FilterValue() string {
 }
 
 // Title returns the first line of the list item.
-// Format: [★] Name (hostname) with star for last-connected and warning indicator if ParseError is set.
+// Format: [★] Name (hostname) [badge1] [badge2] with star for last-connected and warning indicator if ParseError is set.
 func (h hostItem) Title() string {
 	// Prepend star indicator if this was recently connected
 	prefix := ""
@@ -31,6 +39,11 @@ func (h hostItem) Title() string {
 	title := fmt.Sprintf("%s (%s)",
 		hostnameStyle.Render(h.host.Name),
 		h.host.Hostname)
+
+	// Append project badges
+	for _, badge := range h.projectBadges {
+		title += " " + RenderProjectBadge(badge.name, badge.color)
+	}
 
 	// Add warning indicator if there's a parse error
 	if h.host.ParseError != nil {

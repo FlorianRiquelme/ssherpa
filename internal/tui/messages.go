@@ -21,3 +21,24 @@ type historyLoadedMsg struct {
 	lastConnectedHost string
 	recentHosts       map[string]time.Time
 }
+
+// projectSeparatorItem is a non-interactive list item that separates
+// current project results from other project results in search.
+type projectSeparatorItem struct {
+	label string
+}
+
+// FilterValue returns empty string (excluded from search).
+func (p projectSeparatorItem) FilterValue() string {
+	return ""
+}
+
+// Title returns the separator label.
+func (p projectSeparatorItem) Title() string {
+	return projectSeparatorStyle.Render(p.label)
+}
+
+// Description returns empty string (no second line for separator).
+func (p projectSeparatorItem) Description() string {
+	return ""
+}

@@ -110,4 +110,9 @@ var (
 			Foreground(secondaryColor).
 			Italic(true).
 			Padding(2, 4)
+
+	// Project separator between current and other projects
+	projectSeparatorStyle = lipgloss.NewStyle().
+				Foreground(secondaryColor).
+				Italic(true)
 )

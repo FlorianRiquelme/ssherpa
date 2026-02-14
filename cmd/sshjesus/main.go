@@ -8,6 +8,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/florianriquelme/sshjesus/internal/config"
 	"github.com/florianriquelme/sshjesus/internal/errors"
+	"github.com/florianriquelme/sshjesus/internal/project"
 	"github.com/florianriquelme/sshjesus/internal/tui"
 )
 
@@ -51,8 +52,21 @@ func main() {
 		returnToTUI = cfg.ReturnToTUI
 	}
 
+	// Detect current project from git (Phase 4)
+	currentProjectID, err := project.DetectCurrentProject()
+	if err != nil {
+		// This should never error per design, but handle it gracefully
+		currentProjectID = ""
+	}
+
+	// Get projects from config (Phase 4)
+	var projects []config.ProjectConfig
+	if cfg != nil {
+		projects = cfg.Projects
+	}
+
 	// Create TUI model with new parameters
-	model := tui.New(sshConfigPath, historyPath, returnToTUI)
+	model := tui.New(sshConfigPath, historyPath, returnToTUI, currentProjectID, projects)
 
 	// Run TUI with alt screen (doesn't pollute terminal history)
 	p := tea.NewProgram(model, tea.WithAltScreen())
