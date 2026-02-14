@@ -19,12 +19,19 @@ type ProjectConfig struct {
 	ServerNames   []string `toml:"server_names,omitempty"`     // SSH config host aliases in this project
 }
 
+// OnePasswordConfig represents 1Password-specific settings.
+type OnePasswordConfig struct {
+	AccountName string `toml:"account_name,omitempty"` // Account name for desktop app integration
+	CachePath   string `toml:"cache_path,omitempty"`   // Override TOML cache path
+}
+
 // Config represents the application configuration.
 type Config struct {
-	Version     int             `toml:"version"`                        // Config schema version for future migrations
-	Backend     string          `toml:"backend"`                        // Backend identifier: "sshconfig", "onepassword", "mock"
-	ReturnToTUI bool            `toml:"return_to_tui_after_disconnect"` // Return to TUI after SSH session ends (default: false = exit to shell)
-	Projects    []ProjectConfig `toml:"project"`                        // Projects (TOML array-of-tables: [[project]])
+	Version     int                   `toml:"version"`                        // Config schema version for future migrations
+	Backend     string                `toml:"backend"`                        // Backend identifier: "sshconfig", "onepassword", "both"
+	ReturnToTUI bool                  `toml:"return_to_tui_after_disconnect"` // Return to TUI after SSH session ends (default: false = exit to shell)
+	OnePassword OnePasswordConfig     `toml:"onepassword"`                    // 1Password backend settings
+	Projects    []ProjectConfig       `toml:"project"`                        // Projects (TOML array-of-tables: [[project]])
 }
 
 // DefaultConfig returns a config with sensible defaults.
@@ -42,6 +49,17 @@ func (c *Config) Validate() error {
 	if c.Backend == "" {
 		return fmt.Errorf("config validation failed: backend must be non-empty")
 	}
+
+	// Valid backend values: "sshconfig", "onepassword", "both"
+	validBackends := map[string]bool{
+		"sshconfig":   true,
+		"onepassword": true,
+		"both":        true,
+	}
+	if !validBackends[c.Backend] {
+		return fmt.Errorf("config validation failed: invalid backend '%s' (valid: sshconfig, onepassword, both)", c.Backend)
+	}
+
 	return nil
 }
 
