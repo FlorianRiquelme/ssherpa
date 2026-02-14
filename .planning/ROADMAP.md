@@ -96,11 +96,12 @@ Plans:
   3. User can delete connection with confirmation prompt (prevents accidental loss)
   4. Config modifications preserve existing formatting and comments
   5. Automatic backup created before any destructive operation
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 05-01: TBD during planning
-- [ ] 05-02: TBD during planning
+- [ ] 05-01-PLAN.md — SSH config writer with formatting-preserving add/edit/delete, backup, and atomic writes
+- [ ] 05-02-PLAN.md — Full-screen add/edit form with field validation and DNS checking
+- [ ] 05-03-PLAN.md — Delete confirmation, session undo buffer, and human verification of complete CRUD
 
 ### Phase 6: 1Password Backend
 **Goal**: Credentials store securely in 1Password with team sharing via shared vaults
@@ -161,7 +162,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 2. SSH Config Integration | 2/2 | ✓ Complete | 2026-02-14 |
 | 3. Connection & Navigation | 2/2 | ✓ Complete | 2026-02-14 |
 | 4. Project Detection | 3/3 | ✓ Complete | 2026-02-14 |
-| 5. Config Management | 0/TBD | Not started | - |
+| 5. Config Management | 0/3 | Not started | - |
 | 6. 1Password Backend | 0/TBD | Not started | - |
 | 7. Advanced SSH Features | 0/TBD | Not started | - |
 | 8. Distribution | 0/TBD | Not started | - |
