@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 6 of 8 (1Password Backend)
-Plan: 3 of 5 (complete)
+Plan: 4 of 5 (complete)
 Status: In Progress
-Last activity: 2026-02-14 — Completed Plan 06-03: Offline fallback and availability polling with status tracking, TOML cache for offline access, background poller for auto-recovery, and write debouncing to prevent sync loops.
+Last activity: 2026-02-14 — Completed Plan 06-04: Multi-backend aggregator with priority-based deduplication, shared BackendStatus enum, TUI status bar for 1Password availability indication, and complete end-to-end wiring from backend to TUI.
 
-Progress: [████████████████████████████████████████████████████████████████████████████████████] 87%
+Progress: [████████████████████████████████████████████████████████████████████████████████████████] 89%
 
 ## Performance Metrics
 
@@ -38,11 +38,11 @@ Progress: [███████████████████████
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 06    | 04   | 570s     | 2     | 14    |
 | 06    | 03   | 468s     | 2     | 7     |
 | 06    | 02   | 351s     | 2     | 5     |
 | 06    | 01   | 467s     | 2     | 9     |
 | 05    | 03   | N/A      | 2     | 6     |
-| 05    | 02   | 239s     | 2     | 6     |
 
 ## Accumulated Context
 
@@ -109,6 +109,12 @@ Recent decisions affecting current work:
 - [Phase 06-03]: 5-second default poll interval, configurable via SSHJESUS_1PASSWORD_POLL_INTERVAL env var
 - [Phase 06-03]: 10-second write debounce window to prevent sync loops after Create/Update/Delete operations
 - [Phase 06-03]: Graceful poller shutdown in Close() (unlock mutex before Stop() to avoid deadlock)
+- [Phase 06-04]: Shared BackendStatus at backend level (avoids import cycles when TUI references status)
+- [Phase 06-04]: Multi-backend priority order (later backends win conflicts for deduplication)
+- [Phase 06-04]: Case-insensitive DisplayName deduplication (SSH config is case-sensitive, but user-facing dedup should be case-insensitive)
+- [Phase 06-04]: Writer delegation to first Writer-capable backend (simple rule, works for current use case)
+- [Phase 06-04]: Status bar only shown when not Available (clean UI when everything works, banner only for issues)
+- [Phase 06-04]: TUI New() signature change adds opStatus parameter (explicit dependency injection)
 
 ### Pending Todos
 
@@ -127,5 +133,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 06-03-PLAN.md — Offline fallback and availability polling with status tracking (Unknown/Available/Locked/Unavailable), TOML cache for offline access, background poller for auto-recovery with configurable interval, and write debouncing to prevent sync loops. SyncFromOnePassword separates fetching from listing. Poller detects availability changes, stops gracefully without deadlock. All 33 tests pass including race detector.
+Stopped at: Completed 06-04-PLAN.md — Multi-backend aggregator with priority-based deduplication (later backends win), shared BackendStatus enum at backend level (avoids import cycles), TUI status bar for 1Password availability indication (only shown when locked/unavailable), complete end-to-end wiring from backend to TUI. Config supports "onepassword" and "both" backend modes. 11 new multi-backend tests, all pass. Full project builds and passes vet.
 Resume file: None
