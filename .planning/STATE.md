@@ -5,35 +5,36 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Find and connect to the right SSH server instantly, from any repo, without remembering aliases or grepping config files.
-**Current focus:** Phase 2 in progress — SSH config integration
+**Current focus:** Phase 2 complete — Ready for Phase 3 (connection execution)
 
 ## Current Position
 
 Phase: 2 of 8 (SSH Config Integration)
-Plan: 1 of 2 (complete)
-Status: Phase in progress
-Last activity: 2026-02-14 — Completed 02-01-PLAN.md (SSH config parser and backend adapter)
+Plan: 2 of 2 (complete)
+Status: Phase complete
+Last activity: 2026-02-14 — Completed Phase 2: SSH Config Integration (parser, backend, TUI)
 
-Progress: [████████████████████] 50%
+Progress: [████████████████████████████████████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: 240.7 seconds
-- Total execution time: 0.20 hours
+- Total plans completed: 4
+- Average duration: 184.8 seconds
+- Total execution time: 0.21 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01    | 2     | 429s  | 214.5s   |
-| 02    | 1     | 293s  | 293.0s   |
+| 02    | 2     | 319s  | 159.5s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 02    | 02   | 26s      | 3     | 8     |
 | 02    | 01   | 293s     | 2     | 6     |
 | 01    | 02   | 299s     | 2     | 7     |
 | 01    | 01   | 130s     | 2     | 8     |
@@ -57,6 +58,8 @@ Recent decisions affecting current work:
 - **TOML config format (01-02)**: Eliminates YAML indentation bugs, provides explicit types
 - **Empty Backend config signals setup needed (01-02)**: No default backend selection, setup wizard deferred to Phase 2+
 - **Testify for test assertions (01-02)**: Better error messages and cleaner test code than stdlib alone
+- **Full-screen detail view over split-panel (02-02)**: Simpler implementation, works at any terminal width, clearer focus
+- **AdaptiveColor for TUI theming (02-02)**: Supports both light and dark terminals without manual detection
 
 ### Pending Todos
 
@@ -77,5 +80,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 02-01-PLAN.md — SSH config parser wrapper and backend adapter (97.5% coverage) using kevinburke/ssh_config. Phase 2 Plan 1 complete.
+Stopped at: Completed Phase 2 (SSH Config Integration) — Users can now run `sshjesus` to see all SSH connections from ~/.ssh/config in a navigable TUI with detail views.
 Resume file: None
