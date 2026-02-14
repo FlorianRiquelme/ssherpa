@@ -65,8 +65,14 @@ func main() {
 		projects = cfg.Projects
 	}
 
+	// Resolve app config path for saving project assignments
+	appConfigPath, err := config.DefaultPath()
+	if err != nil {
+		appConfigPath = "" // Save will use DefaultPath() fallback
+	}
+
 	// Create TUI model with new parameters
-	model := tui.New(sshConfigPath, historyPath, returnToTUI, currentProjectID, projects)
+	model := tui.New(sshConfigPath, historyPath, returnToTUI, currentProjectID, projects, appConfigPath)
 
 	// Run TUI with alt screen (doesn't pollute terminal history)
 	p := tea.NewProgram(model, tea.WithAltScreen())

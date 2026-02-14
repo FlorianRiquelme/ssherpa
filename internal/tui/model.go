@@ -67,7 +67,7 @@ type Model struct {
 }
 
 // New creates a new TUI model.
-func New(configPath, historyPath string, returnToTUI bool, currentProjectID string, projects []config.ProjectConfig) Model {
+func New(configPath, historyPath string, returnToTUI bool, currentProjectID string, projects []config.ProjectConfig, appConfigPath string) Model {
 	// Initialize spinner
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -121,7 +121,7 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 		currentProjectID: currentProjectID,
 		projects:         projects,
 		projectMap:       projectMap,
-		configFilePath:   configPath, // Store for saving assignments
+		configFilePath:   appConfigPath, // App config path for saving project assignments
 	}
 }
 
@@ -864,22 +864,19 @@ func (m *Model) handleProjectCreation(newProject config.ProjectConfig) {
 
 // saveConfig saves the current config to disk.
 func (m *Model) saveConfig() {
-	// Load full config from disk
+	// Load full config from disk, or create default if missing
 	cfg, err := config.Load(m.configFilePath)
 	if err != nil {
-		// Handle error silently for now (could show error message in TUI)
-		return
+		// Config doesn't exist yet — create one with defaults
+		cfg = config.DefaultConfig()
+		cfg.Backend = "sshconfig"
 	}
 
 	// Update projects in config
 	cfg.Projects = m.projects
 
-	// Save back to disk
-	err = config.Save(cfg, m.configFilePath)
-	if err != nil {
-		// Handle error silently for now
-		return
-	}
+	// Save back to disk (empty path triggers DefaultPath fallback)
+	_ = config.Save(cfg, m.configFilePath)
 }
 
 // View renders the current view.
