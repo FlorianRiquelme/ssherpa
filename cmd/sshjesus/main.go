@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea"
+	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/florianriquelme/sshjesus/internal/config"
 	"github.com/florianriquelme/sshjesus/internal/errors"
 	"github.com/florianriquelme/sshjesus/internal/project"
@@ -72,7 +73,8 @@ func main() {
 	}
 
 	// Create TUI model with new parameters
-	model := tui.New(sshConfigPath, historyPath, returnToTUI, currentProjectID, projects, appConfigPath)
+	// For now, pass StatusUnknown (1Password integration in next task)
+	model := tui.New(sshConfigPath, historyPath, returnToTUI, currentProjectID, projects, appConfigPath, backendpkg.StatusUnknown)
 
 	// Run TUI with alt screen (doesn't pollute terminal history)
 	p := tea.NewProgram(model, tea.WithAltScreen())

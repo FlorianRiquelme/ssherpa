@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/florianriquelme/sshjesus/internal/sshconfig"
 )
 
@@ -74,3 +75,11 @@ type undoCompletedMsg struct {
 type undoErrorMsg struct {
 	err error
 }
+
+// onePasswordStatusMsg is sent when 1Password status changes.
+type onePasswordStatusMsg struct {
+	status backend.BackendStatus
+}
+
+// backendServersUpdatedMsg is sent when backend servers are refreshed (e.g., after 1P sync).
+type backendServersUpdatedMsg struct{}

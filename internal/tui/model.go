@@ -13,6 +13,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/florianriquelme/sshjesus/internal/config"
 	"github.com/florianriquelme/sshjesus/internal/history"
 	"github.com/florianriquelme/sshjesus/internal/project"
@@ -73,10 +74,14 @@ type Model struct {
 	deleteConfirm *DeleteConfirm // Delete confirmation (nil when not showing)
 	undoBuffer    *UndoBuffer    // Session-scoped undo buffer
 	statusMsg     string         // Temporary status message (e.g. "Deleted X, press u to undo")
+
+	// Phase 6 additions:
+	opStatus    backend.BackendStatus // Current 1Password status
+	opStatusBar string                // Rendered status bar (cached)
 }
 
 // New creates a new TUI model.
-func New(configPath, historyPath string, returnToTUI bool, currentProjectID string, projects []config.ProjectConfig, appConfigPath string) Model {
+func New(configPath, historyPath string, returnToTUI bool, currentProjectID string, projects []config.ProjectConfig, appConfigPath string, opStatus backend.BackendStatus) Model {
 	// Initialize spinner
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -132,6 +137,8 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 		projectMap:       projectMap,
 		configFilePath:   appConfigPath, // App config path for saving project assignments
 		undoBuffer:       NewUndoBuffer(10),
+		opStatus:         opStatus,    // Initial 1Password status
+		opStatusBar:      "",           // Will be rendered on first draw
 	}
 }
 
@@ -548,10 +555,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Update search input width
 		m.searchInput.Width = msg.Width - 20 // Leave room for label and padding
 
-		// Update list dimensions (subtract space for search bar, title, and help)
+		// Update list dimensions (subtract space for search bar, title, help, and optional status bar)
 		searchBarHeight := 3 // search bar + border
 		footerHeight := 2    // help text
-		m.list.SetSize(msg.Width, msg.Height-searchBarHeight-footerHeight)
+		statusBarHeight := 0
+		if m.opStatus != backend.StatusAvailable && m.opStatus != backend.StatusUnknown {
+			statusBarHeight = 1 // status bar height when shown
+		}
+		m.list.SetSize(msg.Width, msg.Height-searchBarHeight-footerHeight-statusBarHeight)
 
 		// Update viewport dimensions if in detail mode
 		if m.viewMode == ViewDetail && m.detailHost != nil {
@@ -906,6 +917,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Close picker after creation
 		m.showingPicker = false
 		m.picker = nil
+
+	case onePasswordStatusMsg:
+		// Update 1Password status and re-render status bar
+		m.opStatus = msg.status
+		m.opStatusBar = renderStatusBar(m.opStatus, m.width)
+		// Trigger re-render
+		return m, nil
+
+	case backendServersUpdatedMsg:
+		// Backend servers refreshed (e.g., 1Password sync completed)
+		// Reload config to merge with backend servers
+		// For Phase 6, this is a placeholder - full integration in later tasks
+		return m, loadConfigCmd(m.configPath)
 	}
 
 	return m, tea.Batch(cmds...)
@@ -1069,6 +1093,13 @@ Press 'q' to quit
 		searchLabel := searchLabelStyle.Render("Filter: ")
 		searchBar := searchLabel + m.searchInput.View()
 
+		// Build status bar for 1Password availability (if needed)
+		// Only render when status is not Available (clean UI when working)
+		var statusBarView string
+		if m.opStatus != backend.StatusAvailable && m.opStatus != backend.StatusUnknown {
+			statusBarView = renderStatusBar(m.opStatus, m.width)
+		}
+
 		// Build main content
 		var mainContent string
 		if m.searchInput.Value() != "" && len(m.filteredIdx) == 0 {
@@ -1095,26 +1126,27 @@ Press 'q' to quit
 			statusView = undoStatusStyle.Render(m.statusMsg)
 		}
 
-		// Combine all parts
+		// Combine all parts (with optional status bar)
 		var baseView string
-		if statusView != "" {
-			baseView = lipgloss.JoinVertical(
-				lipgloss.Left,
-				searchBar,
-				separatorStyle.Render("─"),
-				mainContent,
-				statusView,
-				helpView,
-			)
-		} else {
-			baseView = lipgloss.JoinVertical(
-				lipgloss.Left,
-				searchBar,
-				separatorStyle.Render("─"),
-				mainContent,
-				helpView,
-			)
+		parts := []string{
+			searchBar,
+			separatorStyle.Render("─"),
 		}
+
+		// Add status bar if present (between search and main content)
+		if statusBarView != "" {
+			parts = append(parts, statusBarView)
+		}
+
+		parts = append(parts, mainContent)
+
+		if statusView != "" {
+			parts = append(parts, statusView)
+		}
+
+		parts = append(parts, helpView)
+
+		baseView = lipgloss.JoinVertical(lipgloss.Left, parts...)
 
 		// If showing picker, overlay it on top
 		if m.showingPicker && m.picker != nil {

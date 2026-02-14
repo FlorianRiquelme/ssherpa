@@ -5,28 +5,28 @@ import (
 	"sync"
 	"time"
 
-	"github.com/florianriquelme/sshjesus/internal/backend"
+	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/florianriquelme/sshjesus/internal/domain"
 	"github.com/florianriquelme/sshjesus/internal/errors"
 )
 
-// Backend implements the backend.Backend and backend.Writer interfaces
+// Backend implements the backendpkg.Backend and backendpkg.Writer interfaces
 // using 1Password as the storage layer.
 type Backend struct {
-	client    Client           // SDK client (real or mock)
-	mu        sync.RWMutex     // Protects cached servers, status, and closed flag
-	servers   []*domain.Server // Cached servers from last sync
-	closed    bool             // Backend closed flag
-	status    BackendStatus    // Current availability status
-	cachePath string           // Path to TOML cache for fallback
-	poller    *Poller          // Background availability poller
-	lastWrite time.Time        // Last write timestamp for debouncing
+	client    Client                // SDK client (real or mock)
+	mu        sync.RWMutex          // Protects cached servers, status, and closed flag
+	servers   []*domain.Server      // Cached servers from last sync
+	closed    bool                  // Backend closed flag
+	status    backendpkg.BackendStatus // Current availability status
+	cachePath string                // Path to TOML cache for fallback
+	poller    *Poller               // Background availability poller
+	lastWrite time.Time             // Last write timestamp for debouncing
 }
 
 // Compile-time interface verification
 var (
-	_ backend.Backend = (*Backend)(nil)
-	_ backend.Writer  = (*Backend)(nil)
+	_ backendpkg.Backend = (*Backend)(nil)
+	_ backendpkg.Writer  = (*Backend)(nil)
 )
 
 // New creates a new 1Password backend with the given client.
@@ -35,7 +35,7 @@ func New(client Client) *Backend {
 	return &Backend{
 		client:  client,
 		servers: make([]*domain.Server, 0),
-		status:  StatusUnknown,
+		status:  backendpkg.StatusUnknown,
 	}
 }
 
@@ -44,7 +44,7 @@ func NewWithCache(client Client, cachePath string) *Backend {
 	return &Backend{
 		client:    client,
 		servers:   make([]*domain.Server, 0),
-		status:    StatusUnknown,
+		status:    backendpkg.StatusUnknown,
 		cachePath: cachePath,
 	}
 }

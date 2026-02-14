@@ -5,6 +5,8 @@ import (
 	"os"
 	"sync"
 	"time"
+
+	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
 )
 
 // Poller periodically checks 1Password availability and auto-recovers when it becomes available.
@@ -14,13 +16,13 @@ type Poller struct {
 	ticker   *time.Ticker
 	stopCh   chan struct{}
 	wg       sync.WaitGroup
-	onChange func(BackendStatus) // Callback when status changes (for TUI notification)
+	onChange func(backendpkg.BackendStatus) // Callback when status changes (for TUI notification)
 }
 
 // NewPoller creates a new poller for the backend.
 // interval: how often to poll (use 0 to read from SSHJESUS_1PASSWORD_POLL_INTERVAL env var, defaults to 5s)
 // onChange: optional callback invoked when status changes (nil = no callback)
-func NewPoller(backend *Backend, interval time.Duration, onChange func(BackendStatus)) *Poller {
+func NewPoller(backend *Backend, interval time.Duration, onChange func(backendpkg.BackendStatus)) *Poller {
 	// Check environment variable for interval override
 	if interval == 0 {
 		interval = 5 * time.Second // default
@@ -100,7 +102,7 @@ func (p *Poller) Stop() {
 
 // StartPolling starts a background poller for this backend.
 // This is a convenience method that creates and starts a poller.
-func (b *Backend) StartPolling(interval time.Duration, onChange func(BackendStatus)) {
+func (b *Backend) StartPolling(interval time.Duration, onChange func(backendpkg.BackendStatus)) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 

@@ -4,46 +4,21 @@ import (
 	"context"
 	"strings"
 
+	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/florianriquelme/sshjesus/internal/domain"
 	"github.com/florianriquelme/sshjesus/internal/errors"
 	"github.com/florianriquelme/sshjesus/internal/sync"
 )
 
-// BackendStatus represents the availability status of the 1Password backend.
-type BackendStatus int
-
-const (
-	StatusUnknown     BackendStatus = iota // Initial state before first check
-	StatusAvailable                        // 1Password is unlocked and responsive
-	StatusLocked                           // 1Password app is running but locked
-	StatusUnavailable                      // 1Password app not running or SDK error
-)
-
-// String returns the string representation of the status.
-func (s BackendStatus) String() string {
-	switch s {
-	case StatusUnknown:
-		return "Unknown"
-	case StatusAvailable:
-		return "Available"
-	case StatusLocked:
-		return "Locked"
-	case StatusUnavailable:
-		return "Unavailable"
-	default:
-		return "Unknown"
-	}
-}
-
 // GetStatus returns the current backend status (thread-safe).
-func (b *Backend) GetStatus() BackendStatus {
+func (b *Backend) GetStatus() backendpkg.BackendStatus {
 	b.mu.RLock()
 	defer b.mu.RUnlock()
 	return b.status
 }
 
 // setStatus updates the backend status (thread-safe).
-func (b *Backend) setStatus(s BackendStatus) {
+func (b *Backend) setStatus(s backendpkg.BackendStatus) {
 	b.mu.Lock()
 	defer b.mu.Unlock()
 	b.status = s
@@ -59,9 +34,9 @@ func (b *Backend) SyncFromOnePassword(ctx context.Context) error {
 		// Inspect error to determine if locked vs unavailable
 		errStr := strings.ToLower(err.Error())
 		if strings.Contains(errStr, "session expired") || strings.Contains(errStr, "locked") {
-			b.setStatus(StatusLocked)
+			b.setStatus(backendpkg.StatusLocked)
 		} else {
-			b.setStatus(StatusUnavailable)
+			b.setStatus(backendpkg.StatusUnavailable)
 		}
 		return &errors.BackendError{
 			Op:      "SyncFromOnePassword",
@@ -97,7 +72,7 @@ func (b *Backend) SyncFromOnePassword(ctx context.Context) error {
 	// Update cache
 	b.mu.Lock()
 	b.servers = servers
-	b.status = StatusAvailable
+	b.status = backendpkg.StatusAvailable
 	b.mu.Unlock()
 
 	// Write to TOML cache for offline fallback

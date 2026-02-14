@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -39,7 +40,7 @@ func TestSyncFromOnePassword_Success(t *testing.T) {
 	backend := NewWithCache(mock, cachePath)
 
 	// Initial status should be Unknown
-	assert.Equal(t, StatusUnknown, backend.GetStatus())
+	assert.Equal(t, backendpkg.StatusUnknown, backend.GetStatus())
 
 	// Sync from 1Password
 	ctx := context.Background()
@@ -47,7 +48,7 @@ func TestSyncFromOnePassword_Success(t *testing.T) {
 	require.NoError(t, err)
 
 	// Status should be Available
-	assert.Equal(t, StatusAvailable, backend.GetStatus())
+	assert.Equal(t, backendpkg.StatusAvailable, backend.GetStatus())
 
 	// Servers should be populated
 	servers, err := backend.ListServers(ctx)
@@ -80,7 +81,7 @@ func TestSyncFromOnePassword_Locked(t *testing.T) {
 	// Since we can't easily simulate the exact "session expired" error string,
 	// we'll accept either Locked or Unavailable
 	status := backend.GetStatus()
-	assert.True(t, status == StatusLocked || status == StatusUnavailable,
+	assert.True(t, status == backendpkg.StatusLocked || status == backendpkg.StatusUnavailable,
 		"Status should be Locked or Unavailable when sync fails")
 }
 
@@ -102,7 +103,7 @@ func TestSyncFromOnePassword_Unavailable(t *testing.T) {
 
 	// Status should be Unavailable or Locked
 	status := backend.GetStatus()
-	assert.True(t, status == StatusLocked || status == StatusUnavailable)
+	assert.True(t, status == backendpkg.StatusLocked || status == backendpkg.StatusUnavailable)
 }
 
 func TestLoadFromCache(t *testing.T) {
@@ -190,7 +191,7 @@ vault_id = ""
 	require.Error(t, err)
 
 	// Status should be Unavailable
-	assert.True(t, backend.GetStatus() != StatusAvailable)
+	assert.True(t, backend.GetStatus() != backendpkg.StatusAvailable)
 
 	// ListServers should still return cached data
 	servers, err := backend.ListServers(ctx)
@@ -202,13 +203,13 @@ vault_id = ""
 
 func TestStatusString(t *testing.T) {
 	tests := []struct {
-		status   BackendStatus
+		status   backendpkg.BackendStatus
 		expected string
 	}{
-		{StatusUnknown, "Unknown"},
-		{StatusAvailable, "Available"},
-		{StatusLocked, "Locked"},
-		{StatusUnavailable, "Unavailable"},
+		{backendpkg.StatusUnknown, "Unknown"},
+		{backendpkg.StatusAvailable, "Available"},
+		{backendpkg.StatusLocked, "Locked"},
+		{backendpkg.StatusUnavailable, "Unavailable"},
 	}
 
 	for _, tt := range tests {
@@ -224,14 +225,14 @@ func TestGetStatus_ThreadSafe(t *testing.T) {
 	backend.cachePath = ""
 
 	// Set status to Available
-	backend.setStatus(StatusAvailable)
+	backend.setStatus(backendpkg.StatusAvailable)
 
 	// Read status from multiple goroutines
 	done := make(chan bool)
 	for i := 0; i < 10; i++ {
 		go func() {
 			status := backend.GetStatus()
-			assert.Equal(t, StatusAvailable, status)
+			assert.Equal(t, backendpkg.StatusAvailable, status)
 			done <- true
 		}()
 	}

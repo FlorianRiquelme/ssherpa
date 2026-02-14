@@ -191,4 +191,16 @@ var (
 	undoStatusStyle = lipgloss.NewStyle().
 			Foreground(accentColor).
 			Italic(true)
+
+	// Status bar styles for 1Password availability
+	statusBarWarningStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#000000")).
+				Background(lipgloss.AdaptiveColor{Light: "#FFA500", Dark: "#FF8C00"}). // Orange
+				Bold(true).
+				Padding(0, 1)
+
+	statusBarInfoStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.AdaptiveColor{Light: "#000000", Dark: "#FFFFFF"}).
+				Background(lipgloss.AdaptiveColor{Light: "#D1D5DB", Dark: "#4B5563"}). // Gray
+				Padding(0, 1)
 )

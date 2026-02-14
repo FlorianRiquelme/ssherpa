@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,9 +25,9 @@ func TestPoller_DetectsAvailability(t *testing.T) {
 	backend := NewWithCache(mock, cachePath)
 
 	// Track status changes
-	var statusChanges []BackendStatus
+	var statusChanges []backendpkg.BackendStatus
 	var mu sync.Mutex
-	onChange := func(status BackendStatus) {
+	onChange := func(status backendpkg.BackendStatus) {
 		mu.Lock()
 		defer mu.Unlock()
 		statusChanges = append(statusChanges, status)
@@ -62,7 +63,7 @@ func TestPoller_DetectsAvailability(t *testing.T) {
 	// Verify status changed to Available
 	mu.Lock()
 	defer mu.Unlock()
-	assert.Contains(t, statusChanges, StatusAvailable, "Should detect 1Password became available")
+	assert.Contains(t, statusChanges, backendpkg.StatusAvailable, "Should detect 1Password became available")
 }
 
 func TestPoller_DetectsUnavailability(t *testing.T) {
@@ -90,12 +91,12 @@ func TestPoller_DetectsUnavailability(t *testing.T) {
 	ctx := context.Background()
 	err := backend.SyncFromOnePassword(ctx)
 	require.NoError(t, err)
-	assert.Equal(t, StatusAvailable, backend.GetStatus())
+	assert.Equal(t, backendpkg.StatusAvailable, backend.GetStatus())
 
 	// Track status changes
-	var statusChanges []BackendStatus
+	var statusChanges []backendpkg.BackendStatus
 	var mu sync.Mutex
-	onChange := func(status BackendStatus) {
+	onChange := func(status backendpkg.BackendStatus) {
 		mu.Lock()
 		defer mu.Unlock()
 		statusChanges = append(statusChanges, status)
@@ -120,9 +121,9 @@ func TestPoller_DetectsUnavailability(t *testing.T) {
 	mu.Lock()
 	defer mu.Unlock()
 	assert.True(t, len(statusChanges) > 0, "Should detect status change")
-	// Could be StatusLocked or StatusUnavailable depending on error
+	// Could be backendpkg.StatusLocked or backendpkg.StatusUnavailable depending on error
 	lastStatus := statusChanges[len(statusChanges)-1]
-	assert.True(t, lastStatus == StatusLocked || lastStatus == StatusUnavailable,
+	assert.True(t, lastStatus == backendpkg.StatusLocked || lastStatus == backendpkg.StatusUnavailable,
 		"Should detect 1Password became unavailable")
 }
 
@@ -137,7 +138,7 @@ func TestPoller_StopsCleanly(t *testing.T) {
 
 	// Track number of times poller runs
 	var pollCount atomic.Int32
-	onChange := func(status BackendStatus) {
+	onChange := func(status backendpkg.BackendStatus) {
 		pollCount.Add(1)
 	}
 
@@ -222,7 +223,7 @@ func TestPoller_ConfigurableInterval(t *testing.T) {
 	// Track poll times
 	var pollTimes []time.Time
 	var mu sync.Mutex
-	onChange := func(status BackendStatus) {
+	onChange := func(status backendpkg.BackendStatus) {
 		mu.Lock()
 		defer mu.Unlock()
 		pollTimes = append(pollTimes, time.Now())
