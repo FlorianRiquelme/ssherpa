@@ -12,7 +12,7 @@ This roadmap delivers an SSH connection manager TUI that differentiates through 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Foundation & Architecture** - Backend interface and domain models
+- [x] **Phase 1: Foundation & Architecture** - Backend interface and domain models
 - [ ] **Phase 2: SSH Config Integration** - Parse and display ~/.ssh/config
 - [ ] **Phase 3: Connection & Navigation** - Search, filter, and connect to servers
 - [ ] **Phase 4: Project Detection** - Git remote-based project organization
@@ -35,8 +35,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Go module, domain models, error types, and backend interface contracts
-- [ ] 01-02-PLAN.md — Mock backend implementation, config management, and comprehensive TDD tests
+- [x] 01-01-PLAN.md — Go module, domain models, error types, and backend interface contracts
+- [x] 01-02-PLAN.md — Mock backend implementation, config management, and comprehensive TDD tests
 
 ### Phase 2: SSH Config Integration
 **Goal**: Users can view all SSH connections from ~/.ssh/config in a working TUI
@@ -156,7 +156,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Architecture | 0/2 | Planning complete | - |
+| 1. Foundation & Architecture | 2/2 | ✓ Complete | 2026-02-14 |
 | 2. SSH Config Integration | 0/TBD | Not started | - |
 | 3. Connection & Navigation | 0/TBD | Not started | - |
 | 4. Project Detection | 0/TBD | Not started | - |

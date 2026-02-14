@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Find and connect to the right SSH server instantly, from any repo, without remembering aliases or grepping config files.
-**Current focus:** Phase 1 - Foundation & Architecture
+**Current focus:** Phase 1 complete — ready for Phase 2
 
 ## Current Position
 
