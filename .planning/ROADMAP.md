@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Project Detection** - Git remote-based project organization
 - [x] **Phase 5: Config Management** - CRUD operations for SSH connections
 - [x] **Phase 6: 1Password Backend** - Credential storage via 1Password SDK
-- [ ] **Phase 7: SSH Key Selection** - Select which SSH key to use per connection
+- [x] **Phase 7: SSH Key Selection** - Select which SSH key to use per connection
 - [ ] **Phase 8: Distribution** - Single binary packaging and release
 
 ## Phase Details
@@ -134,8 +134,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — SSH key discovery package with file/agent/1Password sources and TDD tests
-- [ ] 07-02-PLAN.md — Key picker overlay, form integration, detail view display, and end-to-end verification
+- [x] 07-01-PLAN.md — SSH key discovery package with file/agent/1Password sources and TDD tests
+- [x] 07-02-PLAN.md — Key picker overlay, form integration, detail view display, and end-to-end verification
 
 **Deferred to future version:** Port forwarding configuration (SSH-02), connection status indicators (CONN-04), ProxyJump/bastion host support
 
@@ -167,5 +167,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Project Detection | 3/3 | ✓ Complete | 2026-02-14 |
 | 5. Config Management | 3/3 | ✓ Complete | 2026-02-14 |
 | 6. 1Password Backend | 5/5 | ✓ Complete | 2026-02-14 |
-| 7. SSH Key Selection | 0/2 | In Progress | - |
+| 7. SSH Key Selection | 2/2 | ✓ Complete | 2026-02-14 |
 | 8. Distribution | 0/TBD | Not started | - |
