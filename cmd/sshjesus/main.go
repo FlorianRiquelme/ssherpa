@@ -14,6 +14,13 @@ import (
 )
 
 func main() {
+	// Resolve app config path before loading
+	appConfigPath, err := config.DefaultPath()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error determining config path: %v\n", err)
+		os.Exit(1)
+	}
+
 	// Load config (optional for Phase 2 — SSH config is the default)
 	cfg, err := config.Load("")
 	if err != nil && err != errors.ErrConfigNotFound {
@@ -22,15 +29,33 @@ func main() {
 		os.Exit(1)
 	}
 
+	// If no config exists or backend is empty, run setup wizard
+	if cfg == nil || cfg.Backend == "" {
+		wizard := tui.NewSetupWizard(appConfigPath)
+		p := tea.NewProgram(wizard, tea.WithAltScreen())
+		if _, err := p.Run(); err != nil {
+			fmt.Fprintf(os.Stderr, "Error running setup wizard: %v\n", err)
+			os.Exit(1)
+		}
+
+		// Reload config after wizard completes
+		cfg, err = config.Load("")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error loading config after setup: %v\n", err)
+			os.Exit(1)
+		}
+	}
+
 	// Determine backend from config (or default to sshconfig)
 	backend := "sshconfig"
 	if cfg != nil && cfg.Backend != "" {
 		backend = cfg.Backend
 	}
 
-	// Only sshconfig backend is supported in Phase 2
-	if backend != "sshconfig" {
-		fmt.Fprintf(os.Stderr, "Backend '%s' not yet supported. Using sshconfig.\n", backend)
+	// Backend validation happens naturally when backend adapter is created
+	if backend != "sshconfig" && backend != "onepassword" && backend != "both" {
+		fmt.Fprintf(os.Stderr, "Backend '%s' not supported. Valid options: sshconfig, onepassword, both\n", backend)
+		os.Exit(1)
 	}
 
 	// Determine SSH config path and history path
@@ -64,12 +89,6 @@ func main() {
 	var projects []config.ProjectConfig
 	if cfg != nil {
 		projects = cfg.Projects
-	}
-
-	// Resolve app config path for saving project assignments
-	appConfigPath, err := config.DefaultPath()
-	if err != nil {
-		appConfigPath = "" // Save will use DefaultPath() fallback
 	}
 
 	// Create TUI model with new parameters

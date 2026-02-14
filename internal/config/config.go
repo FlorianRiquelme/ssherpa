@@ -27,11 +27,12 @@ type OnePasswordConfig struct {
 
 // Config represents the application configuration.
 type Config struct {
-	Version     int                   `toml:"version"`                        // Config schema version for future migrations
-	Backend     string                `toml:"backend"`                        // Backend identifier: "sshconfig", "onepassword", "both"
-	ReturnToTUI bool                  `toml:"return_to_tui_after_disconnect"` // Return to TUI after SSH session ends (default: false = exit to shell)
-	OnePassword OnePasswordConfig     `toml:"onepassword"`                    // 1Password backend settings
-	Projects    []ProjectConfig       `toml:"project"`                        // Projects (TOML array-of-tables: [[project]])
+	Version       int                   `toml:"version"`                        // Config schema version for future migrations
+	Backend       string                `toml:"backend"`                        // Backend identifier: "sshconfig", "onepassword", "both"
+	ReturnToTUI   bool                  `toml:"return_to_tui_after_disconnect"` // Return to TUI after SSH session ends (default: false = exit to shell)
+	MigrationDone bool                  `toml:"migration_done,omitempty"`       // Whether migration wizard has been completed or skipped
+	OnePassword   OnePasswordConfig     `toml:"onepassword"`                    // 1Password backend settings
+	Projects      []ProjectConfig       `toml:"project"`                        // Projects (TOML array-of-tables: [[project]])
 }
 
 // DefaultConfig returns a config with sensible defaults.
