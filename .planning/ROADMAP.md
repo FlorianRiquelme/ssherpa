@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Connection & Navigation** - Search, filter, and connect to servers
 - [x] **Phase 4: Project Detection** - Git remote-based project organization
 - [x] **Phase 5: Config Management** - CRUD operations for SSH connections
-- [ ] **Phase 6: 1Password Backend** - Credential storage via 1Password SDK
+- [x] **Phase 6: 1Password Backend** - Credential storage via 1Password SDK
 - [ ] **Phase 7: Advanced SSH Features** - Key selection, port forwarding, and status
 - [ ] **Phase 8: Distribution** - Single binary packaging and release
 
@@ -116,11 +116,11 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — 1Password SDK client wrapper, item mapping, and backend adapter (TDD)
-- [ ] 06-02-PLAN.md — Sync engine: SSH include file, TOML cache, and conflict detection (TDD)
-- [ ] 06-03-PLAN.md — Offline fallback: status tracking, background poller, auto-recovery (TDD)
-- [ ] 06-04-PLAN.md — Multi-backend aggregator, TUI status bar, and main.go wiring
-- [ ] 06-05-PLAN.md — Setup wizard, migration wizard, and end-to-end verification
+- [x] 06-01-PLAN.md — 1Password SDK client wrapper, item mapping, and backend adapter (TDD)
+- [x] 06-02-PLAN.md — Sync engine: SSH include file, TOML cache, and conflict detection (TDD)
+- [x] 06-03-PLAN.md — Offline fallback: status tracking, background poller, auto-recovery (TDD)
+- [x] 06-04-PLAN.md — Multi-backend aggregator, TUI status bar, and main.go wiring
+- [x] 06-05-PLAN.md — Setup wizard, migration wizard, and end-to-end verification
 
 ### Phase 7: Advanced SSH Features
 **Goal**: Users can configure SSH keys, port forwarding, and see connection status
@@ -166,6 +166,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Connection & Navigation | 2/2 | ✓ Complete | 2026-02-14 |
 | 4. Project Detection | 3/3 | ✓ Complete | 2026-02-14 |
 | 5. Config Management | 3/3 | ✓ Complete | 2026-02-14 |
-| 6. 1Password Backend | 0/5 | Not started | - |
+| 6. 1Password Backend | 5/5 | ✓ Complete | 2026-02-14 |
 | 7. Advanced SSH Features | 0/TBD | Not started | - |
 | 8. Distribution | 0/TBD | Not started | - |
