@@ -96,7 +96,7 @@ func renderDetailView(host *sshconfig.SSHHost, width, height int) string {
 
 	// Footer help text
 	b.WriteString("\n")
-	b.WriteString(statusBarStyle.Render("Press Esc to go back | q to quit"))
+	b.WriteString(statusBarStyle.Render("Esc: back | ↑↓: scroll | q: quit"))
 
 	return b.String()
 }

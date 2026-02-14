@@ -11,8 +11,9 @@ import (
 
 // Config represents the application configuration.
 type Config struct {
-	Version int    `toml:"version"` // Config schema version for future migrations
-	Backend string `toml:"backend"` // Backend identifier: "sshconfig", "onepassword", "mock"
+	Version     int    `toml:"version"`                        // Config schema version for future migrations
+	Backend     string `toml:"backend"`                        // Backend identifier: "sshconfig", "onepassword", "mock"
+	ReturnToTUI bool   `toml:"return_to_tui_after_disconnect"` // Return to TUI after SSH session ends (default: false = exit to shell)
 }
 
 // DefaultConfig returns a config with sensible defaults.

@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"time"
+
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/florianriquelme/sshjesus/internal/sshconfig"
 )
@@ -11,4 +13,11 @@ type configLoadedMsg struct {
 	hosts []sshconfig.SSHHost
 	items []list.Item
 	err   error
+}
+
+// historyLoadedMsg is sent after async history loading completes.
+// Carries last-connected host for current directory and recent hosts map.
+type historyLoadedMsg struct {
+	lastConnectedHost string
+	recentHosts       map[string]time.Time
 }

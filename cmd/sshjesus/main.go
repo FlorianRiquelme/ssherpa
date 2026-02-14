@@ -31,7 +31,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Backend '%s' not yet supported. Using sshconfig.\n", backend)
 	}
 
-	// Determine SSH config path
+	// Determine SSH config path and history path
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error determining home directory: %v\n", err)
@@ -39,8 +39,20 @@ func main() {
 	}
 	sshConfigPath := filepath.Join(homeDir, ".ssh", "config")
 
-	// Create TUI model
-	model := tui.New(sshConfigPath)
+	// Determine history path
+	historyPath := ""
+	if homeDir != "" {
+		historyPath = filepath.Join(homeDir, ".ssh", "sshjesus_history.json")
+	}
+
+	// Get return-to-TUI config option (default: false = exit after SSH)
+	returnToTUI := false
+	if cfg != nil {
+		returnToTUI = cfg.ReturnToTUI
+	}
+
+	// Create TUI model with new parameters
+	model := tui.New(sshConfigPath, historyPath, returnToTUI)
 
 	// Run TUI with alt screen (doesn't pollute terminal history)
 	p := tea.NewProgram(model, tea.WithAltScreen())

@@ -9,18 +9,25 @@ import (
 // hostItem wraps an SSHHost for display in the list.
 // Implements list.Item interface.
 type hostItem struct {
-	host sshconfig.SSHHost
+	host          sshconfig.SSHHost
+	lastConnected bool // Whether this host was recently connected
 }
 
 // FilterValue returns the value used for filtering/searching.
-// Returns the host Name for search functionality (Phase 3).
+// Returns concatenated Name + Hostname + User for multi-field search.
 func (h hostItem) FilterValue() string {
-	return h.host.Name
+	return h.host.Name + " " + h.host.Hostname + " " + h.host.User
 }
 
 // Title returns the first line of the list item.
-// Format: Name (hostname) with warning indicator if ParseError is set.
+// Format: [★] Name (hostname) with star for last-connected and warning indicator if ParseError is set.
 func (h hostItem) Title() string {
+	// Prepend star indicator if this was recently connected
+	prefix := ""
+	if h.lastConnected {
+		prefix = starIndicatorStyle.Render("★ ")
+	}
+
 	title := fmt.Sprintf("%s (%s)",
 		hostnameStyle.Render(h.host.Name),
 		h.host.Hostname)
@@ -30,7 +37,7 @@ func (h hostItem) Title() string {
 		title = warningStyle.Render("⚠ ") + title
 	}
 
-	return title
+	return prefix + title
 }
 
 // Description returns the second line of the list item.
