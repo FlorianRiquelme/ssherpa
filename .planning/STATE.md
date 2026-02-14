@@ -10,17 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 5 of 8 (Config Management)
-Plan: 1 of 3 (complete)
+Plan: 2 of 3 (complete)
 Status: In Progress
-Last activity: 2026-02-14 — Completed Plan 05-01: SSH config writer with formatting-preserving add/edit/delete operations, backup, and atomic writes.
+Last activity: 2026-02-14 — Completed Plan 05-02: Full-screen add/edit forms for SSH connections with field-level validation and DNS checking.
 
-Progress: [███████████████████████████████████████████████████████████████████████] 77%
+Progress: [███████████████████████████████████████████████████████████████████████████] 79%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Average duration: 802.3 seconds
+- Total plans completed: 11
+- Average duration: 728.6 seconds
 - Total execution time: 2.23 hours
 
 **By Phase:**
@@ -31,17 +31,17 @@ Progress: [███████████████████████
 | 02    | 2     | 319s  | 159.5s   |
 | 03    | 2     | 2823s | 1411.5s  |
 | 04    | 3     | 4118s | 1372.7s  |
-| 05    | 1     | 286s  | 286.0s   |
+| 05    | 2     | 525s  | 262.5s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 05    | 02   | 239s     | 2     | 6     |
 | 05    | 01   | 286s     | 2     | 6     |
 | 04    | 03   | 1947s    | 3     | 9     |
 | 04    | 02   | 1905s    | 2     | 6     |
 | 04    | 01   | 266s     | 2     | 8     |
-| 03    | 02   | 2236s    | 2     | 8     |
 
 ## Accumulated Context
 
@@ -86,6 +86,9 @@ Recent decisions affecting current work:
 - **Backup before every write (05-01)**: CreateBackup called before add/edit/delete creates .bak with same permissions
 - **Case-insensitive alias matching (05-01)**: Duplicate detection matches SSH config behavior
 - **Block boundary backtracking (05-01)**: Blank lines and comments between blocks excluded from block content
+- [Phase 05-02]: Hand-built form component instead of charmbracelet/huh for Bubbletea v2 alpha compatibility
+- [Phase 05-02]: Blur validation on field exit (Tab/j/k) with inline error messages
+- [Phase 05-02]: DNS check is async and non-blocking (warning only, save proceeds)
 
 ### Pending Todos
 
@@ -104,5 +107,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 05-01-PLAN.md — SSH config writer with formatting-preserving add/edit/delete operations, backup, and atomic writes. Phase 5 (Config Management) in progress, 1 of 3 plans complete.
+Stopped at: Completed 05-02-PLAN.md — Full-screen add/edit forms for SSH connections with field-level validation and DNS checking. Phase 5 (Config Management) in progress, 2 of 3 plans complete.
 Resume file: None
