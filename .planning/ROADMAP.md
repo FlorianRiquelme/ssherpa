@@ -63,11 +63,11 @@ Plans:
   3. User can select a server and press Enter to initiate SSH connection
   4. SSH opens in current terminal session (tea.ExecProcess handoff)
   5. TUI resumes correctly after SSH session ends
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 03-01: TBD during planning
-- [ ] 03-02: TBD during planning
+- [ ] 03-01-PLAN.md — Connection history package and SSH connection helper
+- [ ] 03-02-PLAN.md — TUI overhaul with fuzzy search, SSH handoff, keybindings, and help footer
 
 ### Phase 4: Project Detection
 **Goal**: Servers organize automatically by project based on git remote URL matching
@@ -158,7 +158,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 |-------|----------------|--------|-----------|
 | 1. Foundation & Architecture | 2/2 | ✓ Complete | 2026-02-14 |
 | 2. SSH Config Integration | 0/2 | In progress | - |
-| 3. Connection & Navigation | 0/TBD | Not started | - |
+| 3. Connection & Navigation | 0/2 | Not started | - |
 | 4. Project Detection | 0/TBD | Not started | - |
 | 5. Config Management | 0/TBD | Not started | - |
 | 6. 1Password Backend | 0/TBD | Not started | - |
