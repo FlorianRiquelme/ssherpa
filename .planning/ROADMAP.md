@@ -131,10 +131,11 @@ Plans:
   2. Available SSH keys are discovered and presented for selection
   3. Key selection persists in SSH config (IdentityFile directive)
   4. Key selection renders correctly without blocking TUI event loop
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 07-01: TBD during planning
+- [ ] 07-01-PLAN.md — SSH key discovery package with file/agent/1Password sources and TDD tests
+- [ ] 07-02-PLAN.md — Key picker overlay, form integration, detail view display, and end-to-end verification
 
 **Deferred to future version:** Port forwarding configuration (SSH-02), connection status indicators (CONN-04), ProxyJump/bastion host support
 
@@ -166,5 +167,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Project Detection | 3/3 | ✓ Complete | 2026-02-14 |
 | 5. Config Management | 3/3 | ✓ Complete | 2026-02-14 |
 | 6. 1Password Backend | 5/5 | ✓ Complete | 2026-02-14 |
-| 7. SSH Key Selection | 0/TBD | Not started | - |
+| 7. SSH Key Selection | 0/2 | In Progress | - |
 | 8. Distribution | 0/TBD | Not started | - |
