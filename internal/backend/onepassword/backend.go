@@ -3,6 +3,7 @@ package onepassword
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/florianriquelme/sshjesus/internal/domain"
@@ -18,6 +19,8 @@ type Backend struct {
 	closed    bool             // Backend closed flag
 	status    BackendStatus    // Current availability status
 	cachePath string           // Path to TOML cache for fallback
+	poller    *Poller          // Background availability poller
+	lastWrite time.Time        // Last write timestamp for debouncing
 }
 
 // Compile-time interface verification
@@ -163,13 +166,23 @@ func (b *Backend) GetCredential(ctx context.Context, id string) (*domain.Credent
 // Close releases resources held by the backend.
 func (b *Backend) Close() error {
 	b.mu.Lock()
-	defer b.mu.Unlock()
 
 	if b.closed {
+		b.mu.Unlock()
 		return nil
 	}
 
+	// Stop poller before closing client
+	if b.poller != nil {
+		poller := b.poller
+		b.poller = nil
+		b.mu.Unlock() // Unlock before calling Stop() to avoid deadlock
+		poller.Stop()
+		b.mu.Lock() // Re-lock for closed flag update
+	}
+
 	b.closed = true
+	b.mu.Unlock()
 	return b.client.Close()
 }
 
@@ -215,6 +228,9 @@ func (b *Backend) CreateServer(ctx context.Context, server *domain.Server) error
 	}
 
 	b.servers = append(b.servers, newServer)
+
+	// Update last write timestamp
+	b.lastWrite = time.Now()
 
 	return nil
 }
@@ -284,6 +300,9 @@ func (b *Backend) UpdateServer(ctx context.Context, server *domain.Server) error
 		}
 	}
 
+	// Update last write timestamp
+	b.lastWrite = time.Now()
+
 	return nil
 }
 
@@ -329,6 +348,9 @@ func (b *Backend) DeleteServer(ctx context.Context, id string) error {
 	if foundIndex >= 0 {
 		b.servers = append(b.servers[:foundIndex], b.servers[foundIndex+1:]...)
 	}
+
+	// Update last write timestamp
+	b.lastWrite = time.Now()
 
 	return nil
 }
