@@ -116,13 +116,9 @@ func (w SetupWizard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			error:      msg.error,
 		}
 
-		if msg.available {
-			// Success - move to setup
-			return w, nil
-		} else {
-			// Failed - offer fallback or retry
-			return w, nil
-		}
+		// Advance to the setup screen (shows success or failure)
+		w.step = stepOnePasswordSetup
+		return w, nil
 
 	case configSavedMsg:
 		// Config saved successfully - quit wizard
