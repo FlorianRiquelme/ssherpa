@@ -12,10 +12,12 @@ import (
 // Backend implements the backend.Backend and backend.Writer interfaces
 // using 1Password as the storage layer.
 type Backend struct {
-	client  Client              // SDK client (real or mock)
-	mu      sync.RWMutex        // Protects cached servers and closed flag
-	servers []*domain.Server    // Cached servers from last sync
-	closed  bool                // Backend closed flag
+	client    Client           // SDK client (real or mock)
+	mu        sync.RWMutex     // Protects cached servers, status, and closed flag
+	servers   []*domain.Server // Cached servers from last sync
+	closed    bool             // Backend closed flag
+	status    BackendStatus    // Current availability status
+	cachePath string           // Path to TOML cache for fallback
 }
 
 // Compile-time interface verification
@@ -30,6 +32,17 @@ func New(client Client) *Backend {
 	return &Backend{
 		client:  client,
 		servers: make([]*domain.Server, 0),
+		status:  StatusUnknown,
+	}
+}
+
+// NewWithCache creates a new 1Password backend with cache path for offline fallback.
+func NewWithCache(client Client, cachePath string) *Backend {
+	return &Backend{
+		client:    client,
+		servers:   make([]*domain.Server, 0),
+		status:    StatusUnknown,
+		cachePath: cachePath,
 	}
 }
 
@@ -46,58 +59,19 @@ func (b *Backend) checkClosed() error {
 	return nil
 }
 
-// ListServers retrieves all servers from 1Password by scanning all accessible vaults
-// and filtering for items with the "sshjesus" tag.
+// ListServers returns cached servers (populated by SyncFromOnePassword or LoadFromCache).
+// This is status-aware: returns live data when Available, cached data when Locked/Unavailable.
 func (b *Backend) ListServers(ctx context.Context) ([]*domain.Server, error) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
+	b.mu.RLock()
+	defer b.mu.RUnlock()
 
 	if err := b.checkClosed(); err != nil {
 		return nil, err
 	}
 
-	// Get all accessible vaults
-	vaults, err := b.client.ListVaults(ctx)
-	if err != nil {
-		return nil, &errors.BackendError{
-			Op:      "ListServers",
-			Backend: "onepassword",
-			Err:     err,
-		}
-	}
-
-	// Scan all vaults for items with sshjesus tag
-	servers := make([]*domain.Server, 0)
-
-	for _, vault := range vaults {
-		items, err := b.client.ListItems(ctx, vault.ID)
-		if err != nil {
-			// Log and skip vaults that error (permission issues, etc.)
-			// Don't fail the entire list operation
-			continue
-		}
-
-		for _, item := range items {
-			if !HasSshjesusTag(item.Tags) {
-				continue
-			}
-
-			server, err := ItemToServer(&item)
-			if err != nil {
-				// Skip items that can't be converted (malformed data)
-				continue
-			}
-
-			servers = append(servers, server)
-		}
-	}
-
-	// Update cache
-	b.servers = servers
-
 	// Return copies (copy-on-read pattern)
-	result := make([]*domain.Server, len(servers))
-	for i, s := range servers {
+	result := make([]*domain.Server, len(b.servers))
+	for i, s := range b.servers {
 		serverCopy := *s
 		result[i] = &serverCopy
 	}

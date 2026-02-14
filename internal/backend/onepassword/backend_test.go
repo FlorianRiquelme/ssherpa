@@ -58,6 +58,10 @@ func TestListServers(t *testing.T) {
 	b := New(client)
 	ctx := context.Background()
 
+	// Sync from 1Password
+	err := b.SyncFromOnePassword(ctx)
+	require.NoError(t, err)
+
 	servers, err := b.ListServers(ctx)
 	require.NoError(t, err)
 
@@ -99,7 +103,10 @@ func TestListServersSkipsErrorVaults(t *testing.T) {
 	b := New(client)
 	ctx := context.Background()
 
-	// Should succeed but skip the bad vault
+	// Sync should succeed but skip the bad vault
+	err := b.SyncFromOnePassword(ctx)
+	require.NoError(t, err)
+
 	servers, err := b.ListServers(ctx)
 	require.NoError(t, err)
 
@@ -126,8 +133,8 @@ func TestGetServerFound(t *testing.T) {
 	b := New(client)
 	ctx := context.Background()
 
-	// First list to populate cache
-	_, err := b.ListServers(ctx)
+	// Sync to populate cache
+	err := b.SyncFromOnePassword(ctx)
 	require.NoError(t, err)
 
 	// Get specific server
@@ -144,8 +151,8 @@ func TestGetServerNotFound(t *testing.T) {
 	b := New(client)
 	ctx := context.Background()
 
-	// List to ensure cache is populated
-	_, err := b.ListServers(ctx)
+	// Sync to ensure cache is populated
+	err := b.SyncFromOnePassword(ctx)
 	require.NoError(t, err)
 
 	// Try to get non-existent server
@@ -207,8 +214,8 @@ func TestUpdateServer(t *testing.T) {
 	b := New(client)
 	ctx := context.Background()
 
-	// Populate cache
-	_, err := b.ListServers(ctx)
+	// Sync to populate cache
+	err := b.SyncFromOnePassword(ctx)
 	require.NoError(t, err)
 
 	// Update server
@@ -250,7 +257,10 @@ func TestDeleteServer(t *testing.T) {
 	b := New(client)
 	ctx := context.Background()
 
-	// Populate cache
+	// Sync to populate cache
+	err := b.SyncFromOnePassword(ctx)
+	require.NoError(t, err)
+
 	servers, err := b.ListServers(ctx)
 	require.NoError(t, err)
 	assert.Len(t, servers, 1)
