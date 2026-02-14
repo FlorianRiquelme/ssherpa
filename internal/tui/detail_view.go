@@ -10,6 +10,8 @@ import (
 
 // renderDetailView renders the full-screen detail view for a selected host.
 // Shows all SSH config options, source file, and error info.
+// Note: This function signature needs to stay simple for compatibility.
+// Enriched key display will be added when we have access to discoveredKeys in the model.
 func renderDetailView(host *sshconfig.SSHHost, width, height int) string {
 	if host == nil {
 		return emptyStateStyle.Render("No host selected")
@@ -59,6 +61,7 @@ func renderDetailView(host *sshconfig.SSHHost, width, height int) string {
 	writeField("Port", host.Port)
 
 	// Identity files
+	// TODO: Enhance with key type, fingerprint, and source badge when discoveredKeys are available
 	if len(host.IdentityFile) > 0 {
 		b.WriteString(fmt.Sprintf("  %s\n", detailLabelStyle.Render("IdentityFile:")))
 		for _, file := range host.IdentityFile {
@@ -96,7 +99,7 @@ func renderDetailView(host *sshconfig.SSHHost, width, height int) string {
 
 	// Footer help text
 	b.WriteString("\n")
-	b.WriteString(statusBarStyle.Render("Esc: back | ↑↓: scroll | q: quit"))
+	b.WriteString(statusBarStyle.Render("K: select key | Esc: back | ↑↓: scroll | q: quit"))
 
 	return b.String()
 }

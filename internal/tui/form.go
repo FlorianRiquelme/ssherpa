@@ -14,6 +14,7 @@ import (
 	"github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/florianriquelme/sshjesus/internal/domain"
 	"github.com/florianriquelme/sshjesus/internal/sshconfig"
+	"github.com/florianriquelme/sshjesus/internal/sshkey"
 )
 
 // FormMode represents whether we're adding or editing a host.
@@ -37,6 +38,7 @@ type ServerForm struct {
 	spinner       spinner.Model
 	backendWriter backend.Writer // Optional: if set, routes writes through backend instead of sshconfig
 	originalID    string         // For backend edit mode: original server ID
+	selectedKey   *sshkey.SSHKey // Currently selected SSH key (nil = None)
 }
 
 // formField represents a single field in the form.
@@ -96,14 +98,14 @@ func NewServerForm(configPath string) ServerForm {
 		validator: validatePort,
 	}
 
-	// IdentityFile field
+	// IdentityFile field (read-only display, opens picker on Enter/Space)
 	identityInput := textinput.New()
-	identityInput.Placeholder = "e.g. ~/.ssh/id_rsa"
+	identityInput.Placeholder = "None (SSH default) - Press Enter to select key"
 	fields[4] = formField{
 		label:     "IdentityFile",
 		input:     identityInput,
 		required:  false,
-		validator: validateIdentityFile,
+		validator: nil, // No validation needed, this is display-only
 	}
 
 	// Extra Config field (textarea)
@@ -244,14 +246,28 @@ func (f ServerForm) Update(msg tea.Msg) (ServerForm, tea.Cmd) {
 				return f, nil
 			}
 
-		case "enter":
+		case "enter", " ":
+			// Special handling for IdentityFile field (index 4): open key picker
+			if f.focusIndex == 4 {
+				// Request model to open key picker
+				currentKeyPath := f.fields[4].input.Value()
+				return f, func() tea.Msg {
+					return formRequestKeyPickerMsg{currentKeyPath: currentKeyPath}
+				}
+			}
+
 			// Enter on last field OR if not in textarea: save
-			if !f.fields[f.focusIndex].isTextarea {
+			if msg.String() == "enter" && !f.fields[f.focusIndex].isTextarea {
 				return f, f.handleSave()
 			}
 		}
 
-		// Pass key to focused field
+		// Pass key to focused field (skip IdentityFile field - it's display-only)
+		if f.focusIndex == 4 {
+			// Don't update IdentityFile input - it's controlled by key selection
+			return f, nil
+		}
+
 		if f.fields[f.focusIndex].isTextarea {
 			var cmd tea.Cmd
 			f.fields[f.focusIndex].textarea, cmd = f.fields[f.focusIndex].textarea.Update(msg)

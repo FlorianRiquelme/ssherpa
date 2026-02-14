@@ -1095,8 +1095,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Update form's IdentityFile field
 			if msg.cleared {
 				m.serverForm.fields[4].input.SetValue("")
+				m.serverForm.selectedKey = nil
 			} else {
+				// Store the path value (used when saving)
 				m.serverForm.fields[4].input.SetValue(msg.path)
+				m.serverForm.selectedKey = msg.key
 			}
 		}
 
@@ -1112,6 +1115,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// Extract filename from path
 			filename := filepath.Base(msg.keyPath)
 			m.statusMsg = fmt.Sprintf("Key updated: %s", filename)
+		}
+
+	case formRequestKeyPickerMsg:
+		// Form is requesting to open the key picker
+		if m.serverForm != nil {
+			// Get server name from Alias field
+			serverName := m.serverForm.fields[0].input.Value()
+			if serverName == "" {
+				serverName = "New Server"
+			}
+
+			// Open key picker with current key path
+			picker := NewSSHKeyPicker(serverName, m.discoveredKeys, msg.currentKeyPath)
+			m.keyPicker = &picker
+			m.showingKeyPicker = true
 		}
 
 	case OnePasswordStatusMsg:
@@ -1482,7 +1500,23 @@ Press 'q' to quit
 			m.viewMode = ViewList
 			return m.list.View()
 		}
-		return m.serverForm.View()
+
+		baseView := m.serverForm.View()
+
+		// If showing key picker, overlay it on top
+		if m.showingKeyPicker && m.keyPicker != nil {
+			keyPickerView := m.keyPicker.View()
+			centeredKeyPicker := lipgloss.Place(
+				m.width,
+				m.height,
+				lipgloss.Center,
+				lipgloss.Center,
+				keyPickerView,
+			)
+			return centeredKeyPicker
+		}
+
+		return baseView
 
 	case ViewDelete:
 		if m.deleteConfirm == nil {

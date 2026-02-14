@@ -107,3 +107,8 @@ type hostKeyUpdatedMsg struct {
 	cleared bool
 	keyPath string
 }
+
+// formRequestKeyPickerMsg is sent when the form requests the key picker to open.
+type formRequestKeyPickerMsg struct {
+	currentKeyPath string
+}
