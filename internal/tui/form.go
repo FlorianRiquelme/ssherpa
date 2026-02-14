@@ -1,7 +1,9 @@
 package tui
 
 import (
+	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/spinner"
@@ -9,6 +11,8 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/florianriquelme/sshjesus/internal/backend"
+	"github.com/florianriquelme/sshjesus/internal/domain"
 	"github.com/florianriquelme/sshjesus/internal/sshconfig"
 )
 
@@ -31,6 +35,8 @@ type ServerForm struct {
 	saveError     string // Error from save attempt
 	dnsError      string // Error from DNS check (non-blocking warning)
 	spinner       spinner.Model
+	backendWriter backend.Writer // Optional: if set, routes writes through backend instead of sshconfig
+	originalID    string         // For backend edit mode: original server ID
 }
 
 // formField represents a single field in the form.
@@ -364,8 +370,13 @@ func (f *ServerForm) handleSave() tea.Cmd {
 	)
 }
 
-// performSave writes the entry to SSH config.
+// performSave writes the entry to SSH config or backend.
 func (f *ServerForm) performSave() tea.Cmd {
+	// If backend writer is set, route through it
+	if f.backendWriter != nil {
+		return f.performBackendSave()
+	}
+
 	// Build HostEntry from form fields
 	entry := sshconfig.HostEntry{
 		Alias:        strings.TrimSpace(f.fields[0].input.Value()),
@@ -393,6 +404,58 @@ func (f *ServerForm) performSave() tea.Cmd {
 	// Success - send serverSavedMsg
 	return func() tea.Msg {
 		return serverSavedMsg{alias: entry.Alias}
+	}
+}
+
+// performBackendSave writes the entry through the backend writer.
+func (f *ServerForm) performBackendSave() tea.Cmd {
+	// Build domain.Server from form fields
+	alias := strings.TrimSpace(f.fields[0].input.Value())
+	hostname := strings.TrimSpace(f.fields[1].input.Value())
+	user := strings.TrimSpace(f.fields[2].input.Value())
+	portStr := strings.TrimSpace(f.fields[3].input.Value())
+	identityFile := strings.TrimSpace(f.fields[4].input.Value())
+
+	// Parse port (default 22)
+	port := 22
+	if portStr != "" {
+		if p, err := strconv.Atoi(portStr); err == nil && p > 0 && p <= 65535 {
+			port = p
+		}
+	}
+
+	server := &domain.Server{
+		ID:           alias, // For new servers, ID = DisplayName
+		DisplayName:  alias,
+		Host:         hostname,
+		User:         user,
+		Port:         port,
+		IdentityFile: identityFile,
+		Tags:         []string{},
+	}
+
+	// Perform add or edit
+	ctx := context.Background()
+	var err error
+	if f.mode == FormAdd {
+		err = f.backendWriter.CreateServer(ctx, server)
+	} else {
+		// For edit mode, use originalID if set, otherwise use alias
+		if f.originalID != "" {
+			server.ID = f.originalID
+		}
+		err = f.backendWriter.UpdateServer(ctx, server)
+	}
+
+	if err != nil {
+		f.saveError = err.Error()
+		f.saving = false
+		return nil
+	}
+
+	// Success - send BackendServersUpdatedMsg to trigger reload
+	return func() tea.Msg {
+		return BackendServersUpdatedMsg{}
 	}
 }
 

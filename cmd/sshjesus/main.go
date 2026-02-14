@@ -1,15 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
+	"github.com/florianriquelme/sshjesus/internal/backend/onepassword"
 	"github.com/florianriquelme/sshjesus/internal/config"
 	"github.com/florianriquelme/sshjesus/internal/errors"
 	"github.com/florianriquelme/sshjesus/internal/project"
+	"github.com/florianriquelme/sshjesus/internal/sshconfig"
+	"github.com/florianriquelme/sshjesus/internal/sync"
 	"github.com/florianriquelme/sshjesus/internal/tui"
 )
 
@@ -47,14 +52,14 @@ func main() {
 	}
 
 	// Determine backend from config (or default to sshconfig)
-	backend := "sshconfig"
+	backendType := "sshconfig"
 	if cfg != nil && cfg.Backend != "" {
-		backend = cfg.Backend
+		backendType = cfg.Backend
 	}
 
 	// Backend validation happens naturally when backend adapter is created
-	if backend != "sshconfig" && backend != "onepassword" && backend != "both" {
-		fmt.Fprintf(os.Stderr, "Backend '%s' not supported. Valid options: sshconfig, onepassword, both\n", backend)
+	if backendType != "sshconfig" && backendType != "onepassword" && backendType != "both" {
+		fmt.Fprintf(os.Stderr, "Backend '%s' not supported. Valid options: sshconfig, onepassword, both\n", backendType)
 		os.Exit(1)
 	}
 
@@ -91,12 +96,126 @@ func main() {
 		projects = cfg.Projects
 	}
 
-	// Create TUI model with new parameters
-	// For now, pass StatusUnknown (1Password integration in next task)
-	model := tui.New(sshConfigPath, historyPath, returnToTUI, currentProjectID, projects, appConfigPath, backendpkg.StatusUnknown)
+	// Construct backend based on configuration
+	var backend backendpkg.Backend
+	var opStatus backendpkg.BackendStatus = backendpkg.StatusUnknown
+	var opBackend *onepassword.Backend
+
+	switch backendType {
+	case "sshconfig":
+		// Pure SSH config backend
+		sshBackend, err := sshconfig.New(sshConfigPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating SSH config backend: %v\n", err)
+			os.Exit(1)
+		}
+		backend = sshBackend
+
+	case "onepassword":
+		// 1Password backend
+		client, err := onepassword.NewCLIClient()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating 1Password CLI client: %v\n", err)
+			os.Exit(1)
+		}
+
+		cachePath := filepath.Join(homeDir, ".ssh", "sshjesus_1password_cache.toml")
+		opBackend = onepassword.NewWithCache(client, cachePath)
+
+		// Try to sync from 1Password, fallback to cache on error
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		syncErr := opBackend.SyncFromOnePassword(ctx)
+		cancel()
+
+		if syncErr != nil {
+			// Sync failed, try loading from cache
+			if cacheErr := opBackend.LoadFromCache(); cacheErr != nil {
+				fmt.Fprintf(os.Stderr, "Error syncing from 1Password and no cache available: %v (cache: %v)\n", syncErr, cacheErr)
+				os.Exit(1)
+			}
+			// Successfully loaded from cache, status will be Locked or Unavailable
+		} else {
+			// Sync succeeded, generate SSH include file and ensure Include directive
+			servers, err := opBackend.ListServers(context.Background())
+			if err == nil {
+				includeFile := filepath.Join(homeDir, ".ssh", "sshjesus_config")
+				if err := sync.WriteSSHIncludeFile(servers, includeFile); err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: Failed to write SSH include file: %v\n", err)
+				}
+				if err := sync.EnsureIncludeDirective(sshConfigPath, includeFile); err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: Failed to ensure Include directive: %v\n", err)
+				}
+			}
+		}
+
+		backend = opBackend
+		opStatus = opBackend.GetStatus()
+
+	case "both":
+		// Multi-backend: SSH config + 1Password
+		sshBackend, err := sshconfig.New(sshConfigPath)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating SSH config backend: %v\n", err)
+			os.Exit(1)
+		}
+
+		client, err := onepassword.NewCLIClient()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating 1Password CLI client: %v\n", err)
+			os.Exit(1)
+		}
+
+		cachePath := filepath.Join(homeDir, ".ssh", "sshjesus_1password_cache.toml")
+		opBackend = onepassword.NewWithCache(client, cachePath)
+
+		// Try to sync from 1Password, fallback to cache on error
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		syncErr := opBackend.SyncFromOnePassword(ctx)
+		cancel()
+
+		if syncErr != nil {
+			// Sync failed, try loading from cache
+			if cacheErr := opBackend.LoadFromCache(); cacheErr != nil {
+				// No cache, but don't fail - just use SSH config backend alone
+				fmt.Fprintf(os.Stderr, "Warning: 1Password unavailable and no cache: %v\n", syncErr)
+			}
+		} else {
+			// Sync succeeded, generate SSH include file and ensure Include directive
+			servers, err := opBackend.ListServers(context.Background())
+			if err == nil {
+				includeFile := filepath.Join(homeDir, ".ssh", "sshjesus_config")
+				if err := sync.WriteSSHIncludeFile(servers, includeFile); err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: Failed to write SSH include file: %v\n", err)
+				}
+				if err := sync.EnsureIncludeDirective(sshConfigPath, includeFile); err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: Failed to ensure Include directive: %v\n", err)
+				}
+			}
+		}
+
+		backend = backendpkg.NewMultiBackend(sshBackend, opBackend)
+		opStatus = opBackend.GetStatus()
+	}
+
+	// Create TUI model with backend status and backend
+	model := tui.New(sshConfigPath, historyPath, returnToTUI, currentProjectID, projects, appConfigPath, opStatus, backend)
 
 	// Run TUI with alt screen (doesn't pollute terminal history)
 	p := tea.NewProgram(model, tea.WithAltScreen())
+
+	// Start poller if we have a 1Password backend
+	if opBackend != nil {
+		// Create a callback that sends a message to the TUI program
+		statusCallback := func(status backendpkg.BackendStatus) {
+			p.Send(tui.OnePasswordStatusMsg{Status: status})
+		}
+		opBackend.StartPolling(0, statusCallback) // 0 = use default interval from env or 5s
+		defer opBackend.Close()
+	} else {
+		// Close backend on exit
+		defer backend.Close()
+	}
+
 	if _, err := p.Run(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error running TUI: %v\n", err)
 		os.Exit(1)

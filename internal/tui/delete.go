@@ -1,22 +1,26 @@
 package tui
 
 import (
+	"context"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/florianriquelme/sshjesus/internal/sshconfig"
 )
 
 // DeleteConfirm is a full-screen component for confirming server deletion
 // using the "type alias to confirm" pattern (like GitHub repo deletion).
 type DeleteConfirm struct {
-	alias      string          // Server alias to confirm
-	input      textinput.Model // Text input for confirmation
-	confirmed  bool            // Whether typed text matches alias (case-insensitive)
-	configPath string          // SSH config path for RemoveHost
+	alias         string          // Server alias to confirm
+	input         textinput.Model // Text input for confirmation
+	confirmed     bool            // Whether typed text matches alias (case-insensitive)
+	configPath    string          // SSH config path for RemoveHost
+	backendWriter backend.Writer  // Optional: if set, routes deletes through backend instead of sshconfig
+	serverID      string          // For backend delete mode: server ID
 }
 
 // NewDeleteConfirm creates a delete confirmation view for the given server alias.
@@ -44,7 +48,12 @@ func (d DeleteConfirm) Update(msg tea.Msg) (DeleteConfirm, tea.Cmd) {
 		case key.Matches(msg, key.NewBinding(key.WithKeys("enter"))):
 			// Enter: delete if confirmed
 			if d.confirmed {
-				// Perform deletion
+				// If backend writer is set, route through it
+				if d.backendWriter != nil {
+					return d, d.performBackendDelete()
+				}
+
+				// Perform deletion via SSH config
 				removedLines, err := sshconfig.RemoveHost(d.configPath, d.alias)
 				if err != nil {
 					return d, func() tea.Msg {
@@ -77,6 +86,22 @@ func (d DeleteConfirm) Update(msg tea.Msg) (DeleteConfirm, tea.Cmd) {
 	}
 
 	return d, cmd
+}
+
+// performBackendDelete deletes the server through the backend writer.
+func (d *DeleteConfirm) performBackendDelete() tea.Cmd {
+	ctx := context.Background()
+	err := d.backendWriter.DeleteServer(ctx, d.serverID)
+	if err != nil {
+		return func() tea.Msg {
+			return deleteErrorMsg{err: err}
+		}
+	}
+
+	// Success - send BackendServersUpdatedMsg to trigger reload
+	return func() tea.Msg {
+		return BackendServersUpdatedMsg{}
+	}
 }
 
 // View renders the delete confirmation prompt.

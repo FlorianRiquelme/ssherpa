@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"time"
@@ -15,6 +16,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/florianriquelme/sshjesus/internal/config"
+	"github.com/florianriquelme/sshjesus/internal/domain"
 	"github.com/florianriquelme/sshjesus/internal/history"
 	"github.com/florianriquelme/sshjesus/internal/project"
 	"github.com/florianriquelme/sshjesus/internal/ssh"
@@ -78,10 +80,11 @@ type Model struct {
 	// Phase 6 additions:
 	opStatus    backend.BackendStatus // Current 1Password status
 	opStatusBar string                // Rendered status bar (cached)
+	appBackend  backend.Backend       // Backend interface (nil for sshconfig-only mode)
 }
 
 // New creates a new TUI model.
-func New(configPath, historyPath string, returnToTUI bool, currentProjectID string, projects []config.ProjectConfig, appConfigPath string, opStatus backend.BackendStatus) Model {
+func New(configPath, historyPath string, returnToTUI bool, currentProjectID string, projects []config.ProjectConfig, appConfigPath string, opStatus backend.BackendStatus, appBackend backend.Backend) Model {
 	// Initialize spinner
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -139,16 +142,25 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 		undoBuffer:       NewUndoBuffer(10),
 		opStatus:         opStatus,    // Initial 1Password status
 		opStatusBar:      "",           // Will be rendered on first draw
+		appBackend:       appBackend,   // Backend interface (may be nil)
 	}
 }
 
 // Init initializes the model and starts async config and history loading.
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(
+	cmds := []tea.Cmd{
 		m.spinner.Tick,
-		loadConfigCmd(m.configPath),
 		loadHistoryCmd(m.historyPath),
-	)
+	}
+
+	// Load from backend if available, otherwise fallback to SSH config
+	if m.appBackend != nil {
+		cmds = append(cmds, loadBackendServersCmd(m.appBackend))
+	} else {
+		cmds = append(cmds, loadConfigCmd(m.configPath))
+	}
+
+	return tea.Batch(cmds...)
 }
 
 // loadConfigCmd returns a command that parses the SSH config file asynchronously.
@@ -209,6 +221,90 @@ func loadHistoryCmd(historyPath string) tea.Cmd {
 			recentHosts:       recentHosts,
 		}
 	}
+}
+
+// loadBackendServersCmd returns a command that loads servers from backend asynchronously.
+func loadBackendServersCmd(backend backend.Backend) tea.Cmd {
+	return func() tea.Msg {
+		ctx := context.Background()
+		servers, err := backend.ListServers(ctx)
+		if err != nil {
+			return configLoadedMsg{
+				hosts: nil,
+				items: nil,
+				err:   err,
+			}
+		}
+
+		// Convert domain.Server to SSHHost at TUI boundary
+		hosts := serversToSSHHosts(servers)
+		return configLoadedMsg{
+			hosts: hosts,
+			items: nil,
+			err:   nil,
+		}
+	}
+}
+
+// serversToSSHHosts converts domain.Server models to TUI-internal SSHHost representations.
+// This function defines the domain → TUI boundary, keeping TUI independent of domain models.
+func serversToSSHHosts(servers []*domain.Server) []sshconfig.SSHHost {
+	hosts := make([]sshconfig.SSHHost, 0, len(servers))
+
+	for _, srv := range servers {
+		// Use DisplayName if available, otherwise fallback to Host
+		name := srv.DisplayName
+		if name == "" {
+			name = srv.Host
+		}
+
+		// Convert Port int to string (SSHHost uses string to preserve raw config)
+		portStr := ""
+		if srv.Port != 0 {
+			portStr = fmt.Sprintf("%d", srv.Port)
+		}
+
+		// Build AllOptions map with available data
+		allOptions := make(map[string][]string)
+		if srv.Host != "" {
+			allOptions["HostName"] = []string{srv.Host}
+		}
+		if srv.User != "" {
+			allOptions["User"] = []string{srv.User}
+		}
+		if portStr != "" {
+			allOptions["Port"] = []string{portStr}
+		}
+		if srv.IdentityFile != "" {
+			allOptions["IdentityFile"] = []string{srv.IdentityFile}
+		}
+		if srv.Proxy != "" {
+			allOptions["ProxyJump"] = []string{srv.Proxy}
+		}
+
+		// Build IdentityFile slice
+		var identityFiles []string
+		if srv.IdentityFile != "" {
+			identityFiles = []string{srv.IdentityFile}
+		}
+
+		host := sshconfig.SSHHost{
+			Name:         name,
+			Hostname:     srv.Host,
+			User:         srv.User,
+			Port:         portStr,
+			IdentityFile: identityFiles,
+			AllOptions:   allOptions,
+			SourceFile:   "", // Backend servers have no source file
+			SourceLine:   0,
+			IsWildcard:   false, // Backend servers are never wildcards
+			ParseError:   nil,
+		}
+
+		hosts = append(hosts, host)
+	}
+
+	return hosts
 }
 
 // hostSource implements fuzzy.Source for SSHHost slices.
@@ -918,17 +1014,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.showingPicker = false
 		m.picker = nil
 
-	case onePasswordStatusMsg:
+	case OnePasswordStatusMsg:
 		// Update 1Password status and re-render status bar
-		m.opStatus = msg.status
+		m.opStatus = msg.Status
 		m.opStatusBar = renderStatusBar(m.opStatus, m.width)
 		// Trigger re-render
 		return m, nil
 
-	case backendServersUpdatedMsg:
+	case BackendServersUpdatedMsg:
 		// Backend servers refreshed (e.g., 1Password sync completed)
-		// Reload config to merge with backend servers
-		// For Phase 6, this is a placeholder - full integration in later tasks
+		// Reload servers from backend if available, otherwise fallback to SSH config
+		if m.appBackend != nil {
+			return m, loadBackendServersCmd(m.appBackend)
+		}
 		return m, loadConfigCmd(m.configPath)
 	}
 

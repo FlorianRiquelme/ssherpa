@@ -76,10 +76,10 @@ type undoErrorMsg struct {
 	err error
 }
 
-// onePasswordStatusMsg is sent when 1Password status changes.
-type onePasswordStatusMsg struct {
-	status backend.BackendStatus
+// OnePasswordStatusMsg is sent when 1Password status changes.
+type OnePasswordStatusMsg struct {
+	Status backend.BackendStatus
 }
 
-// backendServersUpdatedMsg is sent when backend servers are refreshed (e.g., after 1P sync).
-type backendServersUpdatedMsg struct{}
+// BackendServersUpdatedMsg is sent when backend servers are refreshed (e.g., after 1P sync).
+type BackendServersUpdatedMsg struct{}
