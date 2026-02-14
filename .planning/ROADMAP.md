@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Project Detection** - Git remote-based project organization
 - [x] **Phase 5: Config Management** - CRUD operations for SSH connections
 - [x] **Phase 6: 1Password Backend** - Credential storage via 1Password SDK
-- [ ] **Phase 7: Advanced SSH Features** - Key selection, port forwarding, and status
+- [ ] **Phase 7: SSH Key Selection** - Select which SSH key to use per connection
 - [ ] **Phase 8: Distribution** - Single binary packaging and release
 
 ## Phase Details
@@ -122,22 +122,21 @@ Plans:
 - [x] 06-04-PLAN.md — Multi-backend aggregator, TUI status bar, and main.go wiring
 - [x] 06-05-PLAN.md — Setup wizard, migration wizard, and end-to-end verification
 
-### Phase 7: Advanced SSH Features
-**Goal**: Users can configure SSH keys, port forwarding, and see connection status
+### Phase 7: SSH Key Selection
+**Goal**: Users can select which SSH key to use for each connection
 **Depends on**: Phase 6
-**Requirements**: SSH-01, SSH-02, CONN-04
+**Requirements**: SSH-01
 **Success Criteria** (what must be TRUE):
   1. User can select which SSH key to use for each connection
-  2. User can configure local, remote, and dynamic port forwarding per connection
-  3. Connection status displays (reachable/unreachable) via async ping checks
-  4. ProxyJump/bastion host configuration supported
-  5. All SSH features render correctly without blocking TUI event loop
+  2. Available SSH keys are discovered and presented for selection
+  3. Key selection persists in SSH config (IdentityFile directive)
+  4. Key selection renders correctly without blocking TUI event loop
 **Plans**: TBD
 
 Plans:
 - [ ] 07-01: TBD during planning
-- [ ] 07-02: TBD during planning
-- [ ] 07-03: TBD during planning
+
+**Deferred to future version:** Port forwarding configuration (SSH-02), connection status indicators (CONN-04), ProxyJump/bastion host support
 
 ### Phase 8: Distribution
 **Goal**: Tool ships as single binary via Homebrew and GitHub releases
@@ -167,5 +166,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 4. Project Detection | 3/3 | ✓ Complete | 2026-02-14 |
 | 5. Config Management | 3/3 | ✓ Complete | 2026-02-14 |
 | 6. 1Password Backend | 5/5 | ✓ Complete | 2026-02-14 |
-| 7. Advanced SSH Features | 0/TBD | Not started | - |
+| 7. SSH Key Selection | 0/TBD | Not started | - |
 | 8. Distribution | 0/TBD | Not started | - |
