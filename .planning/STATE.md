@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 
 ## Current Position
 
-Phase: 2 of 8 (SSH Config Integration)
-Plan: 2 of 2 (complete)
-Status: Phase complete
-Last activity: 2026-02-14 — Completed Phase 2: SSH Config Integration (parser, backend, TUI)
+Phase: 3 of 8 (Connection & Navigation)
+Plan: 2 of 2 (in progress)
+Status: In progress
+Last activity: 2026-02-14 — Completed 03-01: Connection infrastructure (history tracking, SSH handoff)
 
-Progress: [████████████████████████████████████████] 100%
+Progress: [████████████████████████████████████████████████] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 184.8 seconds
-- Total execution time: 0.21 hours
+- Total plans completed: 5
+- Average duration: 251.2 seconds
+- Total execution time: 0.35 hours
 
 **By Phase:**
 
@@ -29,11 +29,13 @@ Progress: [███████████████████████
 |-------|-------|-------|----------|
 | 01    | 2     | 429s  | 214.5s   |
 | 02    | 2     | 319s  | 159.5s   |
+| 03    | 1     | 587s  | 587.0s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 03    | 01   | 587s     | 2     | 3     |
 | 02    | 02   | 26s      | 3     | 8     |
 | 02    | 01   | 293s     | 2     | 6     |
 | 01    | 02   | 299s     | 2     | 7     |
@@ -60,6 +62,9 @@ Recent decisions affecting current work:
 - **Testify for test assertions (01-02)**: Better error messages and cleaner test code than stdlib alone
 - **Full-screen detail view over split-panel (02-02)**: Simpler implementation, works at any terminal width, clearer focus
 - **AdaptiveColor for TUI theming (02-02)**: Supports both light and dark terminals without manual detection
+- **JSON lines for history (03-01)**: Newline-delimited JSON enables append-only writes, graceful corruption recovery
+- **bufio.Scanner for parsing (03-01)**: Line-by-line unmarshaling skips malformed entries without decoder hang
+- **SSH config alias-only (03-01)**: Pass alias to ssh command, leverage existing config (ProxyJump, IdentityFile, etc.)
 
 ### Pending Todos
 
@@ -80,5 +85,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed Phase 2 (SSH Config Integration) — Users can now run `sshjesus` to see all SSH connections from ~/.ssh/config in a navigable TUI with detail views.
+Stopped at: Completed 03-01 (Connection Infrastructure) — History tracking and SSH handoff ready for TUI integration. Next: 03-02 for fuzzy search and connection execution.
 Resume file: None
