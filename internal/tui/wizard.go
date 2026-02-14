@@ -1,13 +1,16 @@
 package tui
 
 import (
+	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	op "github.com/florianriquelme/sshjesus/internal/backend/onepassword"
 	"github.com/florianriquelme/sshjesus/internal/config"
 )
 
@@ -15,7 +18,9 @@ import (
 type SetupWizard struct {
 	step          int              // Current step in the wizard
 	backendChoice string           // Selected backend: "sshconfig", "onepassword", "both"
-	accountInput  textinput.Model  // 1Password account name input
+	tokenInput    textinput.Model  // 1Password service account token input
+	token         string           // Resolved token (from env or manual input)
+	tokenFromEnv  bool             // Whether the token came from OP_SERVICE_ACCOUNT_TOKEN
 	spinner       spinner.Model    // Loading spinner for async operations
 	checking      bool             // Whether we're checking 1Password
 	checkResult   onePasswordCheckResult // Result of 1Password detection
@@ -37,6 +42,7 @@ type onePasswordCheckResult struct {
 // Wizard steps
 const (
 	stepWelcome = iota
+	stepTokenInput
 	stepCheckingOnePassword
 	stepOnePasswordSetup
 	stepMigrationOffer
@@ -45,11 +51,12 @@ const (
 
 // NewSetupWizard creates a new setup wizard.
 func NewSetupWizard(configPath string) SetupWizard {
-	// Initialize account input
-	accountInput := textinput.New()
-	accountInput.Placeholder = "your-account@1password.com"
-	accountInput.CharLimit = 100
-	accountInput.Width = 40
+	// Initialize token input (password-masked)
+	tokenInput := textinput.New()
+	tokenInput.Placeholder = "ops_..."
+	tokenInput.CharLimit = 5000
+	tokenInput.Width = 60
+	tokenInput.EchoMode = textinput.EchoPassword
 
 	// Initialize spinner
 	s := spinner.New()
@@ -57,11 +64,11 @@ func NewSetupWizard(configPath string) SetupWizard {
 	s.Style = lipgloss.NewStyle().Foreground(accentColor)
 
 	return SetupWizard{
-		step:         stepWelcome,
-		accountInput: accountInput,
-		spinner:      s,
-		cursor:       0, // Default to first option
-		configPath:   configPath,
+		step:       stepWelcome,
+		tokenInput: tokenInput,
+		spinner:    s,
+		cursor:     0,
+		configPath: configPath,
 	}
 }
 
@@ -78,9 +85,17 @@ func (w SetupWizard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		w.height = msg.Height
 
 	case tea.KeyMsg:
+		// Global quit handler — always available regardless of step
+		if msg.String() == "ctrl+c" {
+			return w, tea.Quit
+		}
+
 		switch w.step {
 		case stepWelcome:
 			return w.updateWelcome(msg)
+
+		case stepTokenInput:
+			return w.updateTokenInput(msg)
 
 		case stepCheckingOnePassword:
 			// No input while checking
@@ -95,7 +110,6 @@ func (w SetupWizard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case stepSummary:
 			// Enter to save config and exit wizard
 			if msg.String() == "enter" {
-				// Save config before exiting
 				return w, w.saveConfig()
 			}
 		}
@@ -130,6 +144,13 @@ func (w SetupWizard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return w, nil
 	}
 
+	// Forward non-key messages (cursor blink, etc.) to text input when active
+	if w.step == stepTokenInput {
+		var cmd tea.Cmd
+		w.tokenInput, cmd = w.tokenInput.Update(msg)
+		return w, cmd
+	}
+
 	return w, nil
 }
 
@@ -141,60 +162,88 @@ func (w SetupWizard) updateWelcome(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "k", "up":
 		w.cursor = (w.cursor - 1 + 3) % 3
 	case "enter":
-		// User selected a backend
 		switch w.cursor {
 		case 0:
 			w.backendChoice = "sshconfig"
-			w.step = stepSummary // Skip to summary, no 1Password setup needed
+			w.step = stepSummary
 		case 1:
 			w.backendChoice = "onepassword"
-			w.step = stepCheckingOnePassword
-			w.checking = true
-			return w, tea.Batch(w.spinner.Tick, checkOnePassword())
+			return w.transitionToTokenStep()
 		case 2:
 			w.backendChoice = "both"
-			w.step = stepCheckingOnePassword
-			w.checking = true
-			return w, tea.Batch(w.spinner.Tick, checkOnePassword())
+			return w.transitionToTokenStep()
 		}
-	case "q", "ctrl+c":
+	case "q":
 		return w, tea.Quit
 	}
 	return w, nil
 }
 
+// transitionToTokenStep checks for env var token and transitions accordingly.
+func (w SetupWizard) transitionToTokenStep() (tea.Model, tea.Cmd) {
+	// Check if token is already set via environment variable
+	envToken := os.Getenv("OP_SERVICE_ACCOUNT_TOKEN")
+	if envToken != "" {
+		// Token found in env — skip input, go straight to checking
+		w.token = envToken
+		w.tokenFromEnv = true
+		w.step = stepCheckingOnePassword
+		w.checking = true
+		return w, tea.Batch(w.spinner.Tick, checkOnePassword(envToken))
+	}
+
+	// No env var — show token input
+	w.step = stepTokenInput
+	cmd := w.tokenInput.Focus()
+	return w, cmd
+}
+
+// updateTokenInput handles input for the service account token step.
+func (w SetupWizard) updateTokenInput(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "enter":
+		token := strings.TrimSpace(w.tokenInput.Value())
+		if token == "" {
+			return w, nil
+		}
+		w.token = token
+		w.tokenFromEnv = false
+		w.tokenInput.Blur()
+		w.step = stepCheckingOnePassword
+		w.checking = true
+		return w, tea.Batch(w.spinner.Tick, checkOnePassword(token))
+	case "esc":
+		w.step = stepWelcome
+		w.tokenInput.Blur()
+		w.tokenInput.SetValue("")
+		return w, nil
+	default:
+		var cmd tea.Cmd
+		w.tokenInput, cmd = w.tokenInput.Update(msg)
+		return w, cmd
+	}
+}
+
 // updateOnePasswordSetup handles input for 1Password setup.
 func (w SetupWizard) updateOnePasswordSetup(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
-	case "esc":
-		if !w.checkResult.available {
-			// Fall back to SSH config only
-			w.backendChoice = "sshconfig"
-			w.step = stepSummary
-			return w, nil
-		}
-		// Cancel if 1Password is available (go back to welcome)
-		w.step = stepWelcome
-		w.accountInput.SetValue("")
-		return w, nil
 	case "enter":
 		if w.checkResult.available {
-			// Save account name and proceed to migration offer
-			// For now, skip migration offer and go to summary
 			w.step = stepSummary
-			return w, nil
 		} else {
 			// Fall back to SSH config only
 			w.backendChoice = "sshconfig"
 			w.step = stepSummary
-			return w, nil
 		}
-	default:
-		// Pass to text input
-		var cmd tea.Cmd
-		w.accountInput, cmd = w.accountInput.Update(msg)
+		return w, nil
+	case "esc":
+		// Go back to token input to retry
+		w.step = stepTokenInput
+		w.checkResult = onePasswordCheckResult{}
+		cmd := w.tokenInput.Focus()
 		return w, cmd
 	}
+	return w, nil
 }
 
 // updateMigrationOffer handles input for migration offer screen.
@@ -205,11 +254,9 @@ func (w SetupWizard) updateMigrationOffer(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "k", "up":
 		w.cursor = (w.cursor - 1 + 2) % 2
 	case "enter":
-		// User made choice
 		w.runMigration = (w.cursor == 0)
 		w.step = stepSummary
 	case "esc":
-		// Skip migration
 		w.runMigration = false
 		w.step = stepSummary
 	}
@@ -221,6 +268,8 @@ func (w SetupWizard) View() string {
 	switch w.step {
 	case stepWelcome:
 		return w.renderWelcome()
+	case stepTokenInput:
+		return w.renderTokenInput()
 	case stepCheckingOnePassword:
 		return w.renderCheckingOnePassword()
 	case stepOnePasswordSetup:
@@ -264,6 +313,23 @@ func (w SetupWizard) renderWelcome() string {
 	return wizardBoxStyle.Render(b.String())
 }
 
+// renderTokenInput renders the service account token input screen.
+func (w SetupWizard) renderTokenInput() string {
+	var b strings.Builder
+
+	title := titleStyle.Render("1Password Service Account")
+	b.WriteString(title + "\n\n")
+
+	b.WriteString("A service account token is required to connect to 1Password.\n\n")
+	b.WriteString("Create one at: https://my.1password.com/developer-tools/infrastructure-secrets/serviceaccount\n\n")
+	b.WriteString("Paste your token:\n\n")
+	b.WriteString("  " + w.tokenInput.View() + "\n\n")
+	b.WriteString(wizardDimStyle.Render("Tip: set OP_SERVICE_ACCOUNT_TOKEN in your shell profile to skip this step.") + "\n\n")
+	b.WriteString(wizardDimStyle.Render("Press Enter to continue, Esc to go back"))
+
+	return wizardBoxStyle.Render(b.String())
+}
+
 // renderCheckingOnePassword renders the 1Password detection screen.
 func (w SetupWizard) renderCheckingOnePassword() string {
 	var b strings.Builder
@@ -271,7 +337,7 @@ func (w SetupWizard) renderCheckingOnePassword() string {
 	title := titleStyle.Render("1Password Setup")
 	b.WriteString(title + "\n\n")
 
-	b.WriteString(fmt.Sprintf("  %s Detecting 1Password...\n", w.spinner.View()))
+	b.WriteString(fmt.Sprintf("  %s Connecting to 1Password...\n", w.spinner.View()))
 
 	return wizardBoxStyle.Render(b.String())
 }
@@ -284,18 +350,18 @@ func (w SetupWizard) renderOnePasswordSetup() string {
 	b.WriteString(title + "\n\n")
 
 	if w.checkResult.available {
-		// 1Password detected successfully
-		b.WriteString(wizardSuccessStyle.Render("✓ 1Password desktop app found") + "\n\n")
+		b.WriteString(wizardSuccessStyle.Render("✓ Connected to 1Password") + "\n\n")
 		b.WriteString(fmt.Sprintf("  Found %d vault(s)\n\n", w.checkResult.vaultCount))
 		b.WriteString("Press Enter to continue")
 	} else {
-		// 1Password not detected
-		b.WriteString(wizardErrorStyle.Render("✗ 1Password desktop app not found") + "\n\n")
-		b.WriteString("To use the 1Password backend:\n")
-		b.WriteString("  1. Install 1Password 8 from https://1password.com\n")
-		b.WriteString("  2. Enable the desktop app integration in 1Password settings\n")
-		b.WriteString("  3. Re-run sshjesus\n\n")
-		b.WriteString("Press Enter to use SSH Config only, or Esc to quit")
+		b.WriteString(wizardErrorStyle.Render("✗ Could not connect to 1Password") + "\n\n")
+		if w.checkResult.error != "" {
+			b.WriteString(wizardDimStyle.Render(w.checkResult.error) + "\n\n")
+		}
+		b.WriteString("Verify that:\n")
+		b.WriteString("  1. The service account token is valid\n")
+		b.WriteString("  2. The service account has vault access permissions\n\n")
+		b.WriteString("Press Enter to use SSH Config only, or Esc to try again")
 	}
 
 	return wizardBoxStyle.Render(b.String())
@@ -352,8 +418,13 @@ func (w SetupWizard) renderSummary() string {
 
 	// Show 1Password details if applicable
 	if w.backendChoice == "onepassword" || w.backendChoice == "both" {
-		if w.accountInput.Value() != "" {
-			b.WriteString(fmt.Sprintf("Account: %s\n", w.accountInput.Value()))
+		if w.checkResult.vaultCount > 0 {
+			b.WriteString(fmt.Sprintf("Vaults:  %d\n", w.checkResult.vaultCount))
+		}
+		if !w.tokenFromEnv {
+			b.WriteString("\n")
+			b.WriteString(wizardErrorStyle.Render("Important:") + " Add this to your shell profile to persist the token:\n")
+			b.WriteString(wizardDimStyle.Render("  export OP_SERVICE_ACCOUNT_TOKEN=<your-token>") + "\n")
 		}
 		if w.runMigration {
 			b.WriteString(fmt.Sprintf("Migrated: %d items\n", w.migrationItemCount))
@@ -365,10 +436,15 @@ func (w SetupWizard) renderSummary() string {
 	if configPath == "" {
 		configPath = "~/.config/sshjesus/config.toml"
 	}
-	b.WriteString(fmt.Sprintf("Config saved to: %s\n", wizardDimStyle.Render(configPath)))
+	b.WriteString(fmt.Sprintf("Config path: %s\n", wizardDimStyle.Render(configPath)))
 
 	b.WriteString("\n")
-	b.WriteString(wizardDimStyle.Render("Press Enter to start sshjesus"))
+	if w.err != nil {
+		b.WriteString(wizardErrorStyle.Render(fmt.Sprintf("Error saving config: %s", w.err.Error())) + "\n")
+		b.WriteString(wizardDimStyle.Render("Press Enter to retry"))
+	} else {
+		b.WriteString(wizardDimStyle.Render("Press Enter to start sshjesus"))
+	}
 
 	return wizardBoxStyle.Render(b.String())
 }
@@ -381,15 +457,32 @@ var (
 	wizardErrorStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))  // Red
 )
 
-// checkOnePassword checks if 1Password desktop app is available.
-func checkOnePassword() tea.Cmd {
+// checkOnePassword verifies connectivity to 1Password using a service account token.
+func checkOnePassword(token string) tea.Cmd {
 	return func() tea.Msg {
-		// TODO: In Task 2, implement actual 1Password detection using the client
-		// For now, simulate detection failure (no client integrated yet)
+		client, err := op.NewServiceAccountClient(token)
+		if err != nil {
+			return onePasswordCheckCompleteMsg{
+				available:  false,
+				vaultCount: 0,
+				error:      err.Error(),
+			}
+		}
+		defer client.Close()
+
+		vaults, err := client.ListVaults(context.Background())
+		if err != nil {
+			return onePasswordCheckCompleteMsg{
+				available:  false,
+				vaultCount: 0,
+				error:      err.Error(),
+			}
+		}
+
 		return onePasswordCheckCompleteMsg{
-			available:  false,
-			vaultCount: 0,
-			error:      "1Password desktop app not detected (simulated)",
+			available:  true,
+			vaultCount: len(vaults),
+			error:      "",
 		}
 	}
 }
@@ -399,13 +492,6 @@ type onePasswordCheckCompleteMsg struct {
 	available  bool
 	vaultCount int
 	error      string
-}
-
-// wizardCompleteMsg is sent when the wizard completes successfully.
-type wizardCompleteMsg struct {
-	backendChoice string
-	accountName   string
-	runMigration  bool
 }
 
 // configSavedMsg is sent when config is saved successfully.
@@ -419,17 +505,13 @@ type configSaveErrorMsg struct {
 // saveConfig saves the wizard configuration to disk.
 func (w SetupWizard) saveConfig() tea.Cmd {
 	return func() tea.Msg {
-		// Create config with selected backend
 		cfg := config.DefaultConfig()
 		cfg.Backend = w.backendChoice
 
-		// Add 1Password settings if applicable
 		if w.backendChoice == "onepassword" || w.backendChoice == "both" {
-			cfg.OnePassword.AccountName = w.accountInput.Value()
-			cfg.MigrationDone = w.runMigration // Mark migration as done if ran
+			cfg.MigrationDone = w.runMigration
 		}
 
-		// Save config
 		err := config.Save(cfg, w.configPath)
 		if err != nil {
 			return configSaveErrorMsg{err: err}
