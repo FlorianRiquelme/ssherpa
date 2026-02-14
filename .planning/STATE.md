@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 
 ## Current Position
 
-Phase: 4 of 8 (Project Detection)
-Plan: 3 of 3 (complete)
-Status: Complete
-Last activity: 2026-02-14 — Completed Plan 04-03: Project picker with hostname-based auto-suggestions and persistent manual assignment. Phase 4 (Project Detection) complete.
+Phase: 5 of 8 (Config Management)
+Plan: 1 of 3 (complete)
+Status: In Progress
+Last activity: 2026-02-14 — Completed Plan 05-01: SSH config writer with formatting-preserving add/edit/delete operations, backup, and atomic writes.
 
-Progress: [███████████████████████████████████████████████████████████████████] 75%
+Progress: [███████████████████████████████████████████████████████████████████████] 77%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
-- Average duration: 859.9 seconds
-- Total execution time: 2.15 hours
+- Total plans completed: 10
+- Average duration: 802.3 seconds
+- Total execution time: 2.23 hours
 
 **By Phase:**
 
@@ -31,16 +31,17 @@ Progress: [███████████████████████
 | 02    | 2     | 319s  | 159.5s   |
 | 03    | 2     | 2823s | 1411.5s  |
 | 04    | 3     | 4118s | 1372.7s  |
+| 05    | 1     | 286s  | 286.0s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 05    | 01   | 286s     | 2     | 6     |
 | 04    | 03   | 1947s    | 3     | 9     |
 | 04    | 02   | 1905s    | 2     | 6     |
 | 04    | 01   | 266s     | 2     | 8     |
 | 03    | 02   | 2236s    | 2     | 8     |
-| 03    | 01   | 587s     | 2     | 3     |
 
 ## Accumulated Context
 
@@ -80,6 +81,11 @@ Recent decisions affecting current work:
 - **70% similarity threshold for suggestions (04-03)**: Balances useful suggestions vs noise, empirically tested
 - **Simple overlay without external library (04-03)**: Bubbletea v2 alpha compatibility concerns, fewer dependencies
 - **App config path passed explicitly to TUI (04-03)**: Avoids confusion between SSH config and app config paths, enables proper persistence
+- **Text-based SSH config manipulation (05-01)**: ssh_config library doesn't support writes, text-based approach preserves formatting byte-for-byte
+- **4-space indentation standard (05-01)**: Consistent formatting for all generated Host blocks
+- **Backup before every write (05-01)**: CreateBackup called before add/edit/delete creates .bak with same permissions
+- **Case-insensitive alias matching (05-01)**: Duplicate detection matches SSH config behavior
+- **Block boundary backtracking (05-01)**: Blank lines and comments between blocks excluded from block content
 
 ### Pending Todos
 
@@ -98,5 +104,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 04-03-PLAN.md — Project picker with hostname-based auto-suggestions and persistent manual assignment. Phase 4 (Project Detection) fully complete. All three plans delivered: git detection, project-aware TUI, and manual assignment with auto-suggestions. Ready for Phase 5 (1Password integration).
+Stopped at: Completed 05-01-PLAN.md — SSH config writer with formatting-preserving add/edit/delete operations, backup, and atomic writes. Phase 5 (Config Management) in progress, 1 of 3 plans complete.
 Resume file: None
