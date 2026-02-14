@@ -113,11 +113,14 @@ Plans:
   3. Tool detects 1Password Desktop app session and handles auth gracefully
   4. Privilege escalation detection warns users when running as root
   5. Shared vault items enable team access to same server configs
-**Plans**: TBD
+**Plans:** 5 plans
 
 Plans:
-- [ ] 06-01: TBD during planning
-- [ ] 06-02: TBD during planning
+- [ ] 06-01-PLAN.md — 1Password SDK client wrapper, item mapping, and backend adapter (TDD)
+- [ ] 06-02-PLAN.md — Sync engine: SSH include file, TOML cache, and conflict detection (TDD)
+- [ ] 06-03-PLAN.md — Offline fallback: status tracking, background poller, auto-recovery (TDD)
+- [ ] 06-04-PLAN.md — Multi-backend aggregator, TUI status bar, and main.go wiring
+- [ ] 06-05-PLAN.md — Setup wizard, migration wizard, and end-to-end verification
 
 ### Phase 7: Advanced SSH Features
 **Goal**: Users can configure SSH keys, port forwarding, and see connection status
@@ -163,6 +166,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 3. Connection & Navigation | 2/2 | ✓ Complete | 2026-02-14 |
 | 4. Project Detection | 3/3 | ✓ Complete | 2026-02-14 |
 | 5. Config Management | 3/3 | ✓ Complete | 2026-02-14 |
-| 6. 1Password Backend | 0/TBD | Not started | - |
+| 6. 1Password Backend | 0/5 | Not started | - |
 | 7. Advanced SSH Features | 0/TBD | Not started | - |
 | 8. Distribution | 0/TBD | Not started | - |
