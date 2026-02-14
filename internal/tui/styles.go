@@ -175,4 +175,20 @@ var (
 
 	formSavingStyle = lipgloss.NewStyle().
 			Foreground(accentColor)
+
+	// Delete confirmation styles
+	deleteWarningStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.AdaptiveColor{Light: "#DC2626", Dark: "#EF4444"}). // Red
+				Bold(true)
+
+	deleteInstructionStyle = lipgloss.NewStyle().
+				Foreground(secondaryColor)
+
+	deleteConfirmedStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.AdaptiveColor{Light: "#16A34A", Dark: "#4ADE80"}). // Green
+				BorderForeground(lipgloss.AdaptiveColor{Light: "#16A34A", Dark: "#4ADE80"})
+
+	undoStatusStyle = lipgloss.NewStyle().
+			Foreground(accentColor).
+			Italic(true)
 )

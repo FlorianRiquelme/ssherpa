@@ -29,6 +29,7 @@ const (
 	ViewDetail
 	ViewAdd
 	ViewEdit
+	ViewDelete
 )
 
 // Model is the root Bubbletea model for the TUI.
@@ -68,7 +69,10 @@ type Model struct {
 	configFilePath   string                           // Path to config file for saving
 
 	// Phase 5 additions:
-	serverForm *ServerForm // Add/edit form (nil when not showing)
+	serverForm    *ServerForm    // Add/edit form (nil when not showing)
+	deleteConfirm *DeleteConfirm // Delete confirmation (nil when not showing)
+	undoBuffer    *UndoBuffer    // Session-scoped undo buffer
+	statusMsg     string         // Temporary status message (e.g. "Deleted X, press u to undo")
 }
 
 // New creates a new TUI model.
@@ -127,6 +131,7 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 		projects:         projects,
 		projectMap:       projectMap,
 		configFilePath:   appConfigPath, // App config path for saving project assignments
+		undoBuffer:       NewUndoBuffer(10),
 	}
 }
 
@@ -648,6 +653,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 			} else {
+				// Clear status message on any key press
+				m.statusMsg = ""
+
 				// List mode key handling
 				switch {
 				case key.Matches(msg, m.keys.Search):
@@ -719,6 +727,41 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.viewMode = ViewEdit
 					}
 
+				case key.Matches(msg, m.keys.DeleteServer):
+					// 'd': open delete confirmation
+					selectedItem := m.list.SelectedItem()
+					if selectedItem == nil {
+						return m, nil
+					}
+
+					if item, ok := selectedItem.(hostItem); ok {
+						confirm := NewDeleteConfirm(item.host.Name, m.configPath)
+						m.deleteConfirm = &confirm
+						m.viewMode = ViewDelete
+					}
+
+				case key.Matches(msg, m.keys.Undo):
+					// 'u': undo last delete
+					if m.undoBuffer.IsEmpty() {
+						// Nothing to undo - ignore
+						return m, nil
+					}
+
+					// Pop the last deleted entry
+					entry, ok := m.undoBuffer.Pop()
+					if !ok {
+						return m, nil
+					}
+
+					// Run undo command asynchronously
+					return m, func() tea.Msg {
+						err := RestoreHost(entry.ConfigPath, entry.RawLines)
+						if err != nil {
+							return undoErrorMsg{err: err}
+						}
+						return undoCompletedMsg{alias: entry.Alias}
+					}
+
 				case key.Matches(msg, m.keys.GoToTop):
 					// g or Home: jump to top
 					m.list.Select(0)
@@ -776,6 +819,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				*m.serverForm, cmd = m.serverForm.Update(msg)
 				cmds = append(cmds, cmd)
 			}
+
+		case ViewDelete:
+			// Route all messages to delete confirmation
+			if m.deleteConfirm != nil {
+				var cmd tea.Cmd
+				*m.deleteConfirm, cmd = m.deleteConfirm.Update(msg)
+				cmds = append(cmds, cmd)
+			}
 		}
 
 	case formCancelledMsg:
@@ -788,6 +839,42 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.viewMode = ViewList
 		m.serverForm = nil
 		return m, loadConfigCmd(m.configPath)
+
+	case serverDeletedMsg:
+		// Server deleted successfully - push to undo buffer and reload config
+		m.undoBuffer.Push(UndoEntry{
+			Alias:       msg.alias,
+			ConfigPath:  m.configPath,
+			RawLines:    msg.removedLines,
+			DeletedAt:   time.Now(),
+		})
+		m.viewMode = ViewList
+		m.deleteConfirm = nil
+		m.statusMsg = fmt.Sprintf("Deleted '%s' (press 'u' to undo)", msg.alias)
+		return m, loadConfigCmd(m.configPath)
+
+	case deleteErrorMsg:
+		// Delete failed - show error and return to list
+		m.viewMode = ViewList
+		m.deleteConfirm = nil
+		m.statusMsg = fmt.Sprintf("Delete failed: %v", msg.err)
+		return m, nil
+
+	case deleteConfirmCancelledMsg:
+		// User cancelled delete - return to list
+		m.viewMode = ViewList
+		m.deleteConfirm = nil
+		return m, nil
+
+	case undoCompletedMsg:
+		// Undo successful - reload config
+		m.statusMsg = fmt.Sprintf("Restored '%s'", msg.alias)
+		return m, loadConfigCmd(m.configPath)
+
+	case undoErrorMsg:
+		// Undo failed - show error
+		m.statusMsg = fmt.Sprintf("Undo failed: %v", msg.err)
+		return m, nil
 
 	case pickerClosedMsg:
 		// Close picker without changes
@@ -988,14 +1075,32 @@ Press 'q' to quit
 			helpView = m.help.View(m.keys)
 		}
 
+		// Build status message if present
+		var statusView string
+		if m.statusMsg != "" {
+			statusView = undoStatusStyle.Render(m.statusMsg)
+		}
+
 		// Combine all parts
-		baseView := lipgloss.JoinVertical(
-			lipgloss.Left,
-			searchBar,
-			separatorStyle.Render("─"),
-			mainContent,
-			helpView,
-		)
+		var baseView string
+		if statusView != "" {
+			baseView = lipgloss.JoinVertical(
+				lipgloss.Left,
+				searchBar,
+				separatorStyle.Render("─"),
+				mainContent,
+				statusView,
+				helpView,
+			)
+		} else {
+			baseView = lipgloss.JoinVertical(
+				lipgloss.Left,
+				searchBar,
+				separatorStyle.Render("─"),
+				mainContent,
+				helpView,
+			)
+		}
 
 		// If showing picker, overlay it on top
 		if m.showingPicker && m.picker != nil {
@@ -1028,6 +1133,22 @@ Press 'q' to quit
 			return m.list.View()
 		}
 		return m.serverForm.View()
+
+	case ViewDelete:
+		if m.deleteConfirm == nil {
+			m.viewMode = ViewList
+			return m.list.View()
+		}
+		// Center the delete confirmation overlay
+		deleteView := m.deleteConfirm.View()
+		centeredDelete := lipgloss.Place(
+			m.width,
+			m.height,
+			lipgloss.Center,
+			lipgloss.Center,
+			deleteView,
+		)
+		return centeredDelete
 
 	default:
 		return "Unknown view mode"

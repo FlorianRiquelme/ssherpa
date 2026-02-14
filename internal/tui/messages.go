@@ -50,3 +50,27 @@ type formCancelledMsg struct{}
 type serverSavedMsg struct {
 	alias string
 }
+
+// serverDeletedMsg is sent after a server is successfully deleted.
+type serverDeletedMsg struct {
+	alias        string
+	removedLines []string
+}
+
+// deleteErrorMsg is sent when deletion fails.
+type deleteErrorMsg struct {
+	err error
+}
+
+// deleteConfirmCancelledMsg is sent when the user cancels deletion.
+type deleteConfirmCancelledMsg struct{}
+
+// undoCompletedMsg is sent after a successful undo operation.
+type undoCompletedMsg struct {
+	alias string
+}
+
+// undoErrorMsg is sent when undo operation fails.
+type undoErrorMsg struct {
+	err error
+}
