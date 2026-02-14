@@ -13,8 +13,8 @@ This roadmap delivers an SSH connection manager TUI that differentiates through 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Foundation & Architecture** - Backend interface and domain models
-- [ ] **Phase 2: SSH Config Integration** - Parse and display ~/.ssh/config
-- [ ] **Phase 3: Connection & Navigation** - Search, filter, and connect to servers
+- [x] **Phase 2: SSH Config Integration** - Parse and display ~/.ssh/config
+- [x] **Phase 3: Connection & Navigation** - Search, filter, and connect to servers
 - [ ] **Phase 4: Project Detection** - Git remote-based project organization
 - [ ] **Phase 5: Config Management** - CRUD operations for SSH connections
 - [ ] **Phase 6: 1Password Backend** - Credential storage via 1Password SDK
@@ -50,8 +50,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — SSH config parser wrapper and sshconfig backend adapter
-- [ ] 02-02-PLAN.md — Bubbletea TUI with list view, detail view, and main.go wiring
+- [x] 02-01-PLAN.md — SSH config parser wrapper and sshconfig backend adapter
+- [x] 02-02-PLAN.md — Bubbletea TUI with list view, detail view, and main.go wiring
 
 ### Phase 3: Connection & Navigation
 **Goal**: Users can search servers and connect via system SSH
@@ -66,8 +66,8 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Connection history package and SSH connection helper
-- [ ] 03-02-PLAN.md — TUI overhaul with fuzzy search, SSH handoff, keybindings, and help footer
+- [x] 03-01-PLAN.md — Connection history package and SSH connection helper
+- [x] 03-02-PLAN.md — TUI overhaul with fuzzy search, SSH handoff, keybindings, and help footer
 
 ### Phase 4: Project Detection
 **Goal**: Servers organize automatically by project based on git remote URL matching
@@ -157,8 +157,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Architecture | 2/2 | ✓ Complete | 2026-02-14 |
-| 2. SSH Config Integration | 0/2 | In progress | - |
-| 3. Connection & Navigation | 0/2 | Not started | - |
+| 2. SSH Config Integration | 2/2 | ✓ Complete | 2026-02-14 |
+| 3. Connection & Navigation | 2/2 | ✓ Complete | 2026-02-14 |
 | 4. Project Detection | 0/TBD | Not started | - |
 | 5. Config Management | 0/TBD | Not started | - |
 | 6. 1Password Backend | 0/TBD | Not started | - |
