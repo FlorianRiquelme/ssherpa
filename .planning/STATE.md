@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Find and connect to the right SSH server instantly, from any repo, without remembering aliases or grepping config files.
-**Current focus:** Phase 5 complete — Full CRUD operations for SSH config management. Ready for Phase 6 (1Password Backend)
+**Current focus:** Phase 6 in progress — 1Password backend adapter with SDK integration and tag-based discovery
 
 ## Current Position
 
-Phase: 5 of 8 (Config Management)
-Plan: 3 of 3 (complete)
-Status: Complete
-Last activity: 2026-02-14 — Completed Plan 05-03: Delete confirmation with type-to-confirm pattern and session undo buffer. Phase 5 (Config Management) COMPLETE.
+Phase: 6 of 8 (1Password Backend)
+Plan: 1 of 5 (complete)
+Status: In Progress
+Last activity: 2026-02-14 — Completed Plan 06-01: Core 1Password backend adapter with SDK v0.4.0-beta.2, bidirectional item mapping, and full Backend + Writer interface implementation.
 
-Progress: [██████████████████████████████████████████████████████████████████████████████] 83%
+Progress: [█████████████████████████████████████████████████████████████████████████████████] 85%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: 693.8 seconds
-- Total execution time: 2.31 hours
+- Total plans completed: 13
+- Average duration: 685.5 seconds
+- Total execution time: 2.48 hours
 
 **By Phase:**
 
@@ -32,16 +32,17 @@ Progress: [███████████████████████
 | 03    | 2     | 2823s | 1411.5s  |
 | 04    | 3     | 4118s | 1372.7s  |
 | 05    | 3     | 525s  | 175.0s   |
+| 06    | 1     | 467s  | 467.0s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 06    | 01   | 467s     | 2     | 9     |
 | 05    | 03   | N/A      | 2     | 6     |
 | 05    | 02   | 239s     | 2     | 6     |
 | 05    | 01   | 286s     | 2     | 6     |
 | 04    | 03   | 1947s    | 3     | 9     |
-| 04    | 02   | 1905s    | 2     | 6     |
 
 ## Accumulated Context
 
@@ -93,6 +94,11 @@ Recent decisions affecting current work:
 - [Phase 05-03]: Session-scoped undo buffer (max 10 entries, cleared on app exit)
 - [Phase 05-03]: RestoreHost function in undo.go (avoids modifying Plan 01 writer files)
 - [Phase 05-03]: Status flash messages for delete/undo feedback
+- [Phase 06-01]: Client interface abstraction for testability (MockClient enables testing without real 1Password)
+- [Phase 06-01]: Tag-based discovery with case-insensitive "sshjesus" tag filtering across all vaults
+- [Phase 06-01]: Skip vaults with errors (permission issues don't fail entire list operation)
+- [Phase 06-01]: Projects as tags not entities (1Password doesn't have standalone project concept)
+- [Phase 06-01]: Lowercase "server" category matches 1Password API expectations
 
 ### Pending Todos
 
@@ -101,9 +107,9 @@ None yet.
 ### Blockers/Concerns
 
 **Phase 6 considerations:**
-- 1Password SDK error scenarios need discovery during implementation (network failures, corrupted vaults)
-- 1Password service account authentication and token management
-- Vault/item browsing performance with large vaults
+- ~~1Password SDK error scenarios need discovery during implementation (network failures, corrupted vaults)~~ — RESOLVED: MockClient supports error injection, backend skips error vaults
+- 1Password service account authentication and token management — IN PROGRESS: NewServiceAccountClient implemented, config loader needed (06-02)
+- Vault/item browsing performance with large vaults — NOTE: ListItems fetches full items (not just overviews), may need optimization for large vaults
 
 **Cross-platform considerations:**
 - Terminal compatibility matrix needs empirical testing (older terminals, SSH-forwarded, screen/tmux combinations)
@@ -111,5 +117,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 05-03-PLAN.md — Delete confirmation with type-to-confirm pattern and session undo buffer. Phase 5 (Config Management) COMPLETE. All 3 plans executed successfully: SSH config writer, add/edit forms, and delete/undo operations. Full CRUD workflow operational and verified.
+Stopped at: Completed 06-01-PLAN.md — Core 1Password backend adapter with SDK v0.4.0-beta.2 integration. Domain extended with RemoteProjectPath and VaultID fields. Client interface abstraction with MockClient for testing. Bidirectional item-to-server mapping with tag-based discovery. Full Backend + Writer interface implementation. All 18 tests pass.
 Resume file: None
