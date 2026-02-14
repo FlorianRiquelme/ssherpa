@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Find and connect to the right SSH server instantly, from any repo, without remembering aliases or grepping config files.
-**Current focus:** Phase 2 complete — Ready for Phase 3 (connection execution)
+**Current focus:** Phase 3 complete — Core search-and-connect workflow functional. Ready for Phase 4 (project context detection)
 
 ## Current Position
 
 Phase: 3 of 8 (Connection & Navigation)
-Plan: 2 of 2 (in progress)
-Status: In progress
-Last activity: 2026-02-14 — Completed 03-01: Connection infrastructure (history tracking, SSH handoff)
+Plan: 2 of 2 (complete)
+Status: Complete
+Last activity: 2026-02-14 — Completed Phase 3: Search-and-connect TUI with fuzzy search, SSH handoff, Vim navigation
 
-Progress: [████████████████████████████████████████████████] 50%
+Progress: [███████████████████████████████████████████████████████████] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 251.2 seconds
-- Total execution time: 0.35 hours
+- Total plans completed: 6
+- Average duration: 643.5 seconds
+- Total execution time: 1.07 hours
 
 **By Phase:**
 
@@ -29,17 +29,17 @@ Progress: [███████████████████████
 |-------|-------|-------|----------|
 | 01    | 2     | 429s  | 214.5s   |
 | 02    | 2     | 319s  | 159.5s   |
-| 03    | 1     | 587s  | 587.0s   |
+| 03    | 2     | 2823s | 1411.5s  |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 03    | 02   | 2236s    | 2     | 8     |
 | 03    | 01   | 587s     | 2     | 3     |
 | 02    | 02   | 26s      | 3     | 8     |
 | 02    | 01   | 293s     | 2     | 6     |
 | 01    | 02   | 299s     | 2     | 7     |
-| 01    | 01   | 130s     | 2     | 8     |
 
 ## Accumulated Context
 
@@ -65,6 +65,9 @@ Recent decisions affecting current work:
 - **JSON lines for history (03-01)**: Newline-delimited JSON enables append-only writes, graceful corruption recovery
 - **bufio.Scanner for parsing (03-01)**: Line-by-line unmarshaling skips malformed entries without decoder hang
 - **SSH config alias-only (03-01)**: Pass alias to ssh command, leverage existing config (ProxyJump, IdentityFile, etc.)
+- **Always-on search bar (03-02)**: Filter bar always visible at top, matches browser UX pattern for zero-friction search
+- **Enter connects, Tab/i for details (03-02)**: Primary action (connect) gets most natural key, details are secondary
+- **Exit after SSH by default (03-02)**: ReturnToTUI=false matches native ssh UX, keeps user in terminal flow
 
 ### Pending Todos
 
@@ -72,12 +75,10 @@ None yet.
 
 ### Blockers/Concerns
 
-**Phase 2 considerations:**
+**Phase 4 considerations:**
 - 1Password SDK error scenarios need discovery during implementation (network failures, corrupted vaults)
 - Git remote parsing must handle monorepos, submodules, enterprise hosting edge cases
-
-**Phase 3 considerations:**
-- Bubbletea v2 in alpha/beta may have breaking changes — pin specific versions
+- Project-to-server mapping needs flexible matching (exact, prefix, regex patterns)
 
 **Cross-platform considerations:**
 - Terminal compatibility matrix needs empirical testing (older terminals, SSH-forwarded, screen/tmux combinations)
@@ -85,5 +86,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 03-01 (Connection Infrastructure) — History tracking and SSH handoff ready for TUI integration. Next: 03-02 for fuzzy search and connection execution.
+Stopped at: Completed Phase 3 (Connection & Navigation) — Fuzzy search, SSH handoff, Vim navigation, and history tracking fully functional. Core search-and-connect workflow complete. Next: Phase 4 for project context detection.
 Resume file: None
