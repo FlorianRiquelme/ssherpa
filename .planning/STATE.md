@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 6 of 8 (1Password Backend)
-Plan: 2 of 5 (complete)
+Plan: 3 of 5 (complete)
 Status: In Progress
-Last activity: 2026-02-14 — Completed Plan 06-02: Sync engine with SSH include file generation, Include directive management, TOML cache for sshjesus-specific fields, and conflict detection with 1Password-wins semantics.
+Last activity: 2026-02-14 — Completed Plan 06-03: Offline fallback and availability polling with status tracking, TOML cache for offline access, background poller for auto-recovery, and write debouncing to prevent sync loops.
 
-Progress: [██████████████████████████████████████████████████████████████████████████████████] 86%
+Progress: [████████████████████████████████████████████████████████████████████████████████████] 87%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 645.6 seconds
-- Total execution time: 2.51 hours
+- Total plans completed: 15
+- Average duration: 619.1 seconds
+- Total execution time: 2.58 hours
 
 **By Phase:**
 
@@ -32,17 +32,17 @@ Progress: [███████████████████████
 | 03    | 2     | 2823s | 1411.5s  |
 | 04    | 3     | 4118s | 1372.7s  |
 | 05    | 3     | 525s  | 175.0s   |
-| 06    | 2     | 818s  | 409.0s   |
+| 06    | 3     | 1286s | 428.7s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 06    | 03   | 468s     | 2     | 7     |
 | 06    | 02   | 351s     | 2     | 5     |
 | 06    | 01   | 467s     | 2     | 9     |
 | 05    | 03   | N/A      | 2     | 6     |
 | 05    | 02   | 239s     | 2     | 6     |
-| 05    | 01   | 286s     | 2     | 6     |
 
 ## Accumulated Context
 
@@ -103,6 +103,12 @@ Recent decisions affecting current work:
 - [Phase 06-02]: ForwardAgent detected via tags or notes convention (1Password doesn't have native field)
 - [Phase 06-02]: Exclude sshjesus_config entries from conflict detection (auto-detect by SourceFile path)
 - [Phase 06-02]: 1Password always wins conflicts per requirement (Winner="onepassword")
+- [Phase 06-03]: Separate sync from list operations (ListServers returns cached data, SyncFromOnePassword handles fetching)
+- [Phase 06-03]: BackendStatus enum with 4 states (Unknown/Available/Locked/Unavailable) for precise status reporting
+- [Phase 06-03]: TOML cache with ServerCache wrapper type (domain model remains storage-agnostic)
+- [Phase 06-03]: 5-second default poll interval, configurable via SSHJESUS_1PASSWORD_POLL_INTERVAL env var
+- [Phase 06-03]: 10-second write debounce window to prevent sync loops after Create/Update/Delete operations
+- [Phase 06-03]: Graceful poller shutdown in Close() (unlock mutex before Stop() to avoid deadlock)
 
 ### Pending Todos
 
@@ -121,5 +127,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 06-02-PLAN.md — Sync engine with SSH include file generation, Include directive management, TOML cache for sshjesus-specific fields, and conflict detection. WriteSSHIncludeFile generates valid Host blocks with atomic writes. EnsureIncludeDirective prepends Include to ~/.ssh/config (first-match-wins). DetectConflicts finds duplicate aliases (case-insensitive) with 1Password-wins semantics. All 23 sync tests pass.
+Stopped at: Completed 06-03-PLAN.md — Offline fallback and availability polling with status tracking (Unknown/Available/Locked/Unavailable), TOML cache for offline access, background poller for auto-recovery with configurable interval, and write debouncing to prevent sync loops. SyncFromOnePassword separates fetching from listing. Poller detects availability changes, stops gracefully without deadlock. All 33 tests pass including race detector.
 Resume file: None
