@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Foundation & Architecture** - Backend interface and domain models
 - [x] **Phase 2: SSH Config Integration** - Parse and display ~/.ssh/config
 - [x] **Phase 3: Connection & Navigation** - Search, filter, and connect to servers
-- [ ] **Phase 4: Project Detection** - Git remote-based project organization
+- [x] **Phase 4: Project Detection** - Git remote-based project organization
 - [ ] **Phase 5: Config Management** - CRUD operations for SSH connections
 - [ ] **Phase 6: 1Password Backend** - Credential storage via 1Password SDK
 - [ ] **Phase 7: Advanced SSH Features** - Key selection, port forwarding, and status
@@ -82,9 +82,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Git remote detection, project color generation, and TOML project storage (TDD)
-- [ ] 04-02-PLAN.md — TUI overhaul with project badges, grouped list, and project-aware search
-- [ ] 04-03-PLAN.md — Project picker overlay with hostname matcher and persistent assignment
+- [x] 04-01-PLAN.md — Git remote detection, project color generation, and TOML project storage (TDD)
+- [x] 04-02-PLAN.md — TUI overhaul with project badges, grouped list, and project-aware search
+- [x] 04-03-PLAN.md — Project picker overlay with hostname matcher and persistent assignment
 
 ### Phase 5: Config Management
 **Goal**: Users can add, edit, and delete SSH connections with validation
@@ -160,7 +160,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Foundation & Architecture | 2/2 | ✓ Complete | 2026-02-14 |
 | 2. SSH Config Integration | 2/2 | ✓ Complete | 2026-02-14 |
 | 3. Connection & Navigation | 2/2 | ✓ Complete | 2026-02-14 |
-| 4. Project Detection | 0/3 | Planned | - |
+| 4. Project Detection | 3/3 | ✓ Complete | 2026-02-14 |
 | 5. Config Management | 0/TBD | Not started | - |
 | 6. 1Password Backend | 0/TBD | Not started | - |
 | 7. Advanced SSH Features | 0/TBD | Not started | - |
