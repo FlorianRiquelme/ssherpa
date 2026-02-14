@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Find and connect to the right SSH server instantly, from any repo, without remembering aliases or grepping config files.
-**Current focus:** Phase 6 in progress — Wizard bugs found during E2E testing, needs SDK wiring fixes before checkpoint approval
+**Current focus:** Phase 6 — SDK wired, wizard tested with real 1Password service account. Ready for full E2E checkpoint re-run.
 
 ## Current Position
 
 Phase: 6 of 8 (1Password Backend)
-Plan: 5 of 5 - PAUSED AT CHECKPOINT (bugs found during human verification)
-Status: In Progress - Wizard needs fixes before re-testing
-Last activity: 2026-02-14 — All 5 plans executed. During human E2E testing found: (1) wizard step transition bug (FIXED), (2) checkOnePassword() is a stub returning fake failure (NEEDS FIX), (3) wizard flow asks for account name after check but SDK needs it before. Need to restructure wizard to ask account name first, wire real SDK client, then re-test.
+Plan: 5 of 5 - SDK WIRED, READY FOR E2E RE-TEST
+Status: In Progress - Wizard SDK fix committed, needs E2E checkpoint verification
+Last activity: 2026-02-14 — Wizard rewritten to use service account tokens (NewServiceAccountClient) instead of desktop app integration. Flow: Welcome → auto-detect OP_SERVICE_ACCOUNT_TOKEN env var (or manual paste) → verify connection → summary. Tested manually: both env var auto-detect and manual paste paths work. Commit 745339d. Next: re-run the 6 E2E test scenarios from 06-05 Task 3 checkpoint.
 
 Progress: [██████████████████████████████████████████████████████████████████████████████████████████] 92%
 
@@ -118,22 +118,23 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-- **Wizard SDK wiring (06-05):** checkOnePassword() in wizard.go is a stub (always returns false). Need to: (1) restructure flow to ask account name BEFORE checking, (2) import onepassword package and call NewDesktopAppClient(accountName) + ListVaults(), (3) remove fake simulated failure. Config path is `~/Library/Application Support/sshjesus/config.toml` on macOS (XDG default).
-- **Re-run E2E checkpoint (06-05 Task 3):** After wizard fix, re-test all 6 scenarios from the checkpoint.
+- ~~**Wizard SDK wiring (06-05):**~~ DONE (commit 745339d). Uses service account token via OP_SERVICE_ACCOUNT_TOKEN env var or manual paste.
+- **Re-run E2E checkpoint (06-05 Task 3):** Re-test all 6 scenarios from the checkpoint with real 1Password service account.
 
 ### Blockers/Concerns
 
 **Phase 6 considerations:**
 - ~~1Password SDK error scenarios need discovery during implementation (network failures, corrupted vaults)~~ — RESOLVED: MockClient supports error injection, backend skips error vaults
-- 1Password service account authentication and token management — IN PROGRESS: NewServiceAccountClient implemented, config loader needed (06-02)
+- ~~1Password service account authentication and token management~~ — RESOLVED: Service account token via env var, wizard auto-detects or prompts for manual paste
 - Vault/item browsing performance with large vaults — NOTE: ListItems fetches full items (not just overviews), may need optimization for large vaults
+- **Architecture decision:** Switched from desktop app integration (beta, unreliable) to service account tokens (stable SDK). Desktop app integration (`WithDesktopAppIntegration`) requires beta SDK and failed to connect. Service accounts work on all plan types including Family.
 
 **Cross-platform considerations:**
 - Terminal compatibility matrix needs empirical testing (older terminals, SSH-forwarded, screen/tmux combinations)
 
 ## Session Continuity
 
-Last session: 2026-02-14 (phase execution + E2E testing)
-Stopped at: Phase 6 all plans executed but checkpoint verification revealed wizard bugs. Fixed step transition bug (committed). Remaining: wire real SDK into wizard checkOnePassword(), restructure flow (account name before check). Then re-run 6 E2E test scenarios.
+Last session: 2026-02-14 (SDK wiring fix + manual testing)
+Stopped at: Wizard SDK fix committed and manually verified (both env var and paste paths). Next: full E2E checkpoint re-run (6 scenarios from 06-05 Task 3).
 Resume file: None
-Resume command: `/gsd:resume-work` — fix wizard, then re-verify checkpoint
+Resume command: `/gsd:resume-work` — run E2E checkpoint verification
