@@ -73,12 +73,52 @@ func TestSourceBadge(t *testing.T) {
 			source:   Source1Password,
 			expected: "[1password]",
 		},
+		{
+			name:     "unknown source",
+			source:   KeySource(999),
+			expected: "[unknown]",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			key := SSHKey{Source: tt.source}
 			assert.Equal(t, tt.expected, key.SourceBadge())
+		})
+	}
+}
+
+func TestKeySourceString(t *testing.T) {
+	tests := []struct {
+		name     string
+		source   KeySource
+		expected string
+	}{
+		{
+			name:     "file",
+			source:   SourceFile,
+			expected: "file",
+		},
+		{
+			name:     "agent",
+			source:   SourceAgent,
+			expected: "agent",
+		},
+		{
+			name:     "1password",
+			source:   Source1Password,
+			expected: "1password",
+		},
+		{
+			name:     "unknown",
+			source:   KeySource(999),
+			expected: "unknown",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.source.String())
 		})
 	}
 }

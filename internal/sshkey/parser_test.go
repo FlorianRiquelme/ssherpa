@@ -218,3 +218,13 @@ func TestReadPubKeyComment(t *testing.T) {
 		})
 	}
 }
+
+func TestReadPubKeyComment_InvalidFormat(t *testing.T) {
+	tmpDir := t.TempDir()
+	invalidPub := filepath.Join(tmpDir, "invalid.pub")
+	err := os.WriteFile(invalidPub, []byte("not a valid public key format\n"), 0644)
+	require.NoError(t, err)
+
+	comment := ReadPubKeyComment(invalidPub)
+	assert.Empty(t, comment, "should return empty string for invalid pub file")
+}
