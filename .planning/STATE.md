@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 
 ## Current Position
 
-Phase: 3 of 8 (Connection & Navigation)
-Plan: 2 of 2 (complete)
-Status: Complete
-Last activity: 2026-02-14 — Completed Phase 3: Search-and-connect TUI with fuzzy search, SSH handoff, Vim navigation
+Phase: 4 of 8 (Project Detection)
+Plan: 1 of 2 (complete)
+Status: In Progress
+Last activity: 2026-02-14 — Completed Plan 04-01: Git remote detection, project colors, and TOML config storage
 
-Progress: [███████████████████████████████████████████████████████████] 60%
+Progress: [███████████████████████████████████████████████████████████████] 65%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 643.5 seconds
-- Total execution time: 1.07 hours
+- Total plans completed: 7
+- Average duration: 587.6 seconds
+- Total execution time: 1.14 hours
 
 **By Phase:**
 
@@ -30,16 +30,17 @@ Progress: [███████████████████████
 | 01    | 2     | 429s  | 214.5s   |
 | 02    | 2     | 319s  | 159.5s   |
 | 03    | 2     | 2823s | 1411.5s  |
+| 04    | 1     | 266s  | 266.0s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 04    | 01   | 266s     | 2     | 8     |
 | 03    | 02   | 2236s    | 2     | 8     |
 | 03    | 01   | 587s     | 2     | 3     |
 | 02    | 02   | 26s      | 3     | 8     |
 | 02    | 01   | 293s     | 2     | 6     |
-| 01    | 02   | 299s     | 2     | 7     |
 
 ## Accumulated Context
 
@@ -68,6 +69,10 @@ Recent decisions affecting current work:
 - **Always-on search bar (03-02)**: Filter bar always visible at top, matches browser UX pattern for zero-friction search
 - **Enter connects, Tab/i for details (03-02)**: Primary action (connect) gets most natural key, details are secondary
 - **Exit after SSH by default (03-02)**: ReturnToTUI=false matches native ssh UX, keeps user in terminal flow
+- **Only origin remote for project detection (04-01)**: Simplifies implementation, covers 99% of use cases
+- **Empty string for non-git contexts (04-01)**: Non-git directories are valid use case, not error condition
+- **Hex colors over ANSI 256 (04-01)**: Better precision, lipgloss handles degradation automatically
+- **Empty Color field means auto-generate (04-01)**: User override support while defaulting to deterministic generation
 
 ### Pending Todos
 
@@ -86,5 +91,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed Phase 3 (Connection & Navigation) — Fuzzy search, SSH handoff, Vim navigation, and history tracking fully functional. Core search-and-connect workflow complete. Next: Phase 4 for project context detection.
+Stopped at: Completed 04-01-PLAN.md — Git remote detection, project colors, and TOML config storage implemented. Foundation ready for project-aware TUI features in 04-02.
 Resume file: None
