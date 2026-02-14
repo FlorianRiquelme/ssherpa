@@ -115,4 +115,36 @@ var (
 	projectSeparatorStyle = lipgloss.NewStyle().
 				Foreground(secondaryColor).
 				Italic(true)
+
+	// Picker overlay styles
+	pickerBorderStyle = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(accentColor).
+				Padding(1, 2).
+				Width(50)
+
+	pickerTitleStyle = lipgloss.NewStyle().
+				Bold(true).
+				Foreground(accentColor)
+
+	pickerSelectedStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#FFFFFF")).
+				Background(accentColor).
+				Bold(true)
+
+	pickerSuggestedStyle = lipgloss.NewStyle().
+				Foreground(accentColor).
+				Italic(true)
+
+	pickerCheckmarkStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.AdaptiveColor{Light: "#16A34A", Dark: "#4ADE80"}).
+				Bold(true)
+
+	pickerHelpStyle = lipgloss.NewStyle().
+				Foreground(secondaryColor).
+				Italic(true)
+
+	pickerLabelStyle = lipgloss.NewStyle().
+				Foreground(secondaryColor).
+				Bold(true)
 )

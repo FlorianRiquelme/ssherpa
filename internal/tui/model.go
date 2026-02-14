@@ -61,6 +61,9 @@ type Model struct {
 	currentProjectID string                           // Detected from git, empty if not in repo
 	projects         []config.ProjectConfig           // Project configs from TOML
 	projectMap       map[string]config.ProjectConfig  // Project ID -> config, for fast lookup
+	picker           *ProjectPicker                   // Project picker overlay (nil when not showing)
+	showingPicker    bool                             // Whether picker is visible
+	configFilePath   string                           // Path to config file for saving
 }
 
 // New creates a new TUI model.
@@ -118,6 +121,7 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 		currentProjectID: currentProjectID,
 		projects:         projects,
 		projectMap:       projectMap,
+		configFilePath:   configPath, // Store for saving assignments
 	}
 }
 
@@ -595,6 +599,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Batch(cmds...)
 		}
 
+		// If showing picker, route all keys to picker
+		if m.showingPicker && m.picker != nil {
+			var cmd tea.Cmd
+			*m.picker, cmd = m.picker.Update(msg)
+			cmds = append(cmds, cmd)
+			return m, tea.Batch(cmds...)
+		}
+
 		// View-specific key handling
 		switch m.viewMode {
 		case ViewList:
@@ -669,6 +681,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.viewport.SetContent(content)
 					}
 
+				case key.Matches(msg, m.keys.AssignProject):
+					// 'p': open project picker
+					selectedItem := m.list.SelectedItem()
+					if selectedItem == nil {
+						return m, nil
+					}
+
+					if item, ok := selectedItem.(hostItem); ok {
+						// Get auto-suggestions using hostname matcher
+						m.showingPicker = true
+						picker := m.createPickerForHost(item.host.Name)
+						m.picker = &picker
+					}
+
 				case key.Matches(msg, m.keys.GoToTop):
 					// g or Home: jump to top
 					m.list.Select(0)
@@ -719,9 +745,141 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmds = append(cmds, cmd)
 			}
 		}
+
+	case pickerClosedMsg:
+		// Close picker without changes
+		m.showingPicker = false
+		m.picker = nil
+
+	case projectAssignedMsg:
+		// Handle project assignment toggle
+		m.handleProjectAssignment(msg.serverName, msg.projectID, msg.assigned)
+		// Keep picker open to allow multiple assignments
+
+	case projectCreatedMsg:
+		// Handle new project creation
+		m.handleProjectCreation(msg.project)
+		// Close picker after creation
+		m.showingPicker = false
+		m.picker = nil
 	}
 
 	return m, tea.Batch(cmds...)
+}
+
+// createPickerForHost creates a project picker for the given server.
+func (m *Model) createPickerForHost(serverName string) ProjectPicker {
+	// Build ProjectMember list for hostname matcher
+	var projectMembers []project.ProjectMember
+	for _, proj := range m.projects {
+		projectMembers = append(projectMembers, project.ProjectMember{
+			ProjectID:   proj.ID,
+			ProjectName: proj.Name,
+			Hostnames:   proj.ServerNames,
+		})
+	}
+
+	// Get auto-suggestions based on hostname similarity
+	suggestions := project.SuggestProjects(serverName, projectMembers)
+	suggestionIDs := make([]string, len(suggestions))
+	for i, s := range suggestions {
+		suggestionIDs[i] = s.ProjectID
+	}
+
+	// Get current assignments for this server
+	var currentAssignments []string
+	hostProjectMap := m.buildHostProjectMap()
+	if projConfigs, ok := hostProjectMap[serverName]; ok {
+		for _, pc := range projConfigs {
+			currentAssignments = append(currentAssignments, pc.ID)
+		}
+	}
+
+	return NewProjectPicker(serverName, m.projects, currentAssignments, suggestionIDs)
+}
+
+// handleProjectAssignment adds or removes a server from a project.
+func (m *Model) handleProjectAssignment(serverName, projectID string, assigned bool) {
+	// Find the project
+	var targetProject *config.ProjectConfig
+	for i := range m.projects {
+		if m.projects[i].ID == projectID {
+			targetProject = &m.projects[i]
+			break
+		}
+	}
+
+	if targetProject == nil {
+		return
+	}
+
+	if assigned {
+		// Add server to project (if not already present)
+		found := false
+		for _, sn := range targetProject.ServerNames {
+			if sn == serverName {
+				found = true
+				break
+			}
+		}
+		if !found {
+			targetProject.ServerNames = append(targetProject.ServerNames, serverName)
+		}
+	} else {
+		// Remove server from project
+		newServerNames := make([]string, 0, len(targetProject.ServerNames))
+		for _, sn := range targetProject.ServerNames {
+			if sn != serverName {
+				newServerNames = append(newServerNames, sn)
+			}
+		}
+		targetProject.ServerNames = newServerNames
+	}
+
+	// Update projectMap
+	m.projectMap[projectID] = *targetProject
+
+	// Save config
+	m.saveConfig()
+
+	// Rebuild list items to show updated badges
+	m.rebuildListItems()
+}
+
+// handleProjectCreation adds a new project to the config.
+func (m *Model) handleProjectCreation(newProject config.ProjectConfig) {
+	// Add to projects list
+	m.projects = append(m.projects, newProject)
+
+	// Update projectMap
+	m.projectMap[newProject.ID] = newProject
+	m.projectMap[newProject.Name] = newProject
+
+	// Save config
+	m.saveConfig()
+
+	// Rebuild list items to show new badge
+	m.rebuildListItems()
+}
+
+// saveConfig saves the current config to disk.
+func (m *Model) saveConfig() {
+	// Load full config from disk
+	cfg, err := config.Load(m.configFilePath)
+	if err != nil {
+		// Handle error silently for now (could show error message in TUI)
+		return
+	}
+
+	// Update projects in config
+	cfg.Projects = m.projects
+
+	// Save back to disk
+	err = config.Save(cfg, m.configFilePath)
+	if err != nil {
+		// Handle error silently for now
+		return
+	}
 }
 
 // View renders the current view.
@@ -791,13 +949,31 @@ Press 'q' to quit
 		}
 
 		// Combine all parts
-		return lipgloss.JoinVertical(
+		baseView := lipgloss.JoinVertical(
 			lipgloss.Left,
 			searchBar,
 			separatorStyle.Render("─"),
 			mainContent,
 			helpView,
 		)
+
+		// If showing picker, overlay it on top
+		if m.showingPicker && m.picker != nil {
+			pickerView := m.picker.View()
+			// Center the picker over the base view using lipgloss.Place
+			centeredPicker := lipgloss.Place(
+				m.width,
+				m.height,
+				lipgloss.Center,
+				lipgloss.Center,
+				pickerView,
+			)
+			// Layer base view with picker overlay
+			// Simple approach: just show centered picker (base is dimmed/hidden)
+			return centeredPicker
+		}
+
+		return baseView
 
 	case ViewDetail:
 		if m.detailHost == nil {
