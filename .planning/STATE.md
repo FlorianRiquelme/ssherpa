@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 6 of 8 (1Password Backend)
-Plan: 1 of 5 (complete)
+Plan: 2 of 5 (complete)
 Status: In Progress
-Last activity: 2026-02-14 — Completed Plan 06-01: Core 1Password backend adapter with SDK v0.4.0-beta.2, bidirectional item mapping, and full Backend + Writer interface implementation.
+Last activity: 2026-02-14 — Completed Plan 06-02: Sync engine with SSH include file generation, Include directive management, TOML cache for sshjesus-specific fields, and conflict detection with 1Password-wins semantics.
 
-Progress: [█████████████████████████████████████████████████████████████████████████████████] 85%
+Progress: [██████████████████████████████████████████████████████████████████████████████████] 86%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: 685.5 seconds
-- Total execution time: 2.48 hours
+- Total plans completed: 14
+- Average duration: 645.6 seconds
+- Total execution time: 2.51 hours
 
 **By Phase:**
 
@@ -32,17 +32,17 @@ Progress: [███████████████████████
 | 03    | 2     | 2823s | 1411.5s  |
 | 04    | 3     | 4118s | 1372.7s  |
 | 05    | 3     | 525s  | 175.0s   |
-| 06    | 1     | 467s  | 467.0s   |
+| 06    | 2     | 818s  | 409.0s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 06    | 02   | 351s     | 2     | 5     |
 | 06    | 01   | 467s     | 2     | 9     |
 | 05    | 03   | N/A      | 2     | 6     |
 | 05    | 02   | 239s     | 2     | 6     |
 | 05    | 01   | 286s     | 2     | 6     |
-| 04    | 03   | 1947s    | 3     | 9     |
 
 ## Accumulated Context
 
@@ -99,6 +99,10 @@ Recent decisions affecting current work:
 - [Phase 06-01]: Skip vaults with errors (permission issues don't fail entire list operation)
 - [Phase 06-01]: Projects as tags not entities (1Password doesn't have standalone project concept)
 - [Phase 06-01]: Lowercase "server" category matches 1Password API expectations
+- [Phase 06-02]: Prepend Include directive to ~/.ssh/config (not append) for first-match-wins SSH semantics
+- [Phase 06-02]: ForwardAgent detected via tags or notes convention (1Password doesn't have native field)
+- [Phase 06-02]: Exclude sshjesus_config entries from conflict detection (auto-detect by SourceFile path)
+- [Phase 06-02]: 1Password always wins conflicts per requirement (Winner="onepassword")
 
 ### Pending Todos
 
@@ -117,5 +121,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 06-01-PLAN.md — Core 1Password backend adapter with SDK v0.4.0-beta.2 integration. Domain extended with RemoteProjectPath and VaultID fields. Client interface abstraction with MockClient for testing. Bidirectional item-to-server mapping with tag-based discovery. Full Backend + Writer interface implementation. All 18 tests pass.
+Stopped at: Completed 06-02-PLAN.md — Sync engine with SSH include file generation, Include directive management, TOML cache for sshjesus-specific fields, and conflict detection. WriteSSHIncludeFile generates valid Host blocks with atomic writes. EnsureIncludeDirective prepends Include to ~/.ssh/config (first-match-wins). DetectConflicts finds duplicate aliases (case-insensitive) with 1Password-wins semantics. All 23 sync tests pass.
 Resume file: None
