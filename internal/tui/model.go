@@ -159,7 +159,7 @@ func (m Model) Init() tea.Cmd {
 	cmds := []tea.Cmd{
 		m.spinner.Tick,
 		loadHistoryCmd(m.historyPath),
-		discoverKeysCmd(), // Async SSH key discovery
+		discoverKeysCmd(nil), // Async SSH key discovery (re-runs after hosts load)
 	}
 
 	// Load from backend if available, otherwise fallback to SSH config
@@ -233,23 +233,83 @@ func loadHistoryCmd(historyPath string) tea.Cmd {
 }
 
 // discoverKeysCmd returns a command that discovers SSH keys asynchronously.
-func discoverKeysCmd() tea.Cmd {
+// Accepts optional hosts to extract IdentityFile references.
+// Always parses ~/.ssh/config directly for IdentityAgent directives (e.g. 1Password agent).
+func discoverKeysCmd(hosts []sshconfig.SSHHost) tea.Cmd {
 	return func() tea.Msg {
-		// Expand ~/.ssh/ path
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			return keysDiscoveredMsg{keys: nil, err: err}
 		}
 		sshDir := filepath.Join(homeDir, ".ssh")
+		configPath := filepath.Join(sshDir, "config")
 
-		// Discover keys (pass empty servers slice for now, will be updated later)
-		keys, err := sshkey.DiscoverKeys(sshDir, nil)
+		// Extract IdentityFile references from hosts
+		var servers []*domain.Server
+		for _, host := range hosts {
+			for _, idFile := range host.IdentityFile {
+				servers = append(servers, &domain.Server{IdentityFile: idFile})
+			}
+		}
+
+		// Always parse SSH config directly for IdentityAgent directives.
+		// These may be on Host * wildcards that aren't in the backend's server list.
+		var identityAgents []sshkey.IdentityAgentSource
+		seenAgents := make(map[string]bool)
+
+		if configHosts, err := sshconfig.ParseSSHConfig(configPath); err == nil {
+			for _, host := range configHosts {
+				if agentPaths, ok := host.AllOptions["IdentityAgent"]; ok {
+					for _, agentPath := range agentPaths {
+						expanded := expandTilde(agentPath, homeDir)
+						if seenAgents[expanded] {
+							continue
+						}
+						seenAgents[expanded] = true
+
+						source := sshkey.SourceAgent
+						if strings.Contains(strings.ToLower(expanded), "1password") {
+							source = sshkey.Source1Password
+						}
+						identityAgents = append(identityAgents, sshkey.IdentityAgentSource{
+							SocketPath: expanded,
+							Source:     source,
+						})
+					}
+				}
+			}
+		}
+
+		keys, err := sshkey.DiscoverKeys(sshDir, servers, identityAgents...)
 		if err != nil {
 			return keysDiscoveredMsg{keys: nil, err: err}
 		}
 
 		return keysDiscoveredMsg{keys: keys, err: nil}
 	}
+}
+
+// expandTilde strips surrounding quotes and replaces leading ~ with the home directory path.
+func expandTilde(path string, homeDir string) string {
+	// Strip surrounding quotes (SSH config values may be quoted)
+	path = strings.Trim(path, "\"'")
+	if strings.HasPrefix(path, "~/") {
+		return filepath.Join(homeDir, path[2:])
+	}
+	if path == "~" {
+		return homeDir
+	}
+	return path
+}
+
+// has1PasswordKeys returns true if any discovered keys are from 1Password.
+func has1PasswordKeys(keys []sshkey.SSHKey) bool {
+	for _, k := range keys {
+		if k.Source == sshkey.Source1Password {
+			return true
+		}
+	}
+	return false
 }
 
 // loadBackendServersCmd returns a command that loads servers from backend asynchronously.
@@ -705,6 +765,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.hosts != nil {
 			m.allHosts = msg.hosts
 			m.filterHosts() // Initial filter (shows all)
+
+			// Re-discover keys now that hosts are loaded (includes IdentityFile references)
+			cmds = append(cmds, discoverKeysCmd(m.allHosts))
 		}
 
 	case historyLoadedMsg:
@@ -876,6 +939,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				case key.Matches(msg, m.keys.AddServer):
 					// 'a': open add server form
 					form := NewServerForm(m.configPath)
+					if has1PasswordKeys(m.discoveredKeys) {
+						form.fields[4].input.Placeholder = "Default (1Password agent) - Press Enter to select key"
+					}
 					m.serverForm = &form
 					m.viewMode = ViewAdd
 

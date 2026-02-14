@@ -125,17 +125,21 @@ func Discover1PasswordKeys(servers []*domain.Server) []SSHKey {
 // Discovers keys from:
 // - File system (~/.ssh/ directory via header sniffing)
 // - SSH agent (via SSH_AUTH_SOCK)
+// - IdentityAgent sockets (e.g. 1Password's agent configured in SSH config)
 // - 1Password servers (IdentityFile references)
 //
+// identityAgents maps socket paths to their source (e.g. Source1Password for 1Password agent).
+//
 // Deduplicates by SHA256 fingerprint with precedence:
-// - Agent version wins over file version (richer metadata from agent comment)
-// - File version wins over 1Password version (local is authoritative)
+// - 1Password agent keys win (user's primary key source)
+// - SSH agent keys next (richer metadata from agent comment)
+// - File keys as baseline
 //
 // Returns a sorted, deduplicated flat list:
 // - File keys first (alphabetical by filename)
 // - Agent keys second
 // - 1Password keys third
-func DiscoverKeys(sshDir string, servers []*domain.Server) ([]SSHKey, error) {
+func DiscoverKeys(sshDir string, servers []*domain.Server, identityAgents ...IdentityAgentSource) ([]SSHKey, error) {
 	// Discover from all sources
 	fileKeys, err := DiscoverFileKeys(sshDir)
 	if err != nil {
@@ -145,6 +149,15 @@ func DiscoverKeys(sshDir string, servers []*domain.Server) ([]SSHKey, error) {
 	agentKeys, err := DiscoverAgentKeys()
 	if err != nil {
 		return nil, fmt.Errorf("discover agent keys: %w", err)
+	}
+
+	// Discover from IdentityAgent sockets (e.g. 1Password SSH agent)
+	var identityAgentKeys []SSHKey
+	for _, ia := range identityAgents {
+		keys, err := DiscoverKeysFromSocket(ia.SocketPath, ia.Source)
+		if err == nil {
+			identityAgentKeys = append(identityAgentKeys, keys...)
+		}
 	}
 
 	onePasswordKeys := Discover1PasswordKeys(servers)
@@ -160,22 +173,27 @@ func DiscoverKeys(sshDir string, servers []*domain.Server) ([]SSHKey, error) {
 		}
 	}
 
-	// Add agent keys (override file keys with same fingerprint)
+	// Add SSH_AUTH_SOCK agent keys (override file keys with same fingerprint)
 	for _, key := range agentKeys {
 		if key.Fingerprint != "" {
 			keyMap[key.Fingerprint] = key
 		}
 	}
 
-	// Add 1Password keys only if not already present (file/agent wins)
+	// Add IdentityAgent keys (override file/agent keys — these are the user's configured source)
+	for _, key := range identityAgentKeys {
+		if key.Fingerprint != "" {
+			keyMap[key.Fingerprint] = key
+		}
+	}
+
+	// Add 1Password server reference keys only if not already present
 	for _, key := range onePasswordKeys {
 		if key.Fingerprint != "" {
 			if _, exists := keyMap[key.Fingerprint]; !exists {
 				keyMap[key.Fingerprint] = key
 			}
 		} else {
-			// Missing keys don't have fingerprints, add them directly
-			// Use a synthetic key based on path
 			syntheticKey := "missing:" + key.MissingPath
 			keyMap[syntheticKey] = key
 		}
@@ -191,13 +209,10 @@ func DiscoverKeys(sshDir string, servers []*domain.Server) ([]SSHKey, error) {
 	sort.Slice(result, func(i, j int) bool {
 		ki, kj := result[i], result[j]
 
-		// Sort by source first
 		if ki.Source != kj.Source {
-			// File (0) < Agent (1) < 1Password (2)
 			return ki.Source < kj.Source
 		}
 
-		// Within same source, sort by filename/comment
 		if ki.Source == SourceFile {
 			return ki.Filename < kj.Filename
 		}
@@ -212,6 +227,12 @@ func DiscoverKeys(sshDir string, servers []*domain.Server) ([]SSHKey, error) {
 	})
 
 	return result, nil
+}
+
+// IdentityAgentSource pairs a socket path with its key source type.
+type IdentityAgentSource struct {
+	SocketPath string
+	Source      KeySource
 }
 
 // CreateMissingKeyEntry creates an SSHKey entry for a key file that doesn't exist.

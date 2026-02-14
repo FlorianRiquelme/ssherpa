@@ -18,6 +18,7 @@ type SSHKeyPicker struct {
 	width          int
 	height         int
 	serverName     string // Server this picker is for (displayed in title)
+	defaultLabel   string // Label for the "no explicit key" option
 }
 
 // NewSSHKeyPicker creates a new SSH key picker overlay.
@@ -26,6 +27,15 @@ func NewSSHKeyPicker(
 	keys []sshkey.SSHKey,
 	currentKeyPath string, // Current IdentityFile path (empty if none)
 ) SSHKeyPicker {
+	// Determine default label based on whether 1Password agent keys are present
+	defaultLabel := "None (SSH default)"
+	for _, k := range keys {
+		if k.Source == sshkey.Source1Password {
+			defaultLabel = "Default (1Password agent)"
+			break
+		}
+	}
+
 	return SSHKeyPicker{
 		keys:           keys,
 		selected:       0,
@@ -33,6 +43,7 @@ func NewSSHKeyPicker(
 		serverName:     serverName,
 		width:          70,
 		height:         20,
+		defaultLabel:   defaultLabel,
 	}
 }
 
@@ -106,7 +117,7 @@ func (p SSHKeyPicker) View() string {
 	}
 	b.WriteString(cursor)
 	b.WriteString(checkmark)
-	b.WriteString(noneStyle.Render("None (SSH default)"))
+	b.WriteString(noneStyle.Render(p.defaultLabel))
 	b.WriteString("\n")
 
 	// Render each key
@@ -121,9 +132,9 @@ func (p SSHKeyPicker) View() string {
 			cursor = "> "
 		}
 
-		// Checkmark if this key is currently assigned
+		// Checkmark if this key is currently assigned (only match non-empty paths)
 		checkmark := "  "
-		if k.Path == p.currentKeyPath {
+		if k.Path != "" && k.Path == p.currentKeyPath {
 			checkmark = pickerCheckmarkStyle.Render("✓ ")
 		}
 

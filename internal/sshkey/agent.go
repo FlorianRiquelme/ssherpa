@@ -8,42 +8,43 @@ import (
 	"golang.org/x/crypto/ssh/agent"
 )
 
-// DiscoverAgentKeys discovers SSH keys loaded in the SSH agent.
+// DiscoverAgentKeys discovers SSH keys loaded in the SSH agent via SSH_AUTH_SOCK.
 // Returns empty slice (not error) if agent is unavailable or unreachable.
 // Agent unavailability is a normal condition, not an error.
 func DiscoverAgentKeys() ([]SSHKey, error) {
-	// Read SSH_AUTH_SOCK environment variable
 	socketPath := os.Getenv("SSH_AUTH_SOCK")
 	if socketPath == "" {
-		// No agent configured - this is normal
 		return []SSHKey{}, nil
 	}
+	return discoverKeysFromSocket(socketPath, SourceAgent)
+}
 
-	// Try to connect to the agent socket
+// DiscoverKeysFromSocket discovers SSH keys from a specific agent socket path.
+// The source parameter tags discovered keys (e.g. Source1Password for 1Password's IdentityAgent).
+// Returns empty slice (not error) if socket is unavailable.
+func DiscoverKeysFromSocket(socketPath string, source KeySource) ([]SSHKey, error) {
+	return discoverKeysFromSocket(socketPath, source)
+}
+
+// discoverKeysFromSocket connects to an SSH agent socket and lists keys.
+func discoverKeysFromSocket(socketPath string, source KeySource) ([]SSHKey, error) {
 	conn, err := net.Dial("unix", socketPath)
 	if err != nil {
-		// Agent unreachable - this is normal (agent not running, socket stale, etc.)
 		return []SSHKey{}, nil
 	}
 	defer conn.Close()
 
-	// Create agent client
 	agentClient := agent.NewClient(conn)
 
-	// List keys in the agent
 	agentKeys, err := agentClient.List()
 	if err != nil {
-		// Error listing keys - treat as agent unavailable
 		return []SSHKey{}, nil
 	}
 
-	// Convert agent keys to SSHKey format
 	keys := make([]SSHKey, 0, len(agentKeys))
 	for _, agentKey := range agentKeys {
-		// Parse the public key from marshaled format
 		pubKey, err := ssh.ParsePublicKey(agentKey.Marshal())
 		if err != nil {
-			// Skip keys we can't parse
 			continue
 		}
 
@@ -51,9 +52,8 @@ func DiscoverAgentKeys() ([]SSHKey, error) {
 			Type:        extractKeyType(pubKey.Type()),
 			Fingerprint: ssh.FingerprintSHA256(pubKey),
 			Comment:     agentKey.Comment,
-			Source:      SourceAgent,
+			Source:      source,
 			Bits:        extractKeyBits(pubKey),
-			// Path and Filename are empty for agent keys
 		}
 
 		keys = append(keys, key)
