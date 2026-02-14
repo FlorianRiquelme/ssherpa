@@ -47,11 +47,11 @@ Plans:
   2. Config parser preserves formatting, comments, and Include directives
   3. TUI renders server list with basic keyboard navigation (arrow keys, Enter)
   4. Connection details display hostname, user, port, and key path
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 02-01: TBD during planning
-- [ ] 02-02: TBD during planning
+- [ ] 02-01-PLAN.md — SSH config parser wrapper and sshconfig backend adapter
+- [ ] 02-02-PLAN.md — Bubbletea TUI with list view, detail view, and main.go wiring
 
 ### Phase 3: Connection & Navigation
 **Goal**: Users can search servers and connect via system SSH
@@ -157,7 +157,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation & Architecture | 2/2 | ✓ Complete | 2026-02-14 |
-| 2. SSH Config Integration | 0/TBD | Not started | - |
+| 2. SSH Config Integration | 0/2 | In progress | - |
 | 3. Connection & Navigation | 0/TBD | Not started | - |
 | 4. Project Detection | 0/TBD | Not started | - |
 | 5. Config Management | 0/TBD | Not started | - |
