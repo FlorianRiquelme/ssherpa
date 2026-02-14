@@ -134,6 +134,7 @@ Recent decisions affecting current work:
 - **Re-run E2E checkpoint (06-05 Task 3):** Re-test all 6 scenarios from the checkpoint with real 1Password service account.
 - **Rename tool to ssherpa:** Rename from "sshjesus" to "ssherpa" across codebase, Go module, configs, docs, and Phase 8 distribution plan.
 - ~~**Fix selected server highlight readability:**~~ DONE (commit dd4eea6). AdaptiveColor for selectedStyle/pickerSelectedStyle — dark indigo bg on dark terminals, light indigo bg on light terminals.
+- **Fix 1Password status banner showing unavailable when unlocked:** Banner says 1Password unavailable even when desktop app is unlocked — likely `op` CLI not signed in vs service account token issue.
 
 ### Blockers/Concerns
 
