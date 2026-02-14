@@ -132,6 +132,7 @@ Recent decisions affecting current work:
 
 - ~~**Wizard SDK wiring (06-05):**~~ DONE (commit 745339d). Uses service account token via OP_SERVICE_ACCOUNT_TOKEN env var or manual paste.
 - **Re-run E2E checkpoint (06-05 Task 3):** Re-test all 6 scenarios from the checkpoint with real 1Password service account.
+- **Rename tool to ssherpa:** Rename from "sshjesus" to "ssherpa" across codebase, Go module, configs, docs, and Phase 8 distribution plan.
 
 ### Blockers/Concerns
 
