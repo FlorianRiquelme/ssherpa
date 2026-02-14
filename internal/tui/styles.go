@@ -39,10 +39,11 @@ var (
 			Foreground(accentColor).
 			Padding(0, 1)
 
-	// Selected list item highlight
+	// Selected list item highlight — adaptive background keeps inner styled
+	// text readable (hostnameStyle, secondaryStyle, badges) on both themes.
 	selectedStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#FFFFFF")).
-			Background(accentColor).
+			Foreground(lipgloss.AdaptiveColor{Light: "#1E1B4B", Dark: "#E0E7FF"}).
+			Background(lipgloss.AdaptiveColor{Light: "#E0E7FF", Dark: "#312E81"}).
 			Bold(true)
 
 	// Hostname style (accent color + bold)
@@ -128,8 +129,8 @@ var (
 				Foreground(accentColor)
 
 	pickerSelectedStyle = lipgloss.NewStyle().
-				Foreground(lipgloss.Color("#FFFFFF")).
-				Background(accentColor).
+				Foreground(lipgloss.AdaptiveColor{Light: "#1E1B4B", Dark: "#E0E7FF"}).
+				Background(lipgloss.AdaptiveColor{Light: "#E0E7FF", Dark: "#312E81"}).
 				Bold(true)
 
 	pickerSuggestedStyle = lipgloss.NewStyle().
