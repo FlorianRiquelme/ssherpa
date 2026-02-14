@@ -8,19 +8,21 @@ import (
 
 // MockClient is an in-memory implementation of Client for testing.
 type MockClient struct {
-	mu      sync.RWMutex
-	vaults  map[string]*Vault
-	items   map[string]*Item // keyed by itemID
-	errors  map[string]error  // configurable errors by operation
-	closed  bool
+	mu          sync.RWMutex
+	vaults      map[string]*Vault
+	items       map[string]*Item  // keyed by itemID
+	errors      map[string]error  // configurable errors by operation
+	vaultErrors map[string]error  // configurable errors by vaultID (for ListItems)
+	closed      bool
 }
 
 // NewMockClient creates a new MockClient with empty storage.
 func NewMockClient() *MockClient {
 	return &MockClient{
-		vaults: make(map[string]*Vault),
-		items:  make(map[string]*Item),
-		errors: make(map[string]error),
+		vaults:      make(map[string]*Vault),
+		items:       make(map[string]*Item),
+		errors:      make(map[string]error),
+		vaultErrors: make(map[string]error),
 	}
 }
 
@@ -44,6 +46,13 @@ func (m *MockClient) SetError(operation string, err error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.errors[operation] = err
+}
+
+// SetVaultError configures an error for a specific vault (affects ListItems only).
+func (m *MockClient) SetVaultError(vaultID string, err error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.vaultErrors[vaultID] = err
 }
 
 // ClearError removes a configured error for an operation.
@@ -87,6 +96,11 @@ func (m *MockClient) ListItems(ctx context.Context, vaultID string) ([]Item, err
 
 	m.mu.RLock()
 	defer m.mu.RUnlock()
+
+	// Check for vault-specific error
+	if err, ok := m.vaultErrors[vaultID]; ok {
+		return nil, err
+	}
 
 	// Check vault exists
 	if _, ok := m.vaults[vaultID]; !ok {
