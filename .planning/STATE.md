@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Find and connect to the right SSH server instantly, from any repo, without remembering aliases or grepping config files.
-**Current focus:** Phase 6 — SDK wired, wizard tested with real 1Password service account. Ready for full E2E checkpoint re-run.
+**Current focus:** Phase 7 — Advanced SSH Features planning. Phase 6 implementation complete, transitioning to plan SSH keys, port forwarding, and connection status.
 
 ## Current Position
 
-Phase: 6 of 8 (1Password Backend)
-Plan: 5 of 5 - SDK WIRED, READY FOR E2E RE-TEST
-Status: In Progress - Wizard SDK fix committed, needs E2E checkpoint verification
-Last activity: 2026-02-14 — Wizard rewritten to use service account tokens (NewServiceAccountClient) instead of desktop app integration. Flow: Welcome → auto-detect OP_SERVICE_ACCOUNT_TOKEN env var (or manual paste) → verify connection → summary. Tested manually: both env var auto-detect and manual paste paths work. Commit 745339d. Next: re-run the 6 E2E test scenarios from 06-05 Task 3 checkpoint.
+Phase: 7 of 8 (Advanced SSH Features)
+Plan: 1 of 2 complete
+Status: In Progress - Plan 01 (SSH Key Discovery Package) complete
+Last activity: 2026-02-14 — Completed 07-01: SSH key discovery with multi-source integration (file, agent, 1Password), fingerprint deduplication, and TDD implementation. Ready for Plan 02 (SSH Key Picker UI).
 
-Progress: [██████████████████████████████████████████████████████████████████████████████████████████] 92%
+Progress: [███████████████████████████████████████████████████████████████████████████████████████████] 93%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 15 (plus 06-05 partial: 2/3 tasks)
-- Average duration: 610.7 seconds
-- Total execution time: 2.65 hours
+- Total plans completed: 16 (plus 06-05 partial: 2/3 tasks)
+- Average duration: 610.0 seconds
+- Total execution time: 2.83 hours
 
 **By Phase:**
 
@@ -33,16 +33,17 @@ Progress: [███████████████████████
 | 04    | 3     | 4118s | 1372.7s  |
 | 05    | 3     | 525s  | 175.0s   |
 | 06    | 4     | 1538s | 384.5s   |
+| 07    | 1     | 654s  | 654.0s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 07    | 01   | 654s     | 1     | 8     |
 | 06    | 05   | 252s     | 2/3   | 4     |
 | 06    | 04   | 570s     | 2     | 14    |
 | 06    | 03   | 468s     | 2     | 7     |
 | 06    | 02   | 351s     | 2     | 5     |
-| 06    | 01   | 467s     | 2     | 9     |
 
 ## Accumulated Context
 
@@ -115,6 +116,12 @@ Recent decisions affecting current work:
 - [Phase 06-04]: Writer delegation to first Writer-capable backend (simple rule, works for current use case)
 - [Phase 06-04]: Status bar only shown when not Available (clean UI when everything works, banner only for issues)
 - [Phase 06-04]: TUI New() signature change adds opStatus parameter (explicit dependency injection)
+- [Phase 07-01]: Header sniffing over filename conventions (ParseKeyFile checks PEM/OpenSSH headers, not filenames)
+- [Phase 07-01]: Agent wins deduplication over file (same fingerprint: agent version kept for richer metadata)
+- [Phase 07-01]: File wins deduplication over 1Password (local filesystem is authoritative source)
+- [Phase 07-01]: Graceful agent unavailability (DiscoverAgentKeys returns empty slice when agent down, not error)
+- [Phase 07-01]: Encrypted key handling via .pub fallback (detect passphrase error, read .pub for metadata)
+- [Phase 07-01]: Missing .pub file graceful (keys without .pub valid, comment field empty)
 
 ### Pending Todos
 
@@ -134,7 +141,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-14 (SDK wiring fix + manual testing)
-Stopped at: Wizard SDK fix committed and manually verified (both env var and paste paths). Next: full E2E checkpoint re-run (6 scenarios from 06-05 Task 3).
+Last session: 2026-02-14 (Phase 07 Plan 01 execution)
+Stopped at: Completed 07-01 (SSH Key Discovery Package). All commits, tests, and SUMMARY.md verified. Ready for Phase 07 Plan 02 (SSH Key Picker UI).
 Resume file: None
-Resume command: `/gsd:resume-work` — run E2E checkpoint verification
+Resume command: `/gsd:execute-phase 07` or `/gsd:execute-plan 07-02-PLAN.md`
