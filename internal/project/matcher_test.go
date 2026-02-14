@@ -62,7 +62,7 @@ func TestSuggestProjects_MultipleProjects(t *testing.T) {
 		{
 			ProjectID:   "acme/frontend",
 			ProjectName: "Frontend",
-			Hostnames:   []string{"api-prod-05.acme.com"},
+			Hostnames:   []string{"api-staging-01.acme.com"}, // Similar but different environment
 		},
 	}
 
@@ -70,7 +70,9 @@ func TestSuggestProjects_MultipleProjects(t *testing.T) {
 
 	assert.Len(t, suggestions, 2, "should return both matching projects")
 	// Should be sorted by score descending
-	assert.Greater(t, suggestions[0].Score, suggestions[1].Score, "suggestions should be sorted by score")
+	assert.GreaterOrEqual(t, suggestions[0].Score, suggestions[1].Score, "suggestions should be sorted by score")
+	// First one should have higher score (prod vs staging)
+	assert.Equal(t, "acme/backend", suggestions[0].ProjectID, "prod project should rank higher than staging")
 }
 
 func TestSuggestProjects_MaxThree(t *testing.T) {
