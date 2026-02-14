@@ -79,11 +79,12 @@ Plans:
   3. User sees their current project's servers highlighted or filtered by default
   4. User can manually assign servers to projects via TUI
   5. Git detection handles SSH/HTTPS URLs and multiple remotes gracefully
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 04-01: TBD during planning
-- [ ] 04-02: TBD during planning
+- [ ] 04-01-PLAN.md — Git remote detection, project color generation, and TOML project storage (TDD)
+- [ ] 04-02-PLAN.md — TUI overhaul with project badges, grouped list, and project-aware search
+- [ ] 04-03-PLAN.md — Project picker overlay with hostname matcher and persistent assignment
 
 ### Phase 5: Config Management
 **Goal**: Users can add, edit, and delete SSH connections with validation
@@ -159,7 +160,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 1. Foundation & Architecture | 2/2 | ✓ Complete | 2026-02-14 |
 | 2. SSH Config Integration | 2/2 | ✓ Complete | 2026-02-14 |
 | 3. Connection & Navigation | 2/2 | ✓ Complete | 2026-02-14 |
-| 4. Project Detection | 0/TBD | Not started | - |
+| 4. Project Detection | 0/3 | Planned | - |
 | 5. Config Management | 0/TBD | Not started | - |
 | 6. 1Password Backend | 0/TBD | Not started | - |
 | 7. Advanced SSH Features | 0/TBD | Not started | - |
