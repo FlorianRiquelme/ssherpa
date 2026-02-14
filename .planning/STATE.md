@@ -5,14 +5,14 @@
 See: .planning/PROJECT.md (updated 2026-02-14)
 
 **Core value:** Find and connect to the right SSH server instantly, from any repo, without remembering aliases or grepping config files.
-**Current focus:** Phase 6 in progress — 1Password backend adapter with SDK integration and tag-based discovery
+**Current focus:** Phase 6 in progress — Wizard bugs found during E2E testing, needs SDK wiring fixes before checkpoint approval
 
 ## Current Position
 
 Phase: 6 of 8 (1Password Backend)
-Plan: 5 of 5 (complete) - PAUSED AT CHECKPOINT
-Status: In Progress - Awaiting Human Verification
-Last activity: 2026-02-14 — Completed Tasks 1-2 of Plan 06-05: Setup wizard for backend selection and migration wizard for existing items. CHECKPOINT: Task 3 requires human verification with real 1Password desktop app.
+Plan: 5 of 5 - PAUSED AT CHECKPOINT (bugs found during human verification)
+Status: In Progress - Wizard needs fixes before re-testing
+Last activity: 2026-02-14 — All 5 plans executed. During human E2E testing found: (1) wizard step transition bug (FIXED), (2) checkOnePassword() is a stub returning fake failure (NEEDS FIX), (3) wizard flow asks for account name after check but SDK needs it before. Need to restructure wizard to ask account name first, wire real SDK client, then re-test.
 
 Progress: [██████████████████████████████████████████████████████████████████████████████████████████] 92%
 
@@ -118,7 +118,8 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+- **Wizard SDK wiring (06-05):** checkOnePassword() in wizard.go is a stub (always returns false). Need to: (1) restructure flow to ask account name BEFORE checking, (2) import onepassword package and call NewDesktopAppClient(accountName) + ListVaults(), (3) remove fake simulated failure. Config path is `~/Library/Application Support/sshjesus/config.toml` on macOS (XDG default).
+- **Re-run E2E checkpoint (06-05 Task 3):** After wizard fix, re-test all 6 scenarios from the checkpoint.
 
 ### Blockers/Concerns
 
@@ -132,6 +133,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-14 (plan execution)
-Stopped at: Completed 06-04-PLAN.md — Multi-backend aggregator with priority-based deduplication (later backends win), shared BackendStatus enum at backend level (avoids import cycles), TUI status bar for 1Password availability indication (only shown when locked/unavailable), complete end-to-end wiring from backend to TUI. Config supports "onepassword" and "both" backend modes. 11 new multi-backend tests, all pass. Full project builds and passes vet.
+Last session: 2026-02-14 (phase execution + E2E testing)
+Stopped at: Phase 6 all plans executed but checkpoint verification revealed wizard bugs. Fixed step transition bug (committed). Remaining: wire real SDK into wizard checkOnePassword(), restructure flow (account name before check). Then re-run 6 E2E test scenarios.
 Resume file: None
+Resume command: `/gsd:resume-work` — fix wizard, then re-verify checkpoint
