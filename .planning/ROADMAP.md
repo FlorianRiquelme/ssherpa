@@ -32,10 +32,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Domain types (Project, Server, Credential) exist with proper Go idioms
   3. Mock backend implementation allows testing without external dependencies
   4. Core architecture supports future 1Password, local file, and vault backends
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 01-01: TBD during planning
+- [ ] 01-01-PLAN.md — Go module, domain models, error types, and backend interface contracts
+- [ ] 01-02-PLAN.md — Mock backend implementation, config management, and comprehensive TDD tests
 
 ### Phase 2: SSH Config Integration
 **Goal**: Users can view all SSH connections from ~/.ssh/config in a working TUI
@@ -155,7 +156,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation & Architecture | 0/TBD | Not started | - |
+| 1. Foundation & Architecture | 0/2 | Planning complete | - |
 | 2. SSH Config Integration | 0/TBD | Not started | - |
 | 3. Connection & Navigation | 0/TBD | Not started | - |
 | 4. Project Detection | 0/TBD | Not started | - |
