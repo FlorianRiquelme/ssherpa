@@ -203,4 +203,27 @@ var (
 				Foreground(lipgloss.AdaptiveColor{Light: "#000000", Dark: "#FFFFFF"}).
 				Background(lipgloss.AdaptiveColor{Light: "#D1D5DB", Dark: "#4B5563"}). // Gray
 				Padding(0, 1)
+
+	// SSH Key picker styles
+	keySourceFileStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.AdaptiveColor{Light: "#16A34A", Dark: "#4ADE80"}). // Green
+				Bold(true)
+
+	keySourceAgentStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.AdaptiveColor{Light: "#2563EB", Dark: "#60A5FA"}). // Blue
+				Bold(true)
+
+	keySource1PStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.AdaptiveColor{Light: "#9333EA", Dark: "#C084FC"}). // Purple
+				Bold(true)
+
+	keyMissingBadgeStyle = warningStyle // Reuse warning style
+
+	keyEncryptedBadgeStyle = lipgloss.NewStyle().
+				Foreground(secondaryColor).
+				Italic(true)
+
+	keyFingerprintStyle = lipgloss.NewStyle().
+				Foreground(secondaryColor).
+				Italic(true)
 )

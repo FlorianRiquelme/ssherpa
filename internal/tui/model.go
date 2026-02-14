@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/help"
@@ -21,6 +23,7 @@ import (
 	"github.com/florianriquelme/sshjesus/internal/project"
 	"github.com/florianriquelme/sshjesus/internal/ssh"
 	"github.com/florianriquelme/sshjesus/internal/sshconfig"
+	"github.com/florianriquelme/sshjesus/internal/sshkey"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -81,6 +84,11 @@ type Model struct {
 	opStatus    backend.BackendStatus // Current 1Password status
 	opStatusBar string                // Rendered status bar (cached)
 	appBackend  backend.Backend       // Backend interface (nil for sshconfig-only mode)
+
+	// Phase 7 additions:
+	discoveredKeys    []sshkey.SSHKey  // All discovered SSH keys (from file/agent/1Password)
+	keyPicker         *SSHKeyPicker    // SSH key picker overlay (nil when not showing)
+	showingKeyPicker  bool             // Whether key picker is visible
 }
 
 // New creates a new TUI model.
@@ -151,6 +159,7 @@ func (m Model) Init() tea.Cmd {
 	cmds := []tea.Cmd{
 		m.spinner.Tick,
 		loadHistoryCmd(m.historyPath),
+		discoverKeysCmd(), // Async SSH key discovery
 	}
 
 	// Load from backend if available, otherwise fallback to SSH config
@@ -220,6 +229,26 @@ func loadHistoryCmd(historyPath string) tea.Cmd {
 			lastConnectedHost: lastConnectedHost,
 			recentHosts:       recentHosts,
 		}
+	}
+}
+
+// discoverKeysCmd returns a command that discovers SSH keys asynchronously.
+func discoverKeysCmd() tea.Cmd {
+	return func() tea.Msg {
+		// Expand ~/.ssh/ path
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return keysDiscoveredMsg{keys: nil, err: err}
+		}
+		sshDir := filepath.Join(homeDir, ".ssh")
+
+		// Discover keys (pass empty servers slice for now, will be updated later)
+		keys, err := sshkey.DiscoverKeys(sshDir, nil)
+		if err != nil {
+			return keysDiscoveredMsg{keys: nil, err: err}
+		}
+
+		return keysDiscoveredMsg{keys: keys, err: nil}
 	}
 }
 
@@ -687,6 +716,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.rebuildListItems()
 		}
 
+	case keysDiscoveredMsg:
+		// Store discovered keys
+		if msg.err == nil {
+			m.discoveredKeys = msg.keys
+		}
+		// Silently ignore errors - key discovery is optional
+
 	case ssh.SSHFinishedMsg:
 		// SSH session ended
 		if m.returnToTUI {
@@ -730,10 +766,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Batch(cmds...)
 		}
 
-		// If showing picker, route all keys to picker
+		// If showing project picker, route all keys to picker
 		if m.showingPicker && m.picker != nil {
 			var cmd tea.Cmd
 			*m.picker, cmd = m.picker.Update(msg)
+			cmds = append(cmds, cmd)
+			return m, tea.Batch(cmds...)
+		}
+
+		// If showing key picker, route all keys to key picker
+		if m.showingKeyPicker && m.keyPicker != nil {
+			var cmd tea.Cmd
+			*m.keyPicker, cmd = m.keyPicker.Update(msg)
 			cmds = append(cmds, cmd)
 			return m, tea.Batch(cmds...)
 		}
@@ -918,9 +962,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case ViewDetail:
 			switch {
 			case key.Matches(msg, m.keys.ClearSearch): // Esc
+				// If key picker is showing, close it instead of going back to list
+				if m.showingKeyPicker {
+					m.showingKeyPicker = false
+					m.keyPicker = nil
+					return m, nil
+				}
 				// Return to list view
 				m.viewMode = ViewList
 				m.detailHost = nil
+
+			case key.Matches(msg, m.keys.SelectKey): // K: open key picker
+				if m.detailHost != nil {
+					// Get current IdentityFile (first one if multiple)
+					currentKeyPath := ""
+					if len(m.detailHost.IdentityFile) > 0 {
+						currentKeyPath = m.detailHost.IdentityFile[0]
+					}
+					// Open key picker
+					picker := NewSSHKeyPicker(m.detailHost.Name, m.discoveredKeys, currentKeyPath)
+					m.keyPicker = &picker
+					m.showingKeyPicker = true
+				}
 
 			case key.Matches(msg, m.keys.Quit):
 				// q: quit from detail view
@@ -1013,6 +1076,43 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Close picker after creation
 		m.showingPicker = false
 		m.picker = nil
+
+	case keyPickerClosedMsg:
+		// Close key picker without changes
+		m.showingKeyPicker = false
+		m.keyPicker = nil
+
+	case keySelectedMsg:
+		// Handle key selection from picker
+		m.showingKeyPicker = false
+		m.keyPicker = nil
+
+		// Handle based on current view mode
+		if m.viewMode == ViewDetail && m.detailHost != nil {
+			// Update SSH config for the host
+			return m, m.updateHostIdentityFile(m.detailHost.Name, msg.path, msg.cleared)
+		} else if (m.viewMode == ViewAdd || m.viewMode == ViewEdit) && m.serverForm != nil {
+			// Update form's IdentityFile field
+			if msg.cleared {
+				m.serverForm.fields[4].input.SetValue("")
+			} else {
+				m.serverForm.fields[4].input.SetValue(msg.path)
+			}
+		}
+
+	case hostKeyUpdatedMsg:
+		// Update detail view with new host data
+		m.detailHost = &msg.host
+		m.viewport.SetContent(renderDetailView(&msg.host, m.width, m.height))
+
+		// Show status message
+		if msg.cleared {
+			m.statusMsg = "Key cleared (using SSH default)"
+		} else {
+			// Extract filename from path
+			filename := filepath.Base(msg.keyPath)
+			m.statusMsg = fmt.Sprintf("Key updated: %s", filename)
+		}
 
 	case OnePasswordStatusMsg:
 		// Update 1Password status and re-render status bar
@@ -1154,6 +1254,74 @@ func (m *Model) saveConfig() {
 	_ = config.Save(cfg, m.configFilePath)
 }
 
+// updateHostIdentityFile updates the IdentityFile for a host in SSH config.
+// Returns a command that performs the update and refreshes the detail view.
+func (m *Model) updateHostIdentityFile(alias, keyPath string, cleared bool) tea.Cmd {
+	return func() tea.Msg {
+		// Build updated host entry
+		// First, parse the current host to get all fields
+		host := m.detailHost
+		if host == nil {
+			return nil
+		}
+
+		entry := sshconfig.HostEntry{
+			Alias:        host.Name,
+			Hostname:     host.Hostname,
+			User:         host.User,
+			Port:         host.Port,
+			IdentityFile: keyPath,
+			ExtraConfig:  buildExtraConfigFromHost(*host),
+		}
+
+		// Update the host in SSH config
+		err := sshconfig.EditHost(m.configPath, alias, entry)
+		if err != nil {
+			// Show error as status message
+			m.statusMsg = fmt.Sprintf("Failed to update key: %v", err)
+			return nil
+		}
+
+		// Reload config and refresh detail view
+		hosts, err := sshconfig.ParseSSHConfig(m.configPath)
+		if err != nil {
+			return nil
+		}
+
+		// Find the updated host
+		for _, h := range hosts {
+			if h.Name == alias {
+				// Update detail view content
+				return hostKeyUpdatedMsg{host: h, cleared: cleared, keyPath: keyPath}
+			}
+		}
+
+		return nil
+	}
+}
+
+// buildExtraConfigFromHost extracts non-standard SSH options from host.
+func buildExtraConfigFromHost(host sshconfig.SSHHost) string {
+	var lines []string
+	standardKeys := map[string]bool{
+		"HostName":     true,
+		"User":         true,
+		"Port":         true,
+		"IdentityFile": true,
+	}
+
+	for key, values := range host.AllOptions {
+		if standardKeys[key] {
+			continue
+		}
+		for _, val := range values {
+			lines = append(lines, fmt.Sprintf("%s %s", key, val))
+		}
+	}
+
+	return strings.Join(lines, "\n")
+}
+
 // View renders the current view.
 func (m Model) View() string {
 	if !m.ready {
@@ -1255,7 +1423,7 @@ Press 'q' to quit
 
 		baseView = lipgloss.JoinVertical(lipgloss.Left, parts...)
 
-		// If showing picker, overlay it on top
+		// If showing project picker, overlay it on top
 		if m.showingPicker && m.picker != nil {
 			pickerView := m.picker.View()
 			// Center the picker over the base view using lipgloss.Place
@@ -1271,6 +1439,19 @@ Press 'q' to quit
 			return centeredPicker
 		}
 
+		// If showing key picker, overlay it on top
+		if m.showingKeyPicker && m.keyPicker != nil {
+			keyPickerView := m.keyPicker.View()
+			centeredKeyPicker := lipgloss.Place(
+				m.width,
+				m.height,
+				lipgloss.Center,
+				lipgloss.Center,
+				keyPickerView,
+			)
+			return centeredKeyPicker
+		}
+
 		return baseView
 
 	case ViewDetail:
@@ -1278,7 +1459,23 @@ Press 'q' to quit
 			m.viewMode = ViewList
 			return m.list.View()
 		}
-		return m.viewport.View()
+
+		baseView := m.viewport.View()
+
+		// If showing key picker, overlay it on top
+		if m.showingKeyPicker && m.keyPicker != nil {
+			keyPickerView := m.keyPicker.View()
+			centeredKeyPicker := lipgloss.Place(
+				m.width,
+				m.height,
+				lipgloss.Center,
+				lipgloss.Center,
+				keyPickerView,
+			)
+			return centeredKeyPicker
+		}
+
+		return baseView
 
 	case ViewAdd, ViewEdit:
 		if m.serverForm == nil {

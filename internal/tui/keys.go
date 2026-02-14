@@ -20,6 +20,7 @@ type KeyMap struct {
 	Details       key.Binding
 	Search        key.Binding
 	AssignProject key.Binding
+	SelectKey     key.Binding
 	AddServer     key.Binding
 	EditServer    key.Binding
 	DeleteServer  key.Binding
@@ -39,7 +40,7 @@ func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.PageUp, k.PageDown},                    // Navigation group
 		{k.HalfPageUp, k.HalfPageDown, k.GoToTop, k.GoToBottom}, // Advanced navigation
-		{k.Connect, k.Details, k.Search, k.AssignProject, k.AddServer, k.EditServer, k.DeleteServer, k.Quit}, // Actions group
+		{k.Connect, k.Details, k.Search, k.AssignProject, k.SelectKey, k.AddServer, k.EditServer, k.DeleteServer, k.Quit}, // Actions group
 		{k.Undo}, // Additional actions
 	}
 }
@@ -97,6 +98,10 @@ func DefaultKeyMap() KeyMap {
 		AssignProject: key.NewBinding(
 			key.WithKeys("p"),
 			key.WithHelp("p", "project"),
+		),
+		SelectKey: key.NewBinding(
+			key.WithKeys("K"),
+			key.WithHelp("K", "ssh key"),
 		),
 		AddServer: key.NewBinding(
 			key.WithKeys("a"),

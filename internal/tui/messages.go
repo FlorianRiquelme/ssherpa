@@ -6,6 +6,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/florianriquelme/sshjesus/internal/backend"
 	"github.com/florianriquelme/sshjesus/internal/sshconfig"
+	"github.com/florianriquelme/sshjesus/internal/sshkey"
 )
 
 // configLoadedMsg is sent after async SSH config parsing completes.
@@ -83,3 +84,26 @@ type OnePasswordStatusMsg struct {
 
 // BackendServersUpdatedMsg is sent when backend servers are refreshed (e.g., after 1P sync).
 type BackendServersUpdatedMsg struct{}
+
+// keyPickerClosedMsg is sent when the key picker is closed without selection.
+type keyPickerClosedMsg struct{}
+
+// keySelectedMsg is sent when a key is selected from the picker.
+type keySelectedMsg struct {
+	path    string          // Path to the selected key file
+	key     *sshkey.SSHKey  // Selected key (nil if "None" was selected)
+	cleared bool            // True if "None (SSH default)" was selected
+}
+
+// keysDiscoveredMsg is sent after async key discovery completes.
+type keysDiscoveredMsg struct {
+	keys []sshkey.SSHKey
+	err  error
+}
+
+// hostKeyUpdatedMsg is sent after a host's IdentityFile is updated.
+type hostKeyUpdatedMsg struct {
+	host    sshconfig.SSHHost
+	cleared bool
+	keyPath string
+}
