@@ -9,11 +9,22 @@ import (
 	"github.com/florianriquelme/sshjesus/internal/errors"
 )
 
+// ProjectConfig represents a project in the config file.
+// Projects are stored as TOML array-of-tables: [[project]]
+type ProjectConfig struct {
+	ID            string   `toml:"id"`                         // Project identifier (typically org/repo)
+	Name          string   `toml:"name"`                       // Human-readable project name
+	GitRemoteURLs []string `toml:"git_remote_urls"`            // Git remote URLs for this project
+	Color         string   `toml:"color,omitempty"`            // User-overridden color hex (empty = auto-generate)
+	ServerNames   []string `toml:"server_names,omitempty"`     // SSH config host aliases in this project
+}
+
 // Config represents the application configuration.
 type Config struct {
-	Version     int    `toml:"version"`                        // Config schema version for future migrations
-	Backend     string `toml:"backend"`                        // Backend identifier: "sshconfig", "onepassword", "mock"
-	ReturnToTUI bool   `toml:"return_to_tui_after_disconnect"` // Return to TUI after SSH session ends (default: false = exit to shell)
+	Version     int             `toml:"version"`                        // Config schema version for future migrations
+	Backend     string          `toml:"backend"`                        // Backend identifier: "sshconfig", "onepassword", "mock"
+	ReturnToTUI bool            `toml:"return_to_tui_after_disconnect"` // Return to TUI after SSH session ends (default: false = exit to shell)
+	Projects    []ProjectConfig `toml:"project"`                        // Projects (TOML array-of-tables: [[project]])
 }
 
 // DefaultConfig returns a config with sensible defaults.

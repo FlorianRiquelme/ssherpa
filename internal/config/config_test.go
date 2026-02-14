@@ -145,3 +145,163 @@ func TestConfigValidate(t *testing.T) {
 		})
 	}
 }
+
+func TestConfigWithProjects_SaveAndLoad(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "config.toml")
+
+	// Create config with projects
+	original := &Config{
+		Version: 1,
+		Backend: "sshconfig",
+		Projects: []ProjectConfig{
+			{
+				ID:            "acme/backend-api",
+				Name:          "Backend API",
+				GitRemoteURLs: []string{"git@github.com:acme/backend-api.git"},
+				Color:         "#FF5733",
+				ServerNames:   []string{"api-prod", "api-staging"},
+			},
+			{
+				ID:            "example/frontend",
+				Name:          "Frontend App",
+				GitRemoteURLs: []string{"https://github.com/example/frontend.git"},
+				Color:         "", // Empty means auto-generate
+				ServerNames:   []string{"web-prod"},
+			},
+		},
+	}
+
+	// Save
+	err := Save(original, configPath)
+	require.NoError(t, err)
+
+	// Reload
+	reloaded, err := Load(configPath)
+	require.NoError(t, err)
+	require.NotNil(t, reloaded)
+
+	// Verify all fields preserved
+	assert.Equal(t, original.Version, reloaded.Version)
+	assert.Equal(t, original.Backend, reloaded.Backend)
+	require.Len(t, reloaded.Projects, 2)
+
+	// Verify first project
+	assert.Equal(t, "acme/backend-api", reloaded.Projects[0].ID)
+	assert.Equal(t, "Backend API", reloaded.Projects[0].Name)
+	assert.Equal(t, []string{"git@github.com:acme/backend-api.git"}, reloaded.Projects[0].GitRemoteURLs)
+	assert.Equal(t, "#FF5733", reloaded.Projects[0].Color)
+	assert.Equal(t, []string{"api-prod", "api-staging"}, reloaded.Projects[0].ServerNames)
+
+	// Verify second project
+	assert.Equal(t, "example/frontend", reloaded.Projects[1].ID)
+	assert.Equal(t, "Frontend App", reloaded.Projects[1].Name)
+	assert.Equal(t, []string{"https://github.com/example/frontend.git"}, reloaded.Projects[1].GitRemoteURLs)
+	assert.Equal(t, "", reloaded.Projects[1].Color)
+	assert.Equal(t, []string{"web-prod"}, reloaded.Projects[1].ServerNames)
+}
+
+func TestConfigWithProjects_EmptyProjects(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "config.toml")
+
+	// Config with empty Projects slice
+	original := &Config{
+		Version:  1,
+		Backend:  "onepassword",
+		Projects: []ProjectConfig{},
+	}
+
+	// Save
+	err := Save(original, configPath)
+	require.NoError(t, err)
+
+	// Read TOML file
+	content, err := os.ReadFile(configPath)
+	require.NoError(t, err)
+	contentStr := string(content)
+
+	// Should not have any [[project]] entries
+	assert.NotContains(t, contentStr, "[[project]]")
+
+	// Reload
+	reloaded, err := Load(configPath)
+	require.NoError(t, err)
+	require.NotNil(t, reloaded)
+
+	// Verify empty projects preserved (or nil is acceptable)
+	if reloaded.Projects != nil {
+		assert.Empty(t, reloaded.Projects)
+	}
+}
+
+func TestConfigWithProjects_MultipleRemoteURLs(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "config.toml")
+
+	// Project with multiple remote URLs
+	original := &Config{
+		Version: 1,
+		Backend: "sshconfig",
+		Projects: []ProjectConfig{
+			{
+				ID:   "company/monorepo",
+				Name: "Monorepo",
+				GitRemoteURLs: []string{
+					"git@github.com:company/monorepo.git",
+					"https://github.com/company/monorepo.git",
+					"git@gitlab.com:company/monorepo.git",
+				},
+			},
+		},
+	}
+
+	// Save and reload
+	err := Save(original, configPath)
+	require.NoError(t, err)
+
+	reloaded, err := Load(configPath)
+	require.NoError(t, err)
+	require.NotNil(t, reloaded)
+
+	// Verify multiple URLs preserved
+	require.Len(t, reloaded.Projects, 1)
+	assert.Equal(t, 3, len(reloaded.Projects[0].GitRemoteURLs))
+	assert.Equal(t, original.Projects[0].GitRemoteURLs, reloaded.Projects[0].GitRemoteURLs)
+}
+
+func TestConfigWithProjects_ServerNames(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "config.toml")
+
+	// Project with multiple server names
+	original := &Config{
+		Version: 1,
+		Backend: "sshconfig",
+		Projects: []ProjectConfig{
+			{
+				ID:   "acme/backend",
+				Name: "Backend Services",
+				ServerNames: []string{
+					"api-prod-01",
+					"api-prod-02",
+					"api-staging",
+					"api-dev",
+				},
+			},
+		},
+	}
+
+	// Save and reload
+	err := Save(original, configPath)
+	require.NoError(t, err)
+
+	reloaded, err := Load(configPath)
+	require.NoError(t, err)
+	require.NotNil(t, reloaded)
+
+	// Verify server names preserved
+	require.Len(t, reloaded.Projects, 1)
+	assert.Equal(t, 4, len(reloaded.Projects[0].ServerNames))
+	assert.Equal(t, original.Projects[0].ServerNames, reloaded.Projects[0].ServerNames)
+}
