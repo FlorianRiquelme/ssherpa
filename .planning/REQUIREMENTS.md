@@ -95,27 +95,27 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CONN-01 | — | Pending |
-| CONN-02 | — | Pending |
-| CONN-03 | — | Pending |
-| CONN-04 | — | Pending |
-| CONF-01 | — | Pending |
-| CONF-02 | — | Pending |
-| CONF-03 | — | Pending |
-| PROJ-01 | — | Pending |
-| PROJ-02 | — | Pending |
-| PROJ-03 | — | Pending |
-| BACK-01 | — | Pending |
-| BACK-02 | — | Pending |
-| SSH-01 | — | Pending |
-| SSH-02 | — | Pending |
-| DIST-01 | — | Pending |
+| CONN-01 | Phase 2 | Pending |
+| CONN-02 | Phase 3 | Pending |
+| CONN-03 | Phase 3 | Pending |
+| CONN-04 | Phase 7 | Pending |
+| CONF-01 | Phase 5 | Pending |
+| CONF-02 | Phase 5 | Pending |
+| CONF-03 | Phase 5 | Pending |
+| PROJ-01 | Phase 4 | Pending |
+| PROJ-02 | Phase 4 | Pending |
+| PROJ-03 | Phase 4 | Pending |
+| BACK-01 | Phase 1 | Pending |
+| BACK-02 | Phase 6 | Pending |
+| SSH-01 | Phase 7 | Pending |
+| SSH-02 | Phase 7 | Pending |
+| DIST-01 | Phase 8 | Pending |
 
 **Coverage:**
 - v1 requirements: 15 total
-- Mapped to phases: 0
-- Unmapped: 15
+- Mapped to phases: 15
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-02-14*
-*Last updated: 2026-02-14 after initial definition*
+*Last updated: 2026-02-14 after roadmap creation*
