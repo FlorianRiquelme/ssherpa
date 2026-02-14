@@ -1016,8 +1016,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case OnePasswordStatusMsg:
 		// Update 1Password status and re-render status bar
+		oldStatus := m.opStatus
 		m.opStatus = msg.Status
 		m.opStatusBar = renderStatusBar(m.opStatus, m.width)
+
+		// If status changed to Available, trigger server list refresh
+		if oldStatus != backend.StatusAvailable && msg.Status == backend.StatusAvailable {
+			if m.appBackend != nil {
+				return m, loadBackendServersCmd(m.appBackend)
+			}
+		}
+
 		// Trigger re-render
 		return m, nil
 

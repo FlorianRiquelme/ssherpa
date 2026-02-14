@@ -51,6 +51,9 @@ func (p *Poller) Start() {
 		defer p.wg.Done()
 		defer p.ticker.Stop()
 
+		// Run first poll immediately (don't wait for first tick)
+		p.poll()
+
 		for {
 			select {
 			case <-p.stopCh:

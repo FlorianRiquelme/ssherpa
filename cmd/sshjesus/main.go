@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
@@ -122,30 +121,10 @@ func main() {
 		cachePath := filepath.Join(homeDir, ".ssh", "sshjesus_1password_cache.toml")
 		opBackend = onepassword.NewWithCache(client, cachePath)
 
-		// Try to sync from 1Password, fallback to cache on error
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		syncErr := opBackend.SyncFromOnePassword(ctx)
-		cancel()
-
-		if syncErr != nil {
-			// Sync failed, try loading from cache
-			if cacheErr := opBackend.LoadFromCache(); cacheErr != nil {
-				fmt.Fprintf(os.Stderr, "Error syncing from 1Password and no cache available: %v (cache: %v)\n", syncErr, cacheErr)
-				os.Exit(1)
-			}
-			// Successfully loaded from cache, status will be Locked or Unavailable
-		} else {
-			// Sync succeeded, generate SSH include file and ensure Include directive
-			servers, err := opBackend.ListServers(context.Background())
-			if err == nil {
-				includeFile := filepath.Join(homeDir, ".ssh", "sshjesus_config")
-				if err := sync.WriteSSHIncludeFile(servers, includeFile); err != nil {
-					fmt.Fprintf(os.Stderr, "Warning: Failed to write SSH include file: %v\n", err)
-				}
-				if err := sync.EnsureIncludeDirective(sshConfigPath, includeFile); err != nil {
-					fmt.Fprintf(os.Stderr, "Warning: Failed to ensure Include directive: %v\n", err)
-				}
-			}
+		// Load from cache (best-effort, non-fatal) - TUI will show cached data instantly
+		if cacheErr := opBackend.LoadFromCache(); cacheErr != nil {
+			// No cache available, TUI will start with empty list
+			// Background sync will populate data when it completes
 		}
 
 		backend = opBackend
@@ -168,29 +147,10 @@ func main() {
 		cachePath := filepath.Join(homeDir, ".ssh", "sshjesus_1password_cache.toml")
 		opBackend = onepassword.NewWithCache(client, cachePath)
 
-		// Try to sync from 1Password, fallback to cache on error
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		syncErr := opBackend.SyncFromOnePassword(ctx)
-		cancel()
-
-		if syncErr != nil {
-			// Sync failed, try loading from cache
-			if cacheErr := opBackend.LoadFromCache(); cacheErr != nil {
-				// No cache, but don't fail - just use SSH config backend alone
-				fmt.Fprintf(os.Stderr, "Warning: 1Password unavailable and no cache: %v\n", syncErr)
-			}
-		} else {
-			// Sync succeeded, generate SSH include file and ensure Include directive
-			servers, err := opBackend.ListServers(context.Background())
-			if err == nil {
-				includeFile := filepath.Join(homeDir, ".ssh", "sshjesus_config")
-				if err := sync.WriteSSHIncludeFile(servers, includeFile); err != nil {
-					fmt.Fprintf(os.Stderr, "Warning: Failed to write SSH include file: %v\n", err)
-				}
-				if err := sync.EnsureIncludeDirective(sshConfigPath, includeFile); err != nil {
-					fmt.Fprintf(os.Stderr, "Warning: Failed to ensure Include directive: %v\n", err)
-				}
-			}
+		// Load from cache (best-effort, non-fatal) - SSH config data is always available
+		if cacheErr := opBackend.LoadFromCache(); cacheErr != nil {
+			// No cache available, TUI will show SSH config servers only
+			// Background sync will add 1Password servers when it completes
 		}
 
 		backend = backendpkg.NewMultiBackend(sshBackend, opBackend)
@@ -205,9 +165,30 @@ func main() {
 
 	// Start poller if we have a 1Password backend
 	if opBackend != nil {
+		// Track whether we've generated SSH include file yet
+		var sshIncludeGenerated bool
+
 		// Create a callback that sends a message to the TUI program
 		statusCallback := func(status backendpkg.BackendStatus) {
 			p.Send(tui.OnePasswordStatusMsg{Status: status})
+
+			// On first successful sync, generate SSH include file and notify TUI to refresh
+			if status == backendpkg.StatusAvailable && !sshIncludeGenerated {
+				servers, err := opBackend.ListServers(context.Background())
+				if err == nil {
+					includeFile := filepath.Join(homeDir, ".ssh", "sshjesus_config")
+					if err := sync.WriteSSHIncludeFile(servers, includeFile); err != nil {
+						fmt.Fprintf(os.Stderr, "Warning: Failed to write SSH include file: %v\n", err)
+					}
+					if err := sync.EnsureIncludeDirective(sshConfigPath, includeFile); err != nil {
+						fmt.Fprintf(os.Stderr, "Warning: Failed to ensure Include directive: %v\n", err)
+					}
+					sshIncludeGenerated = true
+
+					// Notify TUI to refresh server list
+					p.Send(tui.BackendServersUpdatedMsg{})
+				}
+			}
 		}
 		opBackend.StartPolling(0, statusCallback) // 0 = use default interval from env or 5s
 		defer opBackend.Close()
