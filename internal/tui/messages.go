@@ -42,3 +42,11 @@ func (p projectSeparatorItem) Title() string {
 func (p projectSeparatorItem) Description() string {
 	return ""
 }
+
+// formCancelledMsg is sent when the user cancels the add/edit form.
+type formCancelledMsg struct{}
+
+// serverSavedMsg is sent after a server is successfully added or edited.
+type serverSavedMsg struct {
+	alias string
+}

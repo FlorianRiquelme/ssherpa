@@ -20,6 +20,8 @@ type KeyMap struct {
 	Details       key.Binding
 	Search        key.Binding
 	AssignProject key.Binding
+	AddServer     key.Binding
+	EditServer    key.Binding
 	Quit          key.Binding
 	ClearSearch   key.Binding
 	ForceQuit     key.Binding
@@ -27,7 +29,7 @@ type KeyMap struct {
 
 // ShortHelp returns the key bindings shown in the mini help view (list mode).
 func (k KeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Connect, k.Details, k.Search, k.AssignProject, k.Quit}
+	return []key.Binding{k.Connect, k.Details, k.Search, k.AssignProject, k.AddServer, k.EditServer, k.Quit}
 }
 
 // FullHelp returns the key bindings shown in the full help view.
@@ -35,7 +37,7 @@ func (k KeyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
 		{k.Up, k.Down, k.PageUp, k.PageDown},            // Navigation group
 		{k.HalfPageUp, k.HalfPageDown, k.GoToTop, k.GoToBottom}, // Advanced navigation
-		{k.Connect, k.Details, k.Search, k.AssignProject, k.Quit},        // Actions group
+		{k.Connect, k.Details, k.Search, k.AssignProject, k.AddServer, k.EditServer, k.Quit},        // Actions group
 	}
 }
 
@@ -92,6 +94,14 @@ func DefaultKeyMap() KeyMap {
 		AssignProject: key.NewBinding(
 			key.WithKeys("p"),
 			key.WithHelp("p", "project"),
+		),
+		AddServer: key.NewBinding(
+			key.WithKeys("a"),
+			key.WithHelp("a", "add"),
+		),
+		EditServer: key.NewBinding(
+			key.WithKeys("e"),
+			key.WithHelp("e", "edit"),
 		),
 		Quit: key.NewBinding(
 			key.WithKeys("q"),

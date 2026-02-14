@@ -27,6 +27,8 @@ type ViewMode int
 const (
 	ViewList ViewMode = iota
 	ViewDetail
+	ViewAdd
+	ViewEdit
 )
 
 // Model is the root Bubbletea model for the TUI.
@@ -64,6 +66,9 @@ type Model struct {
 	picker           *ProjectPicker                   // Project picker overlay (nil when not showing)
 	showingPicker    bool                             // Whether picker is visible
 	configFilePath   string                           // Path to config file for saving
+
+	// Phase 5 additions:
+	serverForm *ServerForm // Add/edit form (nil when not showing)
 }
 
 // New creates a new TUI model.
@@ -695,6 +700,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.picker = &picker
 					}
 
+				case key.Matches(msg, m.keys.AddServer):
+					// 'a': open add server form
+					form := NewServerForm(m.configPath)
+					m.serverForm = &form
+					m.viewMode = ViewAdd
+
+				case key.Matches(msg, m.keys.EditServer):
+					// 'e': open edit server form
+					selectedItem := m.list.SelectedItem()
+					if selectedItem == nil {
+						return m, nil
+					}
+
+					if item, ok := selectedItem.(hostItem); ok {
+						form := NewEditServerForm(m.configPath, item.host)
+						m.serverForm = &form
+						m.viewMode = ViewEdit
+					}
+
 				case key.Matches(msg, m.keys.GoToTop):
 					// g or Home: jump to top
 					m.list.Select(0)
@@ -744,7 +768,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.viewport, cmd = m.viewport.Update(msg)
 				cmds = append(cmds, cmd)
 			}
+
+		case ViewAdd, ViewEdit:
+			// Route all messages to form
+			if m.serverForm != nil {
+				var cmd tea.Cmd
+				*m.serverForm, cmd = m.serverForm.Update(msg)
+				cmds = append(cmds, cmd)
+			}
 		}
+
+	case formCancelledMsg:
+		// Close form and return to list
+		m.viewMode = ViewList
+		m.serverForm = nil
+
+	case serverSavedMsg:
+		// Server saved successfully - reload config and return to list
+		m.viewMode = ViewList
+		m.serverForm = nil
+		return m, loadConfigCmd(m.configPath)
 
 	case pickerClosedMsg:
 		// Close picker without changes
@@ -978,6 +1021,13 @@ Press 'q' to quit
 			return m.list.View()
 		}
 		return m.viewport.View()
+
+	case ViewAdd, ViewEdit:
+		if m.serverForm == nil {
+			m.viewMode = ViewList
+			return m.list.View()
+		}
+		return m.serverForm.View()
 
 	default:
 		return "Unknown view mode"

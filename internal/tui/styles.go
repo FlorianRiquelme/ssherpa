@@ -147,4 +147,32 @@ var (
 	pickerLabelStyle = lipgloss.NewStyle().
 				Foreground(secondaryColor).
 				Bold(true)
+
+	// Form styles
+	formTitleStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(accentColor).
+			Padding(1, 0)
+
+	formLabelStyle = lipgloss.NewStyle().
+			Bold(true).
+			Foreground(secondaryColor)
+
+	formRequiredStyle = lipgloss.NewStyle().
+				Foreground(warningColor)
+
+	formErrorStyle = lipgloss.NewStyle().
+			Foreground(warningColor).
+			Italic(true)
+
+	formDnsWarningStyle = lipgloss.NewStyle().
+				Foreground(lipgloss.AdaptiveColor{Light: "#D97706", Dark: "#FBBF24"}). // Amber
+				Italic(true)
+
+	formHelpStyle = lipgloss.NewStyle().
+			Foreground(secondaryColor).
+			Italic(true)
+
+	formSavingStyle = lipgloss.NewStyle().
+			Foreground(accentColor)
 )
