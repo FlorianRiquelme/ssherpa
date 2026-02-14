@@ -597,6 +597,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.spinner, cmd = m.spinner.Update(msg)
 			cmds = append(cmds, cmd)
 		}
+		// Route spinner ticks to form when saving (for the form's spinner)
+		if (m.viewMode == ViewAdd || m.viewMode == ViewEdit) && m.serverForm != nil && m.serverForm.saving {
+			var cmd tea.Cmd
+			*m.serverForm, cmd = m.serverForm.Update(msg)
+			cmds = append(cmds, cmd)
+		}
+
+	case dnsCheckResultMsg:
+		// Route DNS check results to the form
+		if (m.viewMode == ViewAdd || m.viewMode == ViewEdit) && m.serverForm != nil {
+			var cmd tea.Cmd
+			*m.serverForm, cmd = m.serverForm.Update(msg)
+			cmds = append(cmds, cmd)
+		}
 
 	case tea.KeyMsg:
 		// Force quit always works
