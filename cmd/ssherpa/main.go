@@ -7,14 +7,14 @@ import (
 	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea"
-	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
-	"github.com/florianriquelme/sshjesus/internal/backend/onepassword"
-	"github.com/florianriquelme/sshjesus/internal/config"
-	"github.com/florianriquelme/sshjesus/internal/errors"
-	"github.com/florianriquelme/sshjesus/internal/project"
-	"github.com/florianriquelme/sshjesus/internal/sshconfig"
-	"github.com/florianriquelme/sshjesus/internal/sync"
-	"github.com/florianriquelme/sshjesus/internal/tui"
+	backendpkg "github.com/florianriquelme/ssherpa/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/backend/onepassword"
+	"github.com/florianriquelme/ssherpa/internal/config"
+	"github.com/florianriquelme/ssherpa/internal/errors"
+	"github.com/florianriquelme/ssherpa/internal/project"
+	"github.com/florianriquelme/ssherpa/internal/sshconfig"
+	"github.com/florianriquelme/ssherpa/internal/sync"
+	"github.com/florianriquelme/ssherpa/internal/tui"
 )
 
 func main() {

@@ -11,10 +11,10 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/florianriquelme/sshjesus/internal/backend"
-	"github.com/florianriquelme/sshjesus/internal/domain"
-	"github.com/florianriquelme/sshjesus/internal/sshconfig"
-	"github.com/florianriquelme/sshjesus/internal/sshkey"
+	"github.com/florianriquelme/ssherpa/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/sshconfig"
+	"github.com/florianriquelme/ssherpa/internal/sshkey"
 )
 
 // FormMode represents whether we're adding or editing a host.

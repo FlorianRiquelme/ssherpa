@@ -10,7 +10,7 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/florianriquelme/sshjesus/internal/config"
+	"github.com/florianriquelme/ssherpa/internal/config"
 )
 
 // SetupWizard is a Bubbletea model for the first-launch setup flow.

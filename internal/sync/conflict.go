@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/florianriquelme/sshjesus/internal/domain"
-	"github.com/florianriquelme/sshjesus/internal/sshconfig"
+	"github.com/florianriquelme/ssherpa/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/sshconfig"
 )
 
 // Conflict represents a naming conflict between 1Password and SSH config.

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
+	backendpkg "github.com/florianriquelme/ssherpa/internal/backend"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

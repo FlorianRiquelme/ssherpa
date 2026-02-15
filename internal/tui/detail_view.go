@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/florianriquelme/sshjesus/internal/sshconfig"
+	"github.com/florianriquelme/ssherpa/internal/sshconfig"
 )
 
 // renderDetailView renders the full-screen detail view for a selected host.

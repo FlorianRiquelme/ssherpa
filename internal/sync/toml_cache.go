@@ -8,7 +8,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/google/renameio/v2"
 
-	"github.com/florianriquelme/sshjesus/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/domain"
 )
 
 // CachedServer represents a server in the TOML cache.

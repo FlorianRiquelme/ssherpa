@@ -3,7 +3,7 @@ package backend
 import (
 	"context"
 
-	"github.com/florianriquelme/sshjesus/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/domain"
 )
 
 // Backend defines the minimal read-only interface that all backends MUST implement.

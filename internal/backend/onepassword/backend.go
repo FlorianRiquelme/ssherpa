@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
-	"github.com/florianriquelme/sshjesus/internal/domain"
-	"github.com/florianriquelme/sshjesus/internal/errors"
+	backendpkg "github.com/florianriquelme/ssherpa/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/errors"
 )
 
 // Backend implements the backendpkg.Backend and backendpkg.Writer interfaces

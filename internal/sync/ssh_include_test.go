@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/florianriquelme/sshjesus/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/domain"
 )
 
 func TestWriteSSHIncludeFile_FullServer(t *testing.T) {

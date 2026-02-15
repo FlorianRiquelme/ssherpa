@@ -9,7 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/florianriquelme/sshjesus/internal/config"
+	"github.com/florianriquelme/ssherpa/internal/config"
 )
 
 // ProjectPicker is a lightweight popup overlay for project assignment.

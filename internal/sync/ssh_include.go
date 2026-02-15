@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/renameio/v2"
 
-	"github.com/florianriquelme/sshjesus/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/domain"
 )
 
 // WriteSSHIncludeFile generates valid SSH config content from servers and writes

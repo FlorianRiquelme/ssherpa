@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/florianriquelme/sshjesus/internal/backend"
-	"github.com/florianriquelme/sshjesus/internal/domain"
-	backendErrors "github.com/florianriquelme/sshjesus/internal/errors"
+	"github.com/florianriquelme/ssherpa/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/domain"
+	backendErrors "github.com/florianriquelme/ssherpa/internal/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

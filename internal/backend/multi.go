@@ -5,8 +5,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/florianriquelme/sshjesus/internal/domain"
-	"github.com/florianriquelme/sshjesus/internal/errors"
+	"github.com/florianriquelme/ssherpa/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/errors"
 )
 
 // MultiBackend aggregates servers from multiple Backend implementations.

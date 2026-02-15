@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
-	"github.com/florianriquelme/sshjesus/internal/backend"
-	"github.com/florianriquelme/sshjesus/internal/sshconfig"
-	"github.com/florianriquelme/sshjesus/internal/sshkey"
+	"github.com/florianriquelme/ssherpa/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/sshconfig"
+	"github.com/florianriquelme/ssherpa/internal/sshkey"
 )
 
 // configLoadedMsg is sent after async SSH config parsing completes.

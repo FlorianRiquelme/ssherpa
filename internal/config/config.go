@@ -6,7 +6,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/adrg/xdg"
-	"github.com/florianriquelme/sshjesus/internal/errors"
+	"github.com/florianriquelme/ssherpa/internal/errors"
 )
 
 // ProjectConfig represents a project in the config file.

@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/florianriquelme/sshjesus/internal/sshkey"
+	"github.com/florianriquelme/ssherpa/internal/sshkey"
 )
 
 // SSHKeyPicker is a lightweight popup overlay for SSH key selection.

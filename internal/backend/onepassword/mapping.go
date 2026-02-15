@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/florianriquelme/sshjesus/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/domain"
 )
 
 // ItemToServer converts a 1Password item to a domain.Server.

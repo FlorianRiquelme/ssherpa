@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/florianriquelme/sshjesus/internal/sshconfig"
+	"github.com/florianriquelme/ssherpa/internal/sshconfig"
 )
 
 // badgeData represents a project badge to render inline.
