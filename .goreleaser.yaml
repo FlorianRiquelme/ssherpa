@@ -1,0 +1,95 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: ssherpa
+    main: ./cmd/ssherpa
+    binary: ssherpa
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/florianriquelme/ssherpa/internal/version.Version={{.Version}}
+      - -X github.com/florianriquelme/ssherpa/internal/version.Commit={{.FullCommit}}
+      - -X github.com/florianriquelme/ssherpa/internal/version.Date={{.Date}}
+      - -X github.com/florianriquelme/ssherpa/internal/version.GoVersion={{.Env.GOVERSION}}
+
+archives:
+  - id: ssherpa
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+brews:
+  - repository:
+      owner: ssherpa
+      name: homebrew-tap
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    directory: Formula
+    homepage: "https://github.com/florianriquelme/ssherpa"
+    description: "SSH connection manager with project context and 1Password integration"
+    license: "MIT"
+    install: |
+      bin.install "ssherpa"
+    test: |
+      system "#{bin}/ssherpa", "version"
+    commit_msg_template: "chore: update formula for {{ .ProjectName }} version {{ .Tag }}"
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - 'typo'
+
+release:
+  github:
+    owner: florianriquelme
+    name: ssherpa
+  draft: false
+  prerelease: auto
+  mode: append
+  header: |
+    ## ssherpa {{ .Tag }}
+
+    {{ if .IsPrerelease }}This is a pre-release version.{{ end }}
+
+  footer: |
+    **Full Changelog**: https://github.com/florianriquelme/ssherpa/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+    ---
+
+    ## Installation
+
+    ### Homebrew
+    ```sh
+    brew tap ssherpa/tap
+    brew install ssherpa
+    ```
+
+    ### Quick Install (macOS/Linux)
+    ```sh
+    curl -fsSL https://raw.githubusercontent.com/florianriquelme/ssherpa/main/scripts/install.sh | sh
+    ```
+
+    ### Direct Download
+    Download the appropriate binary for your platform from the assets below and verify the checksum.
