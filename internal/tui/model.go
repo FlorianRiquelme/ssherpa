@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -81,9 +82,10 @@ type Model struct {
 	statusMsg     string         // Temporary status message (e.g. "Deleted X, press u to undo")
 
 	// Phase 6 additions:
-	opStatus    backend.BackendStatus // Current 1Password status
-	opStatusBar string                // Rendered status bar (cached)
-	appBackend  backend.Backend       // Backend interface (nil for sshconfig-only mode)
+	opStatus      backend.BackendStatus // Current 1Password status
+	opStatusBar   string                // Rendered status bar (cached)
+	appBackend    backend.Backend       // Backend interface (nil for sshconfig-only mode)
+	opAccountName string                // 1Password account name for `op signin --account`
 
 	// Phase 7 additions:
 	discoveredKeys    []sshkey.SSHKey  // All discovered SSH keys (from file/agent/1Password)
@@ -92,7 +94,7 @@ type Model struct {
 }
 
 // New creates a new TUI model.
-func New(configPath, historyPath string, returnToTUI bool, currentProjectID string, projects []config.ProjectConfig, appConfigPath string, opStatus backend.BackendStatus, appBackend backend.Backend) Model {
+func New(configPath, historyPath string, returnToTUI bool, currentProjectID string, projects []config.ProjectConfig, appConfigPath string, opStatus backend.BackendStatus, appBackend backend.Backend, opAccountName string) Model {
 	// Initialize spinner
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -116,6 +118,8 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 
 	// Initialize key bindings and help
 	keys := DefaultKeyMap()
+	// Enable sign-in keybinding if initial status is NotSignedIn
+	keys.SignIn.SetEnabled(opStatus == backend.StatusNotSignedIn)
 	searchKeys := SearchKeyMap{
 		ClearSearch: keys.ClearSearch,
 	}
@@ -148,9 +152,10 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 		projectMap:       projectMap,
 		configFilePath:   appConfigPath, // App config path for saving project assignments
 		undoBuffer:       NewUndoBuffer(10),
-		opStatus:         opStatus,    // Initial 1Password status
-		opStatusBar:      "",           // Will be rendered on first draw
-		appBackend:       appBackend,   // Backend interface (may be nil)
+		opStatus:         opStatus,       // Initial 1Password status
+		opStatusBar:      "",             // Will be rendered on first draw
+		appBackend:       appBackend,     // Backend interface (may be nil)
+		opAccountName:    opAccountName,  // 1Password account name for signin
 	}
 }
 
@@ -332,6 +337,21 @@ func loadBackendServersCmd(backend backend.Backend) tea.Cmd {
 			items: nil,
 			err:   nil,
 		}
+	}
+}
+
+// syncBackendCmd triggers a backend sync and returns the new status.
+// Used after sign-in to immediately refresh data and status.
+func syncBackendCmd(b backend.Backend) tea.Cmd {
+	return func() tea.Msg {
+		if syncer, ok := b.(backend.Syncer); ok {
+			ctx := context.Background()
+			syncer.SyncFromBackend(ctx)
+			// Error is OK - status is set appropriately by SyncFromBackend
+			return OnePasswordStatusMsg{Status: syncer.GetStatus()}
+		}
+		// Backend doesn't support sync - no-op
+		return nil
 	}
 }
 
@@ -797,6 +817,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
+	case opSigninFinishedMsg:
+		// op signin process completed
+		if msg.err != nil {
+			m.statusMsg = "Sign-in failed"
+		} else {
+			m.statusMsg = "Signed in to 1Password!"
+			// Trigger immediate server list refresh
+			if m.appBackend != nil {
+				return m, loadBackendServersCmd(m.appBackend)
+			}
+		}
+		return m, nil
+
 	case spinner.TickMsg:
 		if m.loading {
 			var cmd tea.Cmd
@@ -992,6 +1025,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 						return undoCompletedMsg{alias: entry.Alias}
 					}
+
+				case key.Matches(msg, m.keys.SignIn):
+					// 's': launch interactive op signin
+					args := []string{"signin", "-f"}
+					if m.opAccountName != "" {
+						args = append(args, "--account", m.opAccountName)
+					}
+					cmd := exec.Command("op", args...)
+					cmd.Stdin = os.Stdin
+					cmd.Stdout = os.Stdout
+					cmd.Stderr = os.Stderr
+					return m, tea.ExecProcess(cmd, func(err error) tea.Msg {
+						return opSigninFinishedMsg{err: err}
+					})
 
 				case key.Matches(msg, m.keys.GoToTop):
 					// g or Home: jump to top
@@ -1203,6 +1250,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		oldStatus := m.opStatus
 		m.opStatus = msg.Status
 		m.opStatusBar = renderStatusBar(m.opStatus, m.width)
+
+		// Toggle sign-in keybinding based on status
+		m.keys.SignIn.SetEnabled(msg.Status == backend.StatusNotSignedIn)
 
 		// If status changed to Available, trigger server list refresh
 		if oldStatus != backend.StatusAvailable && msg.Status == backend.StatusAvailable {
