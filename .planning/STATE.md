@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 
 ## Current Position
 
-Phase: 7 of 8 (SSH Key Selection) — COMPLETE
+Phase: 8 of 8 (Distribution) — IN PROGRESS
 Plan: 2 of 2 complete
-Status: Phase 7 Complete — All plans executed, human verification passed
-Last activity: 2026-02-14 — Completed Phase 7: SSH key discovery package (multi-source: file, agent, 1Password IdentityAgent), key picker overlay with source badges, form/detail integration, and IdentityFile persistence. Post-checkpoint fixes: 1Password IdentityAgent socket discovery, context-aware default labels.
+Status: Phase 8 Plan 02 Complete — Release automation configured
+Last activity: 2026-02-15 — Completed Phase 08 Plan 02: GoReleaser v2 configuration, GitHub Actions release workflow, and curl install script for automated multi-platform binary distribution with Homebrew tap integration.
 
-Progress: [█████████████████████████████████████████████████████████████████████████████████████████████] 96%
+Progress: [████████████████████████████████████████████████████████████████████████████████████████████████] 98%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17 (plus 06-05 partial: 2/3 tasks)
-- Average duration: 625.0 seconds
-- Total execution time: 3.10 hours
+- Total plans completed: 18 (plus 06-05 partial: 2/3 tasks)
+- Average duration: 613.7 seconds
+- Total execution time: 3.14 hours
 
 **By Phase:**
 
@@ -34,16 +34,17 @@ Progress: [███████████████████████
 | 05    | 3     | 525s  | 175.0s   |
 | 06    | 4     | 1538s | 384.5s   |
 | 07    | 2     | 1554s | 777.0s   |
+| 08    | 1     | 138s  | 138.0s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 08    | 02   | 138s     | 2     | 3     |
 | 07    | 02   | 900s     | 3     | 9     |
 | 07    | 01   | 654s     | 1     | 8     |
 | 06    | 05   | 252s     | 2/3   | 4     |
 | 06    | 04   | 570s     | 2     | 14    |
-| 06    | 03   | 468s     | 2     | 7     |
 
 ## Accumulated Context
 
@@ -127,6 +128,10 @@ Recent decisions affecting current work:
 - [Phase 07-02]: Checkmark only for non-empty paths (agent keys with empty Path don't false-match)
 - [Phase 07-02]: Always parse SSH config for IdentityAgent (independent of backend mode)
 - [Phase 07-02]: Re-discover keys after hosts load (initial nil, re-trigger with full host context)
+- [Phase 08-02]: GoReleaser v2 for release automation (multi-platform builds, Homebrew tap, checksums)
+- [Phase 08-02]: Auto-push Homebrew formula to separate tap repository (TAP_GITHUB_TOKEN enables cross-repo push)
+- [Phase 08-02]: CGO_ENABLED=0 for all builds (pure Go binaries with no C dependencies)
+- [Phase 08-02]: Curl install script verifies SHA256 checksum (security best practice for download integrity)
 
 ### Pending Todos
 
@@ -149,7 +154,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-14 (Phase 07 complete)
-Stopped at: Phase 7 complete. Both plans executed, human verification passed with post-checkpoint fixes for 1Password IdentityAgent discovery. Ready for Phase 8 (Distribution).
+Last session: 2026-02-15 (Phase 08 Plan 02 complete)
+Stopped at: Completed 08-02-PLAN.md — GoReleaser configuration, GitHub Actions release workflow, and curl install script created. Ready for Phase 08 Plan 03 or wrap-up.
 Resume file: None
-Resume command: `/gsd:plan-phase 8`
+Resume command: Continue with remaining Phase 08 plans or finalize distribution
