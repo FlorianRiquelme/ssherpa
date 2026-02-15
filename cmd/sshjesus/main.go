@@ -112,7 +112,17 @@ func main() {
 
 	case "onepassword":
 		// 1Password backend
-		client, err := onepassword.NewCLIClient()
+		opAccountName := ""
+		if cfg != nil {
+			opAccountName = cfg.OnePassword.AccountName
+		}
+
+		var client *onepassword.CLIClient
+		if opAccountName != "" {
+			client, err = onepassword.NewCLIClientWithAccount(opAccountName)
+		} else {
+			client, err = onepassword.NewCLIClient()
+		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating 1Password CLI client: %v\n", err)
 			os.Exit(1)
@@ -138,14 +148,24 @@ func main() {
 			os.Exit(1)
 		}
 
-		client, err := onepassword.NewCLIClient()
+		opAccountNameBoth := ""
+		if cfg != nil {
+			opAccountNameBoth = cfg.OnePassword.AccountName
+		}
+
+		var clientBoth *onepassword.CLIClient
+		if opAccountNameBoth != "" {
+			clientBoth, err = onepassword.NewCLIClientWithAccount(opAccountNameBoth)
+		} else {
+			clientBoth, err = onepassword.NewCLIClient()
+		}
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating 1Password CLI client: %v\n", err)
 			os.Exit(1)
 		}
 
 		cachePath := filepath.Join(homeDir, ".ssh", "sshjesus_1password_cache.toml")
-		opBackend = onepassword.NewWithCache(client, cachePath)
+		opBackend = onepassword.NewWithCache(clientBoth, cachePath)
 
 		// Load from cache (best-effort, non-fatal) - SSH config data is always available
 		if cacheErr := opBackend.LoadFromCache(); cacheErr != nil {

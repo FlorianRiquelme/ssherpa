@@ -16,13 +16,19 @@ func renderStatusBar(status backend.BackendStatus, width int) string {
 		// Yellow warning bar: 1Password is locked
 		return statusBarWarningStyle.
 			Width(width).
-			Render("⚠️  1Password is locked. Unlock the app to sync servers.")
+			Render("⚠️  1Password is locked. Press 's' to authenticate.")
 
-	case backend.StatusUnavailable:
-		// Orange warning bar: 1Password not running
+	case backend.StatusNotSignedIn:
+		// Yellow warning bar: op CLI not signed in
 		return statusBarWarningStyle.
 			Width(width).
-			Render("⚠️  1Password is not running. Using cached servers.")
+			Render("⚠️  1Password CLI not signed in. Press 's' to authenticate.")
+
+	case backend.StatusUnavailable:
+		// Orange warning bar: 1Password not available
+		return statusBarWarningStyle.
+			Width(width).
+			Render("⚠️  1Password is not available. Using cached servers.")
 
 	case backend.StatusUnknown:
 		// Gray info bar: checking status

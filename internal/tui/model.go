@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"time"
@@ -82,10 +81,9 @@ type Model struct {
 	statusMsg     string         // Temporary status message (e.g. "Deleted X, press u to undo")
 
 	// Phase 6 additions:
-	opStatus      backend.BackendStatus // Current 1Password status
-	opStatusBar   string                // Rendered status bar (cached)
-	appBackend    backend.Backend       // Backend interface (nil for sshconfig-only mode)
-	opAccountName string                // 1Password account name for `op signin --account`
+	opStatus   backend.BackendStatus // Current 1Password status
+	opStatusBar string               // Rendered status bar (cached)
+	appBackend backend.Backend       // Backend interface (nil for sshconfig-only mode)
 
 	// Phase 7 additions:
 	discoveredKeys    []sshkey.SSHKey  // All discovered SSH keys (from file/agent/1Password)
@@ -94,7 +92,7 @@ type Model struct {
 }
 
 // New creates a new TUI model.
-func New(configPath, historyPath string, returnToTUI bool, currentProjectID string, projects []config.ProjectConfig, appConfigPath string, opStatus backend.BackendStatus, appBackend backend.Backend, opAccountName string) Model {
+func New(configPath, historyPath string, returnToTUI bool, currentProjectID string, projects []config.ProjectConfig, appConfigPath string, opStatus backend.BackendStatus, appBackend backend.Backend) Model {
 	// Initialize spinner
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -118,8 +116,8 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 
 	// Initialize key bindings and help
 	keys := DefaultKeyMap()
-	// Enable sign-in keybinding if initial status is NotSignedIn
-	keys.SignIn.SetEnabled(opStatus == backend.StatusNotSignedIn)
+	// Enable sign-in keybinding if 1Password needs authentication
+	keys.SignIn.SetEnabled(opStatus == backend.StatusNotSignedIn || opStatus == backend.StatusLocked)
 	searchKeys := SearchKeyMap{
 		ClearSearch: keys.ClearSearch,
 	}
@@ -152,10 +150,9 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 		projectMap:       projectMap,
 		configFilePath:   appConfigPath, // App config path for saving project assignments
 		undoBuffer:       NewUndoBuffer(10),
-		opStatus:         opStatus,       // Initial 1Password status
-		opStatusBar:      "",             // Will be rendered on first draw
-		appBackend:       appBackend,     // Backend interface (may be nil)
-		opAccountName:    opAccountName,  // 1Password account name for signin
+		opStatus:    opStatus,   // Initial 1Password status
+		opStatusBar: "",         // Will be rendered on first draw
+		appBackend:  appBackend, // Backend interface (may be nil)
 	}
 }
 
@@ -351,6 +348,21 @@ func syncBackendCmd(b backend.Backend) tea.Cmd {
 			return OnePasswordStatusMsg{Status: syncer.GetStatus()}
 		}
 		// Backend doesn't support sync - no-op
+		return nil
+	}
+}
+
+// syncBackendWithTimeoutCmd triggers a backend sync with a custom timeout.
+// Used for authentication: the op CLI triggers the native 1Password biometric dialog,
+// and the user needs time to approve it.
+func syncBackendWithTimeoutCmd(b backend.Backend, timeout time.Duration) tea.Cmd {
+	return func() tea.Msg {
+		if syncer, ok := b.(backend.Syncer); ok {
+			ctx, cancel := context.WithTimeout(context.Background(), timeout)
+			defer cancel()
+			syncer.SyncFromBackend(ctx)
+			return OnePasswordStatusMsg{Status: syncer.GetStatus()}
+		}
 		return nil
 	}
 }
@@ -817,19 +829,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 
-	case opSigninFinishedMsg:
-		// op signin process completed
-		if msg.err != nil {
-			m.statusMsg = "Sign-in failed"
-		} else {
-			m.statusMsg = "Signed in to 1Password!"
-			// Trigger immediate sync to refresh status and servers
-			if m.appBackend != nil {
-				return m, syncBackendCmd(m.appBackend)
-			}
-		}
-		return m, nil
-
 	case spinner.TickMsg:
 		if m.loading {
 			var cmd tea.Cmd
@@ -1027,18 +1026,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 
 				case key.Matches(msg, m.keys.SignIn):
-					// 's': launch interactive op signin
-					args := []string{"signin", "-f"}
-					if m.opAccountName != "" {
-						args = append(args, "--account", m.opAccountName)
+					// 's': trigger native 1Password biometric auth via sync
+					if m.appBackend != nil {
+						m.statusMsg = "Authenticating with 1Password..."
+						return m, syncBackendWithTimeoutCmd(m.appBackend, 60*time.Second)
 					}
-					cmd := exec.Command("op", args...)
-					cmd.Stdin = os.Stdin
-					cmd.Stdout = os.Stdout
-					cmd.Stderr = os.Stderr
-					return m, tea.ExecProcess(cmd, func(err error) tea.Msg {
-						return opSigninFinishedMsg{err: err}
-					})
 
 				case key.Matches(msg, m.keys.GoToTop):
 					// g or Home: jump to top
@@ -1252,7 +1244,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.opStatusBar = renderStatusBar(m.opStatus, m.width)
 
 		// Toggle sign-in keybinding based on status
-		m.keys.SignIn.SetEnabled(msg.Status == backend.StatusNotSignedIn)
+		m.keys.SignIn.SetEnabled(msg.Status == backend.StatusNotSignedIn || msg.Status == backend.StatusLocked)
 
 		// If status changed to Available, trigger server list refresh
 		if oldStatus != backend.StatusAvailable && msg.Status == backend.StatusAvailable {

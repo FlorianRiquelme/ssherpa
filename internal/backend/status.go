@@ -9,6 +9,7 @@ const (
 	StatusUnknown     BackendStatus = iota // Initial state before first check
 	StatusAvailable                        // Backend is unlocked and responsive
 	StatusLocked                           // Backend is running but locked
+	StatusNotSignedIn                      // CLI not signed in (op CLI needs auth)
 	StatusUnavailable                      // Backend not running or SDK error
 )
 
@@ -21,6 +22,8 @@ func (s BackendStatus) String() string {
 		return "Available"
 	case StatusLocked:
 		return "Locked"
+	case StatusNotSignedIn:
+		return "NotSignedIn"
 	case StatusUnavailable:
 		return "Unavailable"
 	default:

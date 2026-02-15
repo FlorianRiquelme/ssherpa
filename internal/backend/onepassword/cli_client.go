@@ -31,6 +31,7 @@ func (e *defaultExecutor) Run(ctx context.Context, name string, args ...string) 
 // CLIClient implements the Client interface using the op CLI.
 type CLIClient struct {
 	opPath   string
+	account  string // 1Password account identifier (e.g. "my.1password.com")
 	executor CommandExecutor
 }
 
@@ -48,8 +49,28 @@ func NewCLIClient() (*CLIClient, error) {
 	}, nil
 }
 
+// NewCLIClientWithAccount creates a new CLI-based 1Password client with an account identifier.
+// The account is prepended as --account to all op commands, ensuring the correct
+// 1Password account is used (matches the raycast-1password-extension approach).
+func NewCLIClientWithAccount(account string) (*CLIClient, error) {
+	opPath, err := exec.LookPath("op")
+	if err != nil {
+		return nil, fmt.Errorf("op CLI not found in PATH: %w", err)
+	}
+
+	return &CLIClient{
+		opPath:   opPath,
+		account:  account,
+		executor: &defaultExecutor{},
+	}, nil
+}
+
 // runOP executes an op command with the given arguments and returns the stdout.
+// When an account is configured, --account is prepended to all commands.
 func (c *CLIClient) runOP(ctx context.Context, args ...string) ([]byte, error) {
+	if c.account != "" {
+		args = append([]string{"--account", c.account}, args...)
+	}
 	stdout, stderr, err := c.executor.Run(ctx, c.opPath, args...)
 	if err != nil {
 		// Include stderr in error message for debugging
