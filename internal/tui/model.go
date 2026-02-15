@@ -38,6 +38,12 @@ const (
 	ViewDelete
 )
 
+// hostWithProject pairs a host with its project configurations
+type hostWithProject struct {
+	host     sshconfig.SSHHost
+	projects []config.ProjectConfig
+}
+
 // Model is the root Bubbletea model for the TUI.
 type Model struct {
 	viewMode   ViewMode
@@ -536,6 +542,81 @@ func (m *Model) buildHostProjectMap() map[string][]config.ProjectConfig {
 	return hostProjectMap
 }
 
+// sortHostsByRecency sorts a slice of hosts by last connection time (most recent first)
+// Hosts without connection history are placed after those with history
+func (m *Model) sortHostsByRecency(hosts []sshconfig.SSHHost) {
+	// Sort using bubble sort for simplicity (avoiding importing sort package dependencies)
+	for i := 0; i < len(hosts); i++ {
+		for j := i + 1; j < len(hosts); j++ {
+			iTime, iHasTime := m.recentHosts[hosts[i].Name]
+			jTime, jHasTime := m.recentHosts[hosts[j].Name]
+
+			// If both have times, sort by most recent first
+			// If only one has a time, it goes first
+			// If neither has a time, maintain current order
+			shouldSwap := false
+			if jHasTime && !iHasTime {
+				shouldSwap = true
+			} else if jHasTime && iHasTime && jTime.After(iTime) {
+				shouldSwap = true
+			}
+
+			if shouldSwap {
+				hosts[i], hosts[j] = hosts[j], hosts[i]
+			}
+		}
+	}
+}
+
+// sortHostsWithProjectByRecency sorts a slice of hostWithProject by last connection time (most recent first)
+func (m *Model) sortHostsWithProjectByRecency(hosts []hostWithProject) {
+	for i := 0; i < len(hosts); i++ {
+		for j := i + 1; j < len(hosts); j++ {
+			iTime, iHasTime := m.recentHosts[hosts[i].host.Name]
+			jTime, jHasTime := m.recentHosts[hosts[j].host.Name]
+
+			shouldSwap := false
+			if jHasTime && !iHasTime {
+				shouldSwap = true
+			} else if jHasTime && iHasTime && jTime.After(iTime) {
+				shouldSwap = true
+			}
+
+			if shouldSwap {
+				hosts[i], hosts[j] = hosts[j], hosts[i]
+			}
+		}
+	}
+}
+
+// sortHostsWithProjectAlphabetically sorts a slice of hostWithProject alphabetically by host name (case-insensitive)
+func (m *Model) sortHostsWithProjectAlphabetically(hosts []hostWithProject) {
+	for i := 0; i < len(hosts); i++ {
+		for j := i + 1; j < len(hosts); j++ {
+			// Case-insensitive comparison
+			iName := strings.ToLower(hosts[i].host.Name)
+			jName := strings.ToLower(hosts[j].host.Name)
+			if iName > jName {
+				hosts[i], hosts[j] = hosts[j], hosts[i]
+			}
+		}
+	}
+}
+
+// sortHostsAlphabetically sorts a slice of SSHHost alphabetically by host name (case-insensitive)
+func (m *Model) sortHostsAlphabetically(hosts []sshconfig.SSHHost) {
+	for i := 0; i < len(hosts); i++ {
+		for j := i + 1; j < len(hosts); j++ {
+			// Case-insensitive comparison
+			iName := strings.ToLower(hosts[i].Name)
+			jName := strings.ToLower(hosts[j].Name)
+			if iName > jName {
+				hosts[i], hosts[j] = hosts[j], hosts[i]
+			}
+		}
+	}
+}
+
 // rebuildListItems rebuilds the list items from filteredIdx with history indicators and project grouping.
 func (m *Model) rebuildListItems() {
 	if len(m.filteredIdx) == 0 {
@@ -555,17 +636,10 @@ func (m *Model) rebuildListItems() {
 		return
 	}
 
-	// Project-aware grouping (no search query)
-	// Organize hosts by project membership
-	type hostWithProject struct {
-		host     sshconfig.SSHHost
-		projects []config.ProjectConfig
-	}
-
-	var currentProjectHosts []hostWithProject
-	projectGroups := make(map[string][]hostWithProject) // project ID -> hosts
-	var unassignedHosts []hostWithProject
-	var wildcards []sshconfig.SSHHost
+	// Organize hosts: recently used at top, rest alphabetically
+	var recentHosts []hostWithProject   // Hosts with recent connections (top of list)
+	var otherHosts []hostWithProject    // All other hosts (sorted alphabetically)
+	var wildcards []sshconfig.SSHHost   // Wildcards at bottom
 
 	for _, idx := range m.filteredIdx {
 		host := m.allHosts[idx]
@@ -579,63 +653,31 @@ func (m *Model) rebuildListItems() {
 		projectConfigs := hostProjectMap[host.Name]
 		hwp := hostWithProject{host: host, projects: projectConfigs}
 
-		if len(projectConfigs) == 0 {
-			// Unassigned
-			unassignedHosts = append(unassignedHosts, hwp)
+		// Check if this host has recent connection history
+		_, hasRecentConnection := m.recentHosts[host.Name]
+		if hasRecentConnection {
+			recentHosts = append(recentHosts, hwp)
 		} else {
-			// Check if belongs to current project
-			belongsToCurrentProject := false
-			if m.currentProjectID != "" {
-				for _, pc := range projectConfigs {
-					if pc.ID == m.currentProjectID || pc.Name == m.currentProjectID {
-						belongsToCurrentProject = true
-						break
-					}
-				}
-			}
-
-			if belongsToCurrentProject {
-				currentProjectHosts = append(currentProjectHosts, hwp)
-			} else {
-				// Add to project groups
-				for _, pc := range projectConfigs {
-					projectGroups[pc.ID] = append(projectGroups[pc.ID], hwp)
-				}
-			}
+			otherHosts = append(otherHosts, hwp)
 		}
 	}
+
+	// Sort recently used hosts by most recent first
+	m.sortHostsWithProjectByRecency(recentHosts)
+
+	// Sort other hosts alphabetically by name
+	m.sortHostsWithProjectAlphabetically(otherHosts)
 
 	// Build list items
 	items := make([]list.Item, 0, len(m.filteredIdx)+3)
 
-	// 1. Current project hosts (if any)
-	for _, hwp := range currentProjectHosts {
+	// 1. Recently used hosts FIRST (sorted by most recent)
+	for _, hwp := range recentHosts {
 		items = append(items, m.createHostItem(hwp.host, hwp.projects, hostProjectMap))
 	}
 
-	// 2. Other project groups (sorted alphabetically by project name)
-	projectIDs := make([]string, 0, len(projectGroups))
-	for pid := range projectGroups {
-		projectIDs = append(projectIDs, pid)
-	}
-	// Sort project IDs alphabetically
-	for i := 0; i < len(projectIDs); i++ {
-		for j := i + 1; j < len(projectIDs); j++ {
-			if projectIDs[i] > projectIDs[j] {
-				projectIDs[i], projectIDs[j] = projectIDs[j], projectIDs[i]
-			}
-		}
-	}
-
-	for _, pid := range projectIDs {
-		hosts := projectGroups[pid]
-		for _, hwp := range hosts {
-			items = append(items, m.createHostItem(hwp.host, hwp.projects, hostProjectMap))
-		}
-	}
-
-	// 3. Unassigned hosts
-	for _, hwp := range unassignedHosts {
+	// 2. All other hosts (sorted alphabetically)
+	for _, hwp := range otherHosts {
 		items = append(items, m.createHostItem(hwp.host, hwp.projects, hostProjectMap))
 	}
 
@@ -645,50 +687,40 @@ func (m *Model) rebuildListItems() {
 
 // rebuildListItemsSimple handles list building when in search mode or no projects configured
 func (m *Model) rebuildListItemsSimple(hostProjectMap map[string][]config.ProjectConfig, hasSearch bool) {
-	// Organize filtered hosts
-	var regular, wildcards []sshconfig.SSHHost
+	// Organize filtered hosts into recent and non-recent
+	var recentHosts, otherHosts, wildcards []sshconfig.SSHHost
 	for _, idx := range m.filteredIdx {
 		host := m.allHosts[idx]
 		if host.IsWildcard {
 			wildcards = append(wildcards, host)
 		} else {
-			regular = append(regular, host)
+			// Check if this host has recent connection history
+			_, hasRecentConnection := m.recentHosts[host.Name]
+			if hasRecentConnection {
+				recentHosts = append(recentHosts, host)
+			} else {
+				otherHosts = append(otherHosts, host)
+			}
 		}
 	}
 
+	// Sort recent hosts by most recent first
+	m.sortHostsByRecency(recentHosts)
+
+	// Sort other hosts alphabetically
+	m.sortHostsAlphabetically(otherHosts)
+
 	// Build list items
-	items := make([]list.Item, 0, len(regular)+len(wildcards)+2)
+	items := make([]list.Item, 0, len(recentHosts)+len(otherHosts)+len(wildcards))
 
-	// In search mode with current project: add separator between current and other
-	if hasSearch && m.currentProjectID != "" && len(m.projects) > 0 {
-		currentProjectCount := 0
-		// Count current project hosts
-		for _, host := range regular {
-			projectConfigs := hostProjectMap[host.Name]
-			for _, pc := range projectConfigs {
-				if pc.ID == m.currentProjectID || pc.Name == m.currentProjectID {
-					currentProjectCount++
-					break
-				}
-			}
-		}
+	// 1. Add recently used hosts first (sorted by most recent)
+	for _, host := range recentHosts {
+		items = append(items, m.createHostItem(host, hostProjectMap[host.Name], hostProjectMap))
+	}
 
-		// Add regular hosts (current project first, already sorted by filterHosts)
-		addedCount := 0
-		for _, host := range regular {
-			items = append(items, m.createHostItem(host, hostProjectMap[host.Name], hostProjectMap))
-			addedCount++
-
-			// Add separator after current project hosts
-			if addedCount == currentProjectCount && addedCount < len(regular) {
-				items = append(items, projectSeparatorItem{label: "--- Other Projects ---"})
-			}
-		}
-	} else {
-		// No search or no current project: just add all regular hosts
-		for _, host := range regular {
-			items = append(items, m.createHostItem(host, hostProjectMap[host.Name], hostProjectMap))
-		}
+	// 2. Add all other hosts (sorted alphabetically)
+	for _, host := range otherHosts {
+		items = append(items, m.createHostItem(host, hostProjectMap[host.Name], hostProjectMap))
 	}
 
 	m.list.SetItems(items)
@@ -697,7 +729,11 @@ func (m *Model) rebuildListItemsSimple(hostProjectMap map[string][]config.Projec
 
 // createHostItem creates a hostItem with project badges
 func (m *Model) createHostItem(host sshconfig.SSHHost, projectConfigs []config.ProjectConfig, hostProjectMap map[string][]config.ProjectConfig) hostItem {
-	_, isRecent := m.recentHosts[host.Name]
+	// Get last connected timestamp (if any)
+	var lastConnectedAt *time.Time
+	if ts, exists := m.recentHosts[host.Name]; exists {
+		lastConnectedAt = &ts
+	}
 
 	// Build project badges
 	var badges []badgeData
@@ -711,9 +747,9 @@ func (m *Model) createHostItem(host sshconfig.SSHHost, projectConfigs []config.P
 	}
 
 	return hostItem{
-		host:          host,
-		lastConnected: isRecent,
-		projectBadges: badges,
+		host:            host,
+		lastConnectedAt: lastConnectedAt,
+		projectBadges:   badges,
 	}
 }
 

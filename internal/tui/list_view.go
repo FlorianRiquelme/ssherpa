@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/florianriquelme/sshjesus/internal/sshconfig"
@@ -16,9 +17,9 @@ type badgeData struct {
 // hostItem wraps an SSHHost for display in the list.
 // Implements list.Item interface.
 type hostItem struct {
-	host          sshconfig.SSHHost
-	lastConnected bool        // Whether this host was recently connected
-	projectBadges []badgeData // Project badges to render inline
+	host               sshconfig.SSHHost
+	lastConnectedAt    *time.Time  // Timestamp of last connection (nil if never connected)
+	projectBadges      []badgeData // Project badges to render inline
 }
 
 // FilterValue returns the value used for filtering/searching.
@@ -28,14 +29,8 @@ func (h hostItem) FilterValue() string {
 }
 
 // Title returns the first line of the list item.
-// Format: [★] Name (hostname) [badge1] [badge2] with star for last-connected and warning indicator if ParseError is set.
+// Format: Name (hostname) [badge1] [badge2] with warning indicator if ParseError is set.
 func (h hostItem) Title() string {
-	// Prepend star indicator if this was recently connected
-	prefix := ""
-	if h.lastConnected {
-		prefix = starIndicatorStyle.Render("★ ")
-	}
-
 	title := fmt.Sprintf("%s (%s)",
 		hostnameStyle.Render(h.host.Name),
 		h.host.Hostname)
@@ -50,11 +45,11 @@ func (h hostItem) Title() string {
 		title = warningStyle.Render("⚠ ") + title
 	}
 
-	return prefix + title
+	return title
 }
 
 // Description returns the second line of the list item.
-// Format: "User: {user} | Port: {port}" or error message if ParseError is set.
+// Format: "User: {user} | Port: {port} | Last used at {timestamp}" or error message if ParseError is set.
 func (h hostItem) Description() string {
 	// If there's a parse error, show it instead of user/port
 	if h.host.ParseError != nil {
@@ -72,5 +67,59 @@ func (h hostItem) Description() string {
 		port = "22"
 	}
 
-	return secondaryStyle.Render(fmt.Sprintf("User: %s | Port: %s", user, port))
+	desc := fmt.Sprintf("User: %s | Port: %s", user, port)
+
+	// Add "Last used at" timestamp if available
+	if h.lastConnectedAt != nil {
+		relativeTime := formatRelativeTime(*h.lastConnectedAt)
+		desc += fmt.Sprintf(" | Last used %s", relativeTime)
+	}
+
+	return secondaryStyle.Render(desc)
+}
+
+// formatRelativeTime formats a timestamp as a relative time string (e.g., "2h ago", "yesterday")
+func formatRelativeTime(t time.Time) string {
+	now := time.Now()
+	duration := now.Sub(t)
+
+	if duration < time.Minute {
+		return "just now"
+	} else if duration < time.Hour {
+		minutes := int(duration.Minutes())
+		if minutes == 1 {
+			return "1 minute ago"
+		}
+		return fmt.Sprintf("%d minutes ago", minutes)
+	} else if duration < 24*time.Hour {
+		hours := int(duration.Hours())
+		if hours == 1 {
+			return "1 hour ago"
+		}
+		return fmt.Sprintf("%d hours ago", hours)
+	} else if duration < 7*24*time.Hour {
+		days := int(duration.Hours() / 24)
+		if days == 1 {
+			return "yesterday"
+		}
+		return fmt.Sprintf("%d days ago", days)
+	} else if duration < 30*24*time.Hour {
+		weeks := int(duration.Hours() / (24 * 7))
+		if weeks == 1 {
+			return "1 week ago"
+		}
+		return fmt.Sprintf("%d weeks ago", weeks)
+	} else if duration < 365*24*time.Hour {
+		months := int(duration.Hours() / (24 * 30))
+		if months == 1 {
+			return "1 month ago"
+		}
+		return fmt.Sprintf("%d months ago", months)
+	} else {
+		years := int(duration.Hours() / (24 * 365))
+		if years == 1 {
+			return "1 year ago"
+		}
+		return fmt.Sprintf("%d years ago", years)
+	}
 }
