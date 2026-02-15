@@ -11,7 +11,7 @@ var (
 	Version   = "dev"     // Version string (e.g., "0.1.0")
 	Commit    = "none"    // Git commit hash
 	Date      = "unknown" // Build date (RFC3339 format)
-	GoVersion = "unknown" // Go version used to build
+	GoVersion = runtime.Version() // Go version used to build (overridable via ldflags)
 )
 
 // Short returns just the version string.

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/google/renameio/v2"
+	"github.com/google/renameio/v2/maybe"
 )
 
 // CreateBackup creates a backup of the specified config file.
@@ -39,7 +39,7 @@ func CreateBackup(configPath string) error {
 // from corrupting the file.
 func AtomicWrite(path string, data []byte, perm os.FileMode) error {
 	// Use renameio to write atomically
-	if err := renameio.WriteFile(path, data, perm); err != nil {
+	if err := maybe.WriteFile(path, data, perm); err != nil {
 		return fmt.Errorf("atomic write: %w", err)
 	}
 

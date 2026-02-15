@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/google/renameio/v2"
+	"github.com/google/renameio/v2/maybe"
 
 	"github.com/florianriquelme/ssherpa/internal/domain"
 )
@@ -89,7 +89,7 @@ func WriteTOMLCache(servers []*domain.Server, cachePath string) error {
 	}
 
 	// Write atomically using renameio
-	if err := renameio.WriteFile(cachePath, content, 0600); err != nil {
+	if err := maybe.WriteFile(cachePath, content, 0600); err != nil {
 		return fmt.Errorf("write TOML cache: %w", err)
 	}
 

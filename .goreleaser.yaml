@@ -22,15 +22,16 @@ builds:
       - -X github.com/florianriquelme/ssherpa/internal/version.Version={{.Version}}
       - -X github.com/florianriquelme/ssherpa/internal/version.Commit={{.FullCommit}}
       - -X github.com/florianriquelme/ssherpa/internal/version.Date={{.Date}}
-      - -X github.com/florianriquelme/ssherpa/internal/version.GoVersion={{.Env.GOVERSION}}
 
 archives:
   - id: ssherpa
-    format: tar.gz
+    formats:
+      - tar.gz
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
 
 checksum:
   name_template: 'checksums.txt'

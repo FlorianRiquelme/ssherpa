@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/renameio/v2"
+	"github.com/google/renameio/v2/maybe"
 
 	"github.com/florianriquelme/ssherpa/internal/domain"
 )
@@ -65,7 +65,7 @@ func WriteSSHIncludeFile(servers []*domain.Server, includePath string) error {
 	}
 
 	// Write atomically with renameio (ensures 0600 permissions)
-	if err := renameio.WriteFile(includePath, []byte(content.String()), 0600); err != nil {
+	if err := maybe.WriteFile(includePath, []byte(content.String()), 0600); err != nil {
 		return fmt.Errorf("write SSH include file: %w", err)
 	}
 
@@ -137,7 +137,7 @@ func EnsureIncludeDirective(sshConfigPath, includePath string) error {
 	}
 
 	// Write atomically with renameio
-	if err := renameio.WriteFile(sshConfigPath, []byte(newContent.String()), 0600); err != nil {
+	if err := maybe.WriteFile(sshConfigPath, []byte(newContent.String()), 0600); err != nil {
 		return fmt.Errorf("write SSH config: %w", err)
 	}
 
