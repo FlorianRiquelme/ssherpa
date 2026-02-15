@@ -73,6 +73,13 @@ type Filterer interface {
 	FilterServers(ctx context.Context, filters ServerFilter) ([]*domain.Server, error)
 }
 
+// Syncer is an optional interface for backends that support on-demand synchronization.
+// Type-assert to Syncer to trigger a sync cycle (e.g., after user signs in).
+type Syncer interface {
+	SyncFromBackend(ctx context.Context) error
+	GetStatus() BackendStatus
+}
+
 // ServerFilter captures filter criteria for server queries.
 // All fields are optional (zero values ignored).
 type ServerFilter struct {
