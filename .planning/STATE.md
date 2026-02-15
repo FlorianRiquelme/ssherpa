@@ -96,13 +96,13 @@ Recent decisions affecting current work:
 - [Phase 05-03]: RestoreHost function in undo.go (avoids modifying Plan 01 writer files)
 - [Phase 05-03]: Status flash messages for delete/undo feedback
 - [Phase 06-01]: Client interface abstraction for testability (MockClient enables testing without real 1Password)
-- [Phase 06-01]: Tag-based discovery with case-insensitive "sshjesus" tag filtering across all vaults
+- [Phase 06-01]: Tag-based discovery with case-insensitive "ssherpa" tag filtering across all vaults
 - [Phase 06-01]: Skip vaults with errors (permission issues don't fail entire list operation)
 - [Phase 06-01]: Projects as tags not entities (1Password doesn't have standalone project concept)
 - [Phase 06-01]: Lowercase "server" category matches 1Password API expectations
 - [Phase 06-02]: Prepend Include directive to ~/.ssh/config (not append) for first-match-wins SSH semantics
 - [Phase 06-02]: ForwardAgent detected via tags or notes convention (1Password doesn't have native field)
-- [Phase 06-02]: Exclude sshjesus_config entries from conflict detection (auto-detect by SourceFile path)
+- [Phase 06-02]: Exclude ssherpa_config entries from conflict detection (auto-detect by SourceFile path)
 - [Phase 06-02]: 1Password always wins conflicts per requirement (Winner="onepassword")
 - [Phase 06-03]: Separate sync from list operations (ListServers returns cached data, SyncFromOnePassword handles fetching)
 - [Phase 06-03]: BackendStatus enum with 4 states (Unknown/Available/Locked/Unavailable) for precise status reporting
@@ -132,7 +132,7 @@ Recent decisions affecting current work:
 
 - ~~**Wizard SDK wiring (06-05):**~~ DONE (commit 745339d). Uses service account token via OP_SERVICE_ACCOUNT_TOKEN env var or manual paste.
 - **Re-run E2E checkpoint (06-05 Task 3):** Re-test all 6 scenarios from the checkpoint with real 1Password service account.
-- **Rename tool to ssherpa:** Rename from "sshjesus" to "ssherpa" across codebase, Go module, configs, docs, and Phase 8 distribution plan.
+- **Rename tool to ssherpa:** Rename from "ssherpa" to "ssherpa" across codebase, Go module, configs, docs, and Phase 8 distribution plan.
 - ~~**Fix selected server highlight readability:**~~ DONE (commit dd4eea6). AdaptiveColor for selectedStyle/pickerSelectedStyle — dark indigo bg on dark terminals, light indigo bg on light terminals.
 - **Fix 1Password status banner showing unavailable when unlocked:** Banner says 1Password unavailable even when desktop app is unlocked — likely `op` CLI not signed in vs service account token issue.
 

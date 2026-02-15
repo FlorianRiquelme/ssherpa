@@ -6,7 +6,7 @@
 <domain>
 ## Phase Boundary
 
-1Password backend adapter that stores and syncs SSH server configurations via 1Password SDK. Enables team credential sharing through shared vaults. Servers sync to local storage (SSH config include file + sshjesus TOML) for offline availability. CRUD operations for connections are Phase 5; advanced SSH features are Phase 7.
+1Password backend adapter that stores and syncs SSH server configurations via 1Password SDK. Enables team credential sharing through shared vaults. Servers sync to local storage (SSH config include file + ssherpa TOML) for offline availability. CRUD operations for connections are Phase 5; advanced SSH features are Phase 7.
 
 </domain>
 
@@ -27,18 +27,18 @@
 - When a server exists in both ssh-config AND 1Password, 1Password wins
 
 ### Team sharing model
-- sshjesus scans ALL accessible vaults (not configured to specific vaults)
-- Items are discoverable via a specific tag (e.g., `sshjesus`) — that's how sshjesus identifies its managed items
-- Existing vault-per-customer organization stays as-is — sshjesus works with whatever vault structure exists
-- Migration wizard offered to convert existing unstructured SSH items to sshjesus format with proper tags
+- ssherpa scans ALL accessible vaults (not configured to specific vaults)
+- Items are discoverable via a specific tag (e.g., `ssherpa`) — that's how ssherpa identifies its managed items
+- Existing vault-per-customer organization stays as-is — ssherpa works with whatever vault structure exists
+- Migration wizard offered to convert existing unstructured SSH items to ssherpa format with proper tags
 - Real-time sync — changes by team members appear immediately
 - Personal vault items are supported — users can tag items in their Private vault for personal-only servers
 
 ### Sync to local storage
 - 1Password is the source of truth; synced down to local for offline/fallback
-- Sync targets: both `~/.ssh/sshjesus_config` (include file) AND sshjesus local TOML config
-- SSH config sync uses a separate include file (`~/.ssh/sshjesus_config`) with an `Include` directive added to `~/.ssh/config` — fully isolated, never touches user's existing SSH entries
-- Local TOML gets the extra sshjesus-specific fields (project path, project tags, custom metadata)
+- Sync targets: both `~/.ssh/ssherpa_config` (include file) AND ssherpa local TOML config
+- SSH config sync uses a separate include file (`~/.ssh/ssherpa_config`) with an `Include` directive added to `~/.ssh/config` — fully isolated, never touches user's existing SSH entries
+- Local TOML gets the extra ssherpa-specific fields (project path, project tags, custom metadata)
 - Sync triggers: on launch + on every change (add/edit/remove in 1Password)
 - Conflict detection: if a server exists in both 1Password and user's original ssh-config (not the synced include file), show a warning and let the user decide
 
@@ -51,7 +51,7 @@
 ### Claude's Discretion
 - 1Password SDK authentication approach (desktop app integration, service accounts)
 - Item field mapping and custom field naming in 1Password
-- Tag naming convention for sshjesus-managed items
+- Tag naming convention for ssherpa-managed items
 - Sync conflict resolution UI details
 - Include directive placement strategy in ssh-config
 - Polling interval for auto-detect when 1Password becomes available
@@ -61,10 +61,10 @@
 <specifics>
 ## Specific Ideas
 
-- "We already have existing vaults per customer, each SSH connection is stored there — but not with a uniform structure. sshjesus needs to dictate how to store this."
+- "We already have existing vaults per customer, each SSH connection is stored there — but not with a uniform structure. ssherpa needs to dictate how to store this."
 - Remote project path per server — so users can SSH directly into the correct folder without remembering where it is
 - Tag-based discovery across all vaults rather than vault-specific configuration
-- Migration wizard to bring existing unstructured SSH items into sshjesus format
+- Migration wizard to bring existing unstructured SSH items into ssherpa format
 
 </specifics>
 

@@ -317,6 +317,6 @@ Phase 1 (Project detection) - Robust parsing with fallbacks; Phase 3 (Edge cases
 - [Go Cross-Platform Binary Issues](https://github.com/golang/go/issues/48540)
 
 ---
-*Pitfalls research for: sshjesus - SSH Connection Management TUI*
+*Pitfalls research for: ssherpa - SSH Connection Management TUI*
 *Researched: 2026-02-14*
 *Confidence: MEDIUM-HIGH (WebSearch verified with official sources; some LOW confidence items flagged)*

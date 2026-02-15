@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
+	backendpkg "github.com/florianriquelme/ssherpa/internal/backend"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -34,7 +34,7 @@ func TestSyncFromOnePassword_Success(t *testing.T) {
 		Title:    "Production Server",
 		VaultID:  vaultID,
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "prod.example.com"},
 			{Title: "user", Value: "deploy"},

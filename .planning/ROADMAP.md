@@ -1,4 +1,4 @@
-# Roadmap: sshjesus
+# Roadmap: ssherpa
 
 ## Overview
 
@@ -43,7 +43,7 @@ Plans:
 **Depends on**: Phase 1
 **Requirements**: CONN-01
 **Success Criteria** (what must be TRUE):
-  1. User can launch sshjesus and see all connections from ~/.ssh/config
+  1. User can launch ssherpa and see all connections from ~/.ssh/config
   2. Config parser preserves formatting, comments, and Include directives
   3. TUI renders server list with basic keyboard navigation (arrow keys, Enter)
   4. Connection details display hostname, user, port, and key path
@@ -145,7 +145,7 @@ Plans:
 **Requirements**: DIST-01
 **Success Criteria** (what must be TRUE):
   1. GoReleaser produces single binaries for macOS, Linux, and Windows
-  2. Homebrew tap allows `brew install sshjesus`
+  2. Homebrew tap allows `brew install ssherpa`
   3. GitHub releases include checksums and installation instructions
   4. Binary runs on all supported platforms without additional dependencies
   5. Terminal compatibility tested across iTerm2, Alacritty, Windows Terminal, and tmux

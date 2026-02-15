@@ -183,7 +183,7 @@ import (
     "sort"
 
     "github.com/sahilm/fuzzy"
-    "github.com/florianriquelme/sshjesus/internal/domain"
+    "github.com/florianriquelme/ssherpa/internal/domain"
 )
 
 // SearchServers performs fuzzy search with current project prioritization.

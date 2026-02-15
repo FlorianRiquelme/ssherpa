@@ -20,7 +20,7 @@ All 11 must-have truths from the plan have been verified against the actual code
 
 | # | Truth | Status | Evidence |
 |---|-------|--------|----------|
-| 1 | User can launch sshjesus and see all connections from ~/.ssh/config in a navigable list | ✓ VERIFIED | `main.go` wires config loading → TUI launch, `model.go` loads config async via `loadConfigCmd` → `ParseSSHConfig` → `configLoadedMsg` → list populated |
+| 1 | User can launch ssherpa and see all connections from ~/.ssh/config in a navigable list | ✓ VERIFIED | `main.go` wires config loading → TUI launch, `model.go` loads config async via `loadConfigCmd` → `ParseSSHConfig` → `configLoadedMsg` → list populated |
 | 2 | Server list shows two lines per entry: name + hostname on first line, user/port on second | ✓ VERIFIED | `list_view.go:23-44` implements `Title()` returning "Name (hostname)" and `Description()` returning "User: {user} \| Port: {port}" |
 | 3 | Wildcard entries (Host *) appear in a separate section at the bottom of the list | ✓ VERIFIED | `model.go:83-98` uses `OrganizeHosts` to separate wildcards, appends `separatorItem` ("--- Wildcard Entries ---"), then wildcard items |
 | 4 | User can navigate the list with arrow keys (up/down) and see selection highlight | ✓ VERIFIED | `model.go:163-192` delegates arrow keys to list component, `Update()` method handles `tea.KeyMsg`, list component provides built-in navigation |
@@ -45,7 +45,7 @@ All artifacts from plan 02-02 verified at all three levels (exists, substantive,
 | `internal/tui/detail_view.go` | Detail view rendering all SSH config options for selected host | ✓ VERIFIED | 110 lines (exceeds 40 line minimum), `renderDetailView()` function iterates `AllOptions` map, shows source tracking |
 | `internal/tui/styles.go` | Lipgloss style definitions with AdaptiveColor for light/dark terminals | ✓ VERIFIED | 91 lines (exceeds 20 line minimum), uses `lipgloss.AdaptiveColor` for all colors (accentColor, secondaryColor, warningColor, borderColor) |
 | `internal/tui/messages.go` | Custom Bubbletea messages for async config loading | ✓ VERIFIED | 14 lines, exports `configLoadedMsg` (carries `[]sshconfig.SSHHost` and `error`) |
-| `cmd/sshjesus/main.go` | Entry point wiring config loader, backend, and TUI together | ✓ VERIFIED | 51 lines (exceeds 20 line minimum), calls `config.Load`, determines SSH config path, creates `tui.New`, runs `tea.Program` with alt screen |
+| `cmd/ssherpa/main.go` | Entry point wiring config loader, backend, and TUI together | ✓ VERIFIED | 51 lines (exceeds 20 line minimum), calls `config.Load`, determines SSH config path, creates `tui.New`, runs `tea.Program` with alt screen |
 
 **All artifacts:**
 - Level 1 (Exists): ✓ All files exist
@@ -61,8 +61,8 @@ All 5 key links from plan verified as wired:
 | `internal/tui/model.go` | `internal/sshconfig/parser.go` | SSHHost data for list items | ✓ WIRED | `model.go:27,31` declares `*sshconfig.SSHHost` and `[]sshconfig.SSHHost`, `loadConfigCmd` calls `ParseSSHConfig` |
 | `internal/tui/model.go` | `charmbracelet/bubbletea` | tea.Model interface implementation | ✓ WIRED | `model.go:112` implements `Update(msg tea.Msg) (tea.Model, tea.Cmd)` method |
 | `internal/tui/list_view.go` | `charmbracelet/bubbles/list` | list.Item and list.DefaultDelegate | ✓ WIRED | `list_view.go:10` comment references `list.Item`, implements `FilterValue()`, `Title()`, `Description()` methods |
-| `cmd/sshjesus/main.go` | `internal/sshconfig/backend.go` | backend construction from config | ✓ WIRED | `main.go:16` calls `config.Load`, determines backend (sshconfig), TUI async loads via parser (backend not directly used in Phase 2, planned for Phase 3+) |
-| `cmd/sshjesus/main.go` | `internal/config/config.go` | config.Load for backend selection | ✓ WIRED | `main.go:16` calls `config.Load("")`, handles `ErrConfigNotFound`, uses `cfg.Backend` to determine which backend |
+| `cmd/ssherpa/main.go` | `internal/sshconfig/backend.go` | backend construction from config | ✓ WIRED | `main.go:16` calls `config.Load`, determines backend (sshconfig), TUI async loads via parser (backend not directly used in Phase 2, planned for Phase 3+) |
+| `cmd/ssherpa/main.go` | `internal/config/config.go` | config.Load for backend selection | ✓ WIRED | `main.go:16` calls `config.Load("")`, handles `ErrConfigNotFound`, uses `cfg.Backend` to determine which backend |
 
 **Note on Link 4:** The sshconfig backend is not directly instantiated in main.go (TUI loads config directly via parser). This is acceptable for Phase 2 as the backend adapter exists and will be used in Phase 3 when connection execution requires the Backend interface. Parser provides read-only access for display purposes.
 
@@ -102,7 +102,7 @@ Specifically checked:
 - Spinner: verified via spinner initialization and conditional display
 
 **Optional manual testing** (recommended for UX validation, but not required for verification):
-1. Build and run: `go run ./cmd/sshjesus/`
+1. Build and run: `go run ./cmd/ssherpa/`
 2. Verify visual appearance matches design intent
 3. Test color scheme in both light and dark terminal themes
 4. Verify keyboard navigation feels responsive
@@ -118,7 +118,7 @@ Specifically checked:
 
 ### Build Verification
 ```bash
-$ go build -o /tmp/sshjesus ./cmd/sshjesus/
+$ go build -o /tmp/ssherpa ./cmd/ssherpa/
 # Success (no output)
 
 $ go vet ./...

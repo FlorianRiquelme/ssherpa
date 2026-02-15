@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
+	backendpkg "github.com/florianriquelme/ssherpa/internal/backend"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -47,7 +47,7 @@ func TestPoller_DetectsAvailability(t *testing.T) {
 		Title:    "Test Server",
 		VaultID:  "vault-1",
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "test.example.com"},
 			{Title: "user", Value: "testuser"},
@@ -78,7 +78,7 @@ func TestPoller_DetectsUnavailability(t *testing.T) {
 		Title:    "Test Server",
 		VaultID:  "vault-1",
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "test.example.com"},
 			{Title: "user", Value: "testuser"},
@@ -174,7 +174,7 @@ func TestPoller_SkipsSyncAfterRecentWrite(t *testing.T) {
 		Title:    "Test Server",
 		VaultID:  "vault-1",
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "test.example.com"},
 			{Title: "user", Value: "testuser"},

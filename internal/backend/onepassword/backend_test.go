@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/florianriquelme/sshjesus/internal/backend"
-	"github.com/florianriquelme/sshjesus/internal/domain"
-	"github.com/florianriquelme/sshjesus/internal/errors"
+	"github.com/florianriquelme/ssherpa/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +24,7 @@ func TestListServers(t *testing.T) {
 		Title:    "Server 1",
 		VaultID:  "vault-1",
 		Category: "server",
-		Tags:     []string{"sshjesus", "production"},
+		Tags:     []string{"ssherpa", "production"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "server1.example.com", FieldType: "Text"},
 			{Title: "user", Value: "admin", FieldType: "Text"},
@@ -36,7 +36,7 @@ func TestListServers(t *testing.T) {
 		Title:    "Server 2",
 		VaultID:  "vault-2",
 		Category: "server",
-		Tags:     []string{"sshjesus", "dev"},
+		Tags:     []string{"ssherpa", "dev"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "server2.example.com", FieldType: "Text"},
 			{Title: "user", Value: "ubuntu", FieldType: "Text"},
@@ -65,7 +65,7 @@ func TestListServers(t *testing.T) {
 	servers, err := b.ListServers(ctx)
 	require.NoError(t, err)
 
-	// Should return exactly 2 servers (filtered by sshjesus tag)
+	// Should return exactly 2 servers (filtered by ssherpa tag)
 	assert.Len(t, servers, 2)
 
 	// Verify server IDs
@@ -90,7 +90,7 @@ func TestListServersSkipsErrorVaults(t *testing.T) {
 		Title:    "Good Server",
 		VaultID:  "vault-good",
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "good.example.com", FieldType: "Text"},
 			{Title: "user", Value: "admin", FieldType: "Text"},
@@ -123,7 +123,7 @@ func TestGetServerFound(t *testing.T) {
 		Title:    "Test Server",
 		VaultID:  "vault-1",
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "test.example.com", FieldType: "Text"},
 			{Title: "user", Value: "testuser", FieldType: "Text"},
@@ -204,7 +204,7 @@ func TestUpdateServer(t *testing.T) {
 		Title:    "Old Title",
 		VaultID:  "vault-1",
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "old.example.com", FieldType: "Text"},
 			{Title: "user", Value: "olduser", FieldType: "Text"},
@@ -247,7 +247,7 @@ func TestDeleteServer(t *testing.T) {
 		Title:    "Server to Delete",
 		VaultID:  "vault-1",
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "delete.example.com", FieldType: "Text"},
 			{Title: "user", Value: "admin", FieldType: "Text"},

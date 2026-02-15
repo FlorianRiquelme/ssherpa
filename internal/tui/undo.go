@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/florianriquelme/sshjesus/internal/sshconfig"
+	"github.com/florianriquelme/ssherpa/internal/sshconfig"
 )
 
 // UndoEntry represents a deleted Host block that can be restored.

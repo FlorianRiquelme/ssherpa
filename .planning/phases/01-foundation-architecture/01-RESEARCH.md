@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 1 establishes the pluggable backend architecture for sshjesus using Go best practices for domain-driven design and interface-based extensibility. The research confirms that Go's standard library patterns (particularly `database/sql`) provide proven blueprints for implementing pluggable backends with optional methods via type assertions. The domain models (Server, Project, Credential) should be completely database-agnostic, with backends handling only storage CRUD operations. Go's ecosystem offers mature tooling for configuration management (XDG base directory specification), SSH config parsing, and mock-based testing.
+Phase 1 establishes the pluggable backend architecture for ssherpa using Go best practices for domain-driven design and interface-based extensibility. The research confirms that Go's standard library patterns (particularly `database/sql`) provide proven blueprints for implementing pluggable backends with optional methods via type assertions. The domain models (Server, Project, Credential) should be completely database-agnostic, with backends handling only storage CRUD operations. Go's ecosystem offers mature tooling for configuration management (XDG base directory specification), SSH config parsing, and mock-based testing.
 
 **Primary recommendation:** Follow the `database/sql` package pattern: create a thin user-facing API layer that wraps a pluggable backend interface, support optional backend capabilities via type assertions, and keep domain types completely separate from storage concerns.
 
@@ -20,7 +20,7 @@ Phase 1 establishes the pluggable backend architecture for sshjesus using Go bes
 - VPN requirement flag lets the TUI warn users before connecting to a server that needs VPN
 - **Project** = named group of servers (e.g., "payments-api"). Git remote URL is one detection method, but servers can also be manually assigned to projects
 - A server can belong to **multiple projects** (shared infra spanning teams)
-- **Credential** = auth reference, not a secret store. Points to a key file path, SSH agent, or marks "password auth". Actual secrets live in the filesystem, 1Password, or agent — not in sshjesus
+- **Credential** = auth reference, not a secret store. Points to a key file path, SSH agent, or marks "password auth". Actual secrets live in the filesystem, 1Password, or agent — not in ssherpa
 
 #### Backend capabilities
 - Backends handle **storage only** (CRUD for servers, projects, credentials). Operational tasks (connectivity checks, import, sync) live outside the backend interface
@@ -30,7 +30,7 @@ Phase 1 establishes the pluggable backend architecture for sshjesus using Go bes
 
 #### Multi-backend strategy
 - **One backend active at a time** — user picks ssh config OR 1Password, not both simultaneously
-- Backend selection via **config file** (~/.config/sshjesus or similar)
+- Backend selection via **config file** (~/.config/ssherpa or similar)
 - **First run with no config → interactive setup wizard** prompts user to pick a backend and creates the config file (DEFERRED to Phase 2+)
 - **Switching backends via TUI settings screen** — discoverable, not just config file editing (DEFERRED to Phase 2+)
 
@@ -92,9 +92,9 @@ go get github.com/BurntSushi/toml  # or yaml.v3, depending on config format choi
 
 ### Recommended Project Structure
 ```
-sshjesus/
+ssherpa/
 ├── cmd/
-│   └── sshjesus/        # Main executable entry point (minimal logic)
+│   └── ssherpa/        # Main executable entry point (minimal logic)
 ├── internal/
 │   ├── domain/          # Domain models (Server, Project, Credential)
 │   ├── backend/         # Backend interface + implementations
@@ -110,7 +110,7 @@ sshjesus/
 ```
 
 **Rationale:**
-- `/cmd/sshjesus` contains minimal `main()` that imports from `/internal`
+- `/cmd/ssherpa` contains minimal `main()` that imports from `/internal`
 - `/internal` prevents external packages from importing private code
 - Domain models live in `/internal/domain` — completely database-agnostic
 - Backend implementations are separate packages under `/internal/backend`
@@ -127,7 +127,7 @@ sshjesus/
 **Example:**
 ```go
 // Source: https://eli.thegreenplace.net/2019/design-patterns-in-gos-databasesql-package/
-// Adapted for sshjesus domain
+// Adapted for ssherpa domain
 
 package backend
 
@@ -253,7 +253,7 @@ type AppConfig struct {
 
 func Load() (*AppConfig, error) {
     // Search for existing config file across XDG search paths
-    configPath, err := xdg.SearchConfigFile("sshjesus/config.toml")
+    configPath, err := xdg.SearchConfigFile("ssherpa/config.toml")
     if err != nil {
         // Config doesn't exist — return default or trigger setup wizard
         return nil, ErrConfigNotFound
@@ -268,7 +268,7 @@ func Load() (*AppConfig, error) {
 
 func Save(cfg *AppConfig) error {
     // ConfigFile creates directories if they don't exist
-    configPath, err := xdg.ConfigFile("sshjesus/config.toml")
+    configPath, err := xdg.ConfigFile("ssherpa/config.toml")
     if err != nil {
         return fmt.Errorf("failed to create config path: %w", err)
     }
@@ -572,7 +572,7 @@ type Config struct {
 }
 
 func LoadOrDefault() (*Config, error) {
-    configPath, err := xdg.SearchConfigFile("sshjesus/config.toml")
+    configPath, err := xdg.SearchConfigFile("ssherpa/config.toml")
     if err != nil {
         // Config doesn't exist yet — return default config
         return &Config{
@@ -589,7 +589,7 @@ func LoadOrDefault() (*Config, error) {
 }
 
 func (c *Config) Save() error {
-    configPath, err := xdg.ConfigFile("sshjesus/config.toml")
+    configPath, err := xdg.ConfigFile("ssherpa/config.toml")
     if err != nil {
         return fmt.Errorf("failed to create config directory: %w", err)
     }
@@ -618,8 +618,8 @@ import (
     "context"
     "sync"
 
-    "github.com/yourorg/sshjesus/internal/domain"
-    "github.com/yourorg/sshjesus/internal/errors"
+    "github.com/yourorg/ssherpa/internal/domain"
+    "github.com/yourorg/ssherpa/internal/errors"
 )
 
 type Backend struct {

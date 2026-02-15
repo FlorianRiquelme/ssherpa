@@ -4,10 +4,10 @@ import (
 	"context"
 	"strings"
 
-	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
-	"github.com/florianriquelme/sshjesus/internal/domain"
-	"github.com/florianriquelme/sshjesus/internal/errors"
-	"github.com/florianriquelme/sshjesus/internal/sync"
+	backendpkg "github.com/florianriquelme/ssherpa/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/errors"
+	"github.com/florianriquelme/ssherpa/internal/sync"
 )
 
 // GetStatus returns the current backend status (thread-safe).

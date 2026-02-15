@@ -51,7 +51,7 @@ metrics:
 
 JSON-lines append-only history tracking with three core functions:
 
-- **`RecordConnection(path, hostName, hostname, user)`** — Appends connection record with timestamp, working directory, host details to `~/.ssh/sshjesus_history.json` (0600 permissions)
+- **`RecordConnection(path, hostName, hostname, user)`** — Appends connection record with timestamp, working directory, host details to `~/.ssh/ssherpa_history.json` (0600 permissions)
 - **`GetLastConnectedForPath(historyPath, workingDir)`** — Returns most recent connection for current directory (enables "connect to last-used server" UX)
 - **`GetRecentHosts(historyPath, limit)`** — Returns map of host names to latest timestamps (for "recently connected" badges in TUI)
 

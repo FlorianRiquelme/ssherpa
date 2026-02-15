@@ -24,7 +24,7 @@ tech_stack:
 key_files:
   created:
     - go.mod
-    - cmd/sshjesus/main.go
+    - cmd/ssherpa/main.go
     - internal/domain/server.go
     - internal/domain/project.go
     - internal/domain/credential.go
@@ -125,7 +125,7 @@ Created comprehensive error system:
 
 All success criteria met:
 
-- ✅ Go module `github.com/florianriquelme/sshjesus` initialized with Go 1.24+
+- ✅ Go module `github.com/florianriquelme/ssherpa` initialized with Go 1.24+
 - ✅ Server struct has all 14 user-specified fields
 - ✅ Project struct has GitRemoteURLs for detection
 - ✅ Credential struct uses CredentialType enum
@@ -172,9 +172,9 @@ All success criteria met:
 ### File Structure
 
 ```
-github.com/florianriquelme/sshjesus/
+github.com/florianriquelme/ssherpa/
 ├── go.mod
-├── cmd/sshjesus/main.go (entry point scaffold)
+├── cmd/ssherpa/main.go (entry point scaffold)
 └── internal/
     ├── domain/
     │   ├── server.go (Server type)
@@ -206,7 +206,7 @@ All future work depends on these domain types and interfaces.
 
 **Checking created files:**
 ```bash
-$ ls -la cmd/sshjesus/main.go internal/domain/*.go internal/errors/errors.go internal/backend/backend.go go.mod
+$ ls -la cmd/ssherpa/main.go internal/domain/*.go internal/errors/errors.go internal/backend/backend.go go.mod
 ```
 ✅ All files exist
 
@@ -229,7 +229,7 @@ $ go vet ./...
 ```bash
 $ grep -r "json:" internal/domain/
 # (no results)
-$ grep "github.com/florianriquelme/sshjesus/internal" internal/domain/*.go
+$ grep "github.com/florianriquelme/ssherpa/internal" internal/domain/*.go
 # (no results)
 ```
 ✅ Domain has no struct tags and no internal dependencies

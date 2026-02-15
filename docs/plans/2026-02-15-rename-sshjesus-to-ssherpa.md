@@ -1,8 +1,8 @@
-# Rename sshjesus to ssherpa — Implementation Plan
+# Rename ssherpa to ssherpa — Implementation Plan
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
-**Goal:** Rename the tool from "sshjesus" to "ssherpa" across the entire codebase — Go module, source, tests, and docs.
+**Goal:** Rename the tool from "ssherpa" to "ssherpa" across the entire codebase — Go module, source, tests, and docs.
 
 **Architecture:** Mechanical find-and-replace in stages: Go module path first (breaks compilation), then fix all imports (restores compilation), then string literals, then docs. Each stage is verified before moving on.
 
@@ -19,7 +19,7 @@
 
 In `go.mod`, change line 1:
 ```
-module github.com/florianriquelme/sshjesus
+module github.com/florianriquelme/ssherpa
 ```
 to:
 ```
@@ -30,7 +30,7 @@ module github.com/florianriquelme/ssherpa
 
 ```bash
 git add go.mod
-git commit --no-gpg-sign -m "refactor: rename Go module from sshjesus to ssherpa"
+git commit --no-gpg-sign -m "refactor: rename Go module from ssherpa to ssherpa"
 ```
 
 Note: The build will be broken until Task 2 completes (all imports still reference old module path).
@@ -40,25 +40,25 @@ Note: The build will be broken until Task 2 completes (all imports still referen
 ### Task 2: Rename cmd directory and update all Go import paths
 
 **Files:**
-- Rename: `cmd/sshjesus/` → `cmd/ssherpa/`
-- Modify: All 73 `.go` files — replace import path `github.com/florianriquelme/sshjesus/` with `github.com/florianriquelme/ssherpa/`
+- Rename: `cmd/ssherpa/` → `cmd/ssherpa/`
+- Modify: All 73 `.go` files — replace import path `github.com/florianriquelme/ssherpa/` with `github.com/florianriquelme/ssherpa/`
 
 **Step 1: Rename the cmd directory**
 
 ```bash
-git mv cmd/sshjesus cmd/ssherpa
+git mv cmd/ssherpa cmd/ssherpa
 ```
 
 **Step 2: Replace all import paths in every .go file**
 
 ```bash
-find . -name '*.go' -exec sed -i '' 's|github.com/florianriquelme/sshjesus/|github.com/florianriquelme/ssherpa/|g' {} +
+find . -name '*.go' -exec sed -i '' 's|github.com/florianriquelme/ssherpa/|github.com/florianriquelme/ssherpa/|g' {} +
 ```
 
 This updates import statements like:
 ```go
 // Before
-import "github.com/florianriquelme/sshjesus/internal/backend"
+import "github.com/florianriquelme/ssherpa/internal/backend"
 
 // After
 import "github.com/florianriquelme/ssherpa/internal/backend"
@@ -93,11 +93,11 @@ git commit --no-gpg-sign -m "refactor: rename cmd directory and update all impor
 
 **Files to modify (all under `internal/` and `cmd/`):**
 - `cmd/ssherpa/main.go` — path constants for history, cache, config
-- `internal/config/config.go` — XDG config path `sshjesus/config.toml`
-- `internal/history/history.go` — history filename `sshjesus_history.json`
-- `internal/sync/ssh_include.go` — include file path `sshjesus_config`
-- `internal/sync/conflict.go` — conflict detection for `sshjesus_config`
-- `internal/backend/onepassword/mapping.go` — 1Password tag `sshjesus`
+- `internal/config/config.go` — XDG config path `ssherpa/config.toml`
+- `internal/history/history.go` — history filename `ssherpa_history.json`
+- `internal/sync/ssh_include.go` — include file path `ssherpa_config`
+- `internal/sync/conflict.go` — conflict detection for `ssherpa_config`
+- `internal/backend/onepassword/mapping.go` — 1Password tag `ssherpa`
 - `internal/backend/onepassword/backend.go` — cache filename
 - `internal/tui/wizard.go` — wizard text references
 - `internal/tui/migration.go` — migration text references
@@ -123,18 +123,18 @@ git commit --no-gpg-sign -m "refactor: rename cmd directory and update all impor
 - `internal/errors/errors.go` — error messages
 - `internal/sync/toml_cache.go` — cache references
 
-**Step 1: Replace all remaining "sshjesus" string references in Go source files**
+**Step 1: Replace all remaining "ssherpa" string references in Go source files**
 
 ```bash
-find . -name '*.go' -exec sed -i '' 's/sshjesus/ssherpa/g' {} +
+find . -name '*.go' -exec sed -i '' 's/ssherpa/ssherpa/g' {} +
 ```
 
 This catches:
-- `sshjesus_config` → `ssherpa_config`
-- `sshjesus_history.json` → `ssherpa_history.json`
-- `sshjesus_1password_cache.toml` → `ssherpa_1password_cache.toml`
-- `sshjesus/config.toml` → `ssherpa/config.toml` (XDG path)
-- `"sshjesus"` tag → `"ssherpa"` tag (1Password)
+- `ssherpa_config` → `ssherpa_config`
+- `ssherpa_history.json` → `ssherpa_history.json`
+- `ssherpa_1password_cache.toml` → `ssherpa_1password_cache.toml`
+- `ssherpa/config.toml` → `ssherpa/config.toml` (XDG path)
+- `"ssherpa"` tag → `"ssherpa"` tag (1Password)
 - Any remaining comments or strings
 
 **Step 2: Verify build still compiles**
@@ -161,7 +161,7 @@ Spot-check these critical paths:
 
 ```bash
 git add -A
-git commit --no-gpg-sign -m "refactor: update all hardcoded sshjesus references to ssherpa in Go source"
+git commit --no-gpg-sign -m "refactor: update all hardcoded ssherpa references to ssherpa in Go source"
 ```
 
 ---
@@ -170,10 +170,10 @@ git commit --no-gpg-sign -m "refactor: update all hardcoded sshjesus references 
 
 **Files:** All `*_test.go` files (should already be updated by Task 3's sed, but verify)
 
-**Step 1: Verify no remaining "sshjesus" references in test files**
+**Step 1: Verify no remaining "ssherpa" references in test files**
 
 ```bash
-grep -r "sshjesus" --include="*_test.go" .
+grep -r "ssherpa" --include="*_test.go" .
 ```
 
 Expected: No matches. If any remain, update them manually.
@@ -190,7 +190,7 @@ Expected: All tests pass with the new paths and strings.
 
 ```bash
 git add -A
-git commit --no-gpg-sign -m "test: fix remaining sshjesus references in test files"
+git commit --no-gpg-sign -m "test: fix remaining ssherpa references in test files"
 ```
 
 ---
@@ -199,22 +199,22 @@ git commit --no-gpg-sign -m "test: fix remaining sshjesus references in test fil
 
 **Files:** All `.planning/**/*.md` files (69 files)
 
-**Step 1: Replace all "sshjesus" references in planning files**
+**Step 1: Replace all "ssherpa" references in planning files**
 
 ```bash
-find .planning -name '*.md' -exec sed -i '' 's/sshjesus/ssherpa/g' {} +
+find .planning -name '*.md' -exec sed -i '' 's/ssherpa/ssherpa/g' {} +
 ```
 
 **Step 2: Update design docs**
 
 ```bash
-find docs -name '*.md' -exec sed -i '' 's/sshjesus/ssherpa/g' {} +
+find docs -name '*.md' -exec sed -i '' 's/ssherpa/ssherpa/g' {} +
 ```
 
 **Step 3: Verify no remaining references**
 
 ```bash
-grep -r "sshjesus" .planning/ docs/ 2>/dev/null
+grep -r "ssherpa" .planning/ docs/ 2>/dev/null
 ```
 
 Expected: No matches (except possibly the rename todo itself describing the old name, which is fine).
@@ -223,7 +223,7 @@ Expected: No matches (except possibly the rename todo itself describing the old 
 
 ```bash
 git add -A
-git commit --no-gpg-sign -m "docs: rename sshjesus to ssherpa across all planning and documentation"
+git commit --no-gpg-sign -m "docs: rename ssherpa to ssherpa across all planning and documentation"
 ```
 
 ---
@@ -233,7 +233,7 @@ git commit --no-gpg-sign -m "docs: rename sshjesus to ssherpa across all plannin
 **Step 1: Delete the old compiled binary**
 
 ```bash
-rm -f sshjesus
+rm -f ssherpa
 ```
 
 **Step 2: Build the new binary**
@@ -252,10 +252,10 @@ go test ./...
 
 Expected: All tests pass.
 
-**Step 4: Verify no remaining "sshjesus" anywhere in tracked Go/config files**
+**Step 4: Verify no remaining "ssherpa" anywhere in tracked Go/config files**
 
 ```bash
-grep -r "sshjesus" --include="*.go" --include="*.toml" --include="*.mod" .
+grep -r "ssherpa" --include="*.go" --include="*.toml" --include="*.mod" .
 ```
 
 Expected: No matches.
@@ -274,7 +274,7 @@ git commit --no-gpg-sign -m "chore: cleanup old binary and verify complete renam
 **Step 7: Move todo to done**
 
 ```bash
-mv .planning/todos/pending/2026-02-14-rename-tool-from-sshjesus-to-ssherpa.md .planning/todos/done/ 2>/dev/null || true
+mv .planning/todos/pending/2026-02-14-rename-tool-from-ssherpa-to-ssherpa.md .planning/todos/done/ 2>/dev/null || true
 ```
 
 ---
@@ -284,9 +284,9 @@ mv .planning/todos/pending/2026-02-14-rename-tool-from-sshjesus-to-ssherpa.md .p
 After all tasks complete, these must be true:
 - [ ] `go build ./cmd/ssherpa/` succeeds
 - [ ] `go test ./...` passes all tests
-- [ ] `grep -r "sshjesus" --include="*.go" .` returns nothing
+- [ ] `grep -r "ssherpa" --include="*.go" .` returns nothing
 - [ ] `go.mod` says `module github.com/florianriquelme/ssherpa`
-- [ ] `cmd/ssherpa/main.go` exists (not cmd/sshjesus)
+- [ ] `cmd/ssherpa/main.go` exists (not cmd/ssherpa)
 - [ ] Config path is `ssherpa/config.toml`
 - [ ] SSH paths use `ssherpa_config`, `ssherpa_history.json`, `ssherpa_1password_cache.toml`
 - [ ] 1Password tag is `ssherpa`

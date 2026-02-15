@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/florianriquelme/sshjesus/internal/backend"
-	"github.com/florianriquelme/sshjesus/internal/backend/mock"
-	"github.com/florianriquelme/sshjesus/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/backend/mock"
+	"github.com/florianriquelme/ssherpa/internal/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

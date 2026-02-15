@@ -6,7 +6,7 @@ tags: [multi-backend, status-bar, aggregator, tui-integration]
 dependency_graph:
   requires: [internal/backend/backend.go, internal/backend/onepassword/status.go, internal/tui/model.go]
   provides: [internal/backend/multi.go, internal/backend/status.go, internal/tui/status_bar.go]
-  affects: [cmd/sshjesus/main.go, internal/config/config.go]
+  affects: [cmd/ssherpa/main.go, internal/config/config.go]
 tech_stack:
   added: []
   patterns:
@@ -30,7 +30,7 @@ key_files:
     - internal/tui/model.go: Added opStatus, opStatusBar fields; updated New(), Update(), View()
     - internal/tui/messages.go: Added onePasswordStatusMsg and backendServersUpdatedMsg
     - internal/tui/styles.go: Added statusBarWarningStyle and statusBarInfoStyle
-    - cmd/sshjesus/main.go: Updated to pass StatusUnknown to TUI (placeholder)
+    - cmd/ssherpa/main.go: Updated to pass StatusUnknown to TUI (placeholder)
 decisions:
   - title: Shared BackendStatus at backend level
     rationale: Avoids import cycles when TUI needs to reference status. Backend package is lower in dependency hierarchy than onepassword.
@@ -211,8 +211,8 @@ None - plan executed exactly as written.
 ```bash
 $ go test ./internal/backend/... -v
 PASS
-ok      github.com/florianriquelme/sshjesus/internal/backend            0.317s
-ok      github.com/florianriquelme/sshjesus/internal/backend/onepassword 1.923s
+ok      github.com/florianriquelme/ssherpa/internal/backend            0.317s
+ok      github.com/florianriquelme/ssherpa/internal/backend/onepassword 1.923s
 ```
 
 **Project compiles:**
@@ -245,22 +245,22 @@ $ go vet ./...
 ## Key Files
 
 **Created:**
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/multi.go` - MultiBackend aggregator with 400+ lines
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/multi_test.go` - 11 comprehensive tests
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/status.go` - Shared BackendStatus enum
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/tui/status_bar.go` - Status bar rendering component
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/multi.go` - MultiBackend aggregator with 400+ lines
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/multi_test.go` - 11 comprehensive tests
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/status.go` - Shared BackendStatus enum
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/tui/status_bar.go` - Status bar rendering component
 
 **Modified:**
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/config/config.go` - Added OnePasswordConfig, updated Validate()
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/status.go` - Use backendpkg.BackendStatus
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/backend.go` - Use backendpkg types
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/poller.go` - Use backendpkg.BackendStatus
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/status_test.go` - Updated status references
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/poller_test.go` - Updated status references
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/tui/model.go` - Added opStatus tracking, message handling, view updates
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/tui/messages.go` - Added new message types
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/tui/styles.go` - Added status bar styles
-- `/Users/florianriquelme/Repos/mine/sshjesus/cmd/sshjesus/main.go` - Pass StatusUnknown to TUI
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/config/config.go` - Added OnePasswordConfig, updated Validate()
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/status.go` - Use backendpkg.BackendStatus
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/backend.go` - Use backendpkg types
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/poller.go` - Use backendpkg.BackendStatus
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/status_test.go` - Updated status references
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/poller_test.go` - Updated status references
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/tui/model.go` - Added opStatus tracking, message handling, view updates
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/tui/messages.go` - Added new message types
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/tui/styles.go` - Added status bar styles
+- `/Users/florianriquelme/Repos/mine/ssherpa/cmd/ssherpa/main.go` - Pass StatusUnknown to TUI
 
 ## Next Steps (from ROADMAP)
 
@@ -283,7 +283,7 @@ FOUND: internal/tui/status_bar.go
 FOUND: internal/config/config.go (modified)
 FOUND: internal/backend/onepassword/status.go (modified)
 FOUND: internal/tui/model.go (modified)
-FOUND: cmd/sshjesus/main.go (modified)
+FOUND: cmd/ssherpa/main.go (modified)
 ```
 
 **Commits exist:**

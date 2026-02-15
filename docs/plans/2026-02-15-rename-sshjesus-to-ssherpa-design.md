@@ -1,11 +1,11 @@
-# Design: Rename sshjesus to ssherpa
+# Design: Rename ssherpa to ssherpa
 
 **Date:** 2026-02-15
 **Status:** Approved
 
 ## Context
 
-The tool is currently named "sshjesus" throughout the codebase. It needs to be renamed to "ssherpa" before Phase 8 (Distribution). This is pre-release, so no migration logic is needed.
+The tool is currently named "ssherpa" throughout the codebase. It needs to be renamed to "ssherpa" before Phase 8 (Distribution). This is pre-release, so no migration logic is needed.
 
 ## Scope
 
@@ -16,17 +16,17 @@ The tool is currently named "sshjesus" throughout the codebase. It needs to be r
 
 ### 1. Go Module & Imports
 
-- `go.mod`: `github.com/florianriquelme/sshjesus` -> `github.com/florianriquelme/ssherpa`
+- `go.mod`: `github.com/florianriquelme/ssherpa` -> `github.com/florianriquelme/ssherpa`
 - All internal Go files: update import paths
-- Rename directory `cmd/sshjesus/` -> `cmd/ssherpa/`
+- Rename directory `cmd/ssherpa/` -> `cmd/ssherpa/`
 
 ### 2. Hardcoded Paths & Strings
 
-- `~/.ssh/sshjesus_config` -> `~/.ssh/ssherpa_config`
-- `~/.ssh/sshjesus_history.json` -> `~/.ssh/ssherpa_history.json`
-- `~/.ssh/sshjesus_1password_cache.toml` -> `~/.ssh/ssherpa_1password_cache.toml`
-- XDG config: `sshjesus/config.toml` -> `ssherpa/config.toml`
-- 1Password tag: `sshjesus` -> `ssherpa`
+- `~/.ssh/ssherpa_config` -> `~/.ssh/ssherpa_config`
+- `~/.ssh/ssherpa_history.json` -> `~/.ssh/ssherpa_history.json`
+- `~/.ssh/ssherpa_1password_cache.toml` -> `~/.ssh/ssherpa_1password_cache.toml`
+- XDG config: `ssherpa/config.toml` -> `ssherpa/config.toml`
+- 1Password tag: `ssherpa` -> `ssherpa`
 
 ### 3. Tests
 
@@ -39,7 +39,7 @@ The tool is currently named "sshjesus" throughout the codebase. It needs to be r
 
 ### 5. Cleanup
 
-- Delete compiled `sshjesus` binary
+- Delete compiled `ssherpa` binary
 - Rebuild as `ssherpa`
 - Run `go build` and `go test` to verify
 

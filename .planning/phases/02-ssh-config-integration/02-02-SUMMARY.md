@@ -13,7 +13,7 @@ dependency_graph:
     - internal/tui/list_view.go (two-line list items)
     - internal/tui/detail_view.go (full SSH config detail view)
     - internal/tui/styles.go (adaptive color scheme)
-    - cmd/sshjesus/main.go (TUI entry point)
+    - cmd/ssherpa/main.go (TUI entry point)
   affects: []
 tech_stack:
   added:
@@ -35,7 +35,7 @@ key_files:
     - internal/tui/styles.go (91 lines)
     - internal/tui/messages.go (14 lines)
   modified:
-    - cmd/sshjesus/main.go (52 lines - TUI wiring)
+    - cmd/ssherpa/main.go (52 lines - TUI wiring)
     - go.mod (added Bubbletea dependencies)
     - go.sum (dependency checksums)
 decisions:
@@ -64,7 +64,7 @@ metrics:
 
 ## What Was Built
 
-Created a complete TUI application that reads `~/.ssh/config` and displays all SSH connections in a navigable interface. This is the first user-facing screen of sshjesus.
+Created a complete TUI application that reads `~/.ssh/config` and displays all SSH connections in a navigable interface. This is the first user-facing screen of ssherpa.
 
 **Key Components:**
 
@@ -99,7 +99,7 @@ Created a complete TUI application that reads `~/.ssh/config` and displays all S
    - Border color (slate): separators and panels
    - 11 reusable Lipgloss styles for consistent theming
 
-5. **Main Entry Point** (`cmd/sshjesus/main.go` - 52 lines):
+5. **Main Entry Point** (`cmd/ssherpa/main.go` - 52 lines):
    - Config loading with fallback to sshconfig backend
    - SSH config path resolution (~/.ssh/config)
    - Alt screen TUI launch (no terminal history pollution)
@@ -147,7 +147,7 @@ None. Plan executed exactly as written.
 
 All success criteria met (verified by human at checkpoint):
 
-- ✅ `go run ./cmd/sshjesus/` launches TUI showing SSH connections from ~/.ssh/config
+- ✅ `go run ./cmd/ssherpa/` launches TUI showing SSH connections from ~/.ssh/config
 - ✅ List shows two-line entries: name+hostname / user+port
 - ✅ Wildcard entries appear in separate section at bottom
 - ✅ Arrow keys navigate, Enter opens detail view, Esc returns to list
@@ -164,16 +164,16 @@ User confirmed TUI displays correctly, navigation works, colors render properly,
 ## Files Changed
 
 **Created:**
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/tui/model.go`
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/tui/list_view.go`
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/tui/detail_view.go`
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/tui/styles.go`
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/tui/messages.go`
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/tui/model.go`
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/tui/list_view.go`
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/tui/detail_view.go`
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/tui/styles.go`
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/tui/messages.go`
 
 **Modified:**
-- `/Users/florianriquelme/Repos/mine/sshjesus/cmd/sshjesus/main.go`
-- `/Users/florianriquelme/Repos/mine/sshjesus/go.mod`
-- `/Users/florianriquelme/Repos/mine/sshjesus/go.sum`
+- `/Users/florianriquelme/Repos/mine/ssherpa/cmd/ssherpa/main.go`
+- `/Users/florianriquelme/Repos/mine/ssherpa/go.mod`
+- `/Users/florianriquelme/Repos/mine/ssherpa/go.sum`
 
 ## Task Commits
 
@@ -185,7 +185,7 @@ User confirmed TUI displays correctly, navigation works, colors render properly,
 
 ## What's Next
 
-**Phase 2 Complete:** This plan completes Phase 2 (SSH Config Integration). Users can now run `sshjesus` and see all their SSH connections from `~/.ssh/config` in a navigable TUI.
+**Phase 2 Complete:** This plan completes Phase 2 (SSH Config Integration). Users can now run `ssherpa` and see all their SSH connections from `~/.ssh/config` in a navigable TUI.
 
 **Ready for Phase 3:** TUI foundation is ready for connection execution (Phase 3). The list view will need minimal changes to support Enter-to-connect (currently Enter opens detail, will need key remapping to d=detail, Enter=connect).
 
@@ -198,12 +198,12 @@ User confirmed TUI displays correctly, navigation works, colors render properly,
 ## Self-Check: PASSED
 
 **Files created:**
-- ✅ FOUND: /Users/florianriquelme/Repos/mine/sshjesus/internal/tui/model.go
-- ✅ FOUND: /Users/florianriquelme/Repos/mine/sshjesus/internal/tui/list_view.go
-- ✅ FOUND: /Users/florianriquelme/Repos/mine/sshjesus/internal/tui/detail_view.go
-- ✅ FOUND: /Users/florianriquelme/Repos/mine/sshjesus/internal/tui/styles.go
-- ✅ FOUND: /Users/florianriquelme/Repos/mine/sshjesus/internal/tui/messages.go
-- ✅ FOUND: /Users/florianriquelme/Repos/mine/sshjesus/cmd/sshjesus/main.go (modified)
+- ✅ FOUND: /Users/florianriquelme/Repos/mine/ssherpa/internal/tui/model.go
+- ✅ FOUND: /Users/florianriquelme/Repos/mine/ssherpa/internal/tui/list_view.go
+- ✅ FOUND: /Users/florianriquelme/Repos/mine/ssherpa/internal/tui/detail_view.go
+- ✅ FOUND: /Users/florianriquelme/Repos/mine/ssherpa/internal/tui/styles.go
+- ✅ FOUND: /Users/florianriquelme/Repos/mine/ssherpa/internal/tui/messages.go
+- ✅ FOUND: /Users/florianriquelme/Repos/mine/ssherpa/cmd/ssherpa/main.go (modified)
 
 **Commits exist:**
 - ✅ FOUND: e7f9ab3 (Task 1 - TUI model, views, styles, messages)
@@ -212,4 +212,4 @@ User confirmed TUI displays correctly, navigation works, colors render properly,
 **Build verification:**
 - ✅ go build ./... — compiles cleanly
 - ✅ go vet ./... — no warnings
-- ✅ go run ./cmd/sshjesus/ — launches TUI successfully
+- ✅ go run ./cmd/ssherpa/ — launches TUI successfully

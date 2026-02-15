@@ -1,4 +1,4 @@
-module github.com/florianriquelme/sshjesus
+module github.com/florianriquelme/ssherpa
 
 go 1.25.0
 

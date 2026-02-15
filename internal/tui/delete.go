@@ -8,8 +8,8 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/florianriquelme/sshjesus/internal/backend"
-	"github.com/florianriquelme/sshjesus/internal/sshconfig"
+	"github.com/florianriquelme/ssherpa/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/sshconfig"
 )
 
 // DeleteConfirm is a full-screen component for confirming server deletion

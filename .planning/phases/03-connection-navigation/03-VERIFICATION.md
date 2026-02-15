@@ -71,7 +71,7 @@ re_verification: false
 | `internal/tui/styles.go` | Styles for search bar, star indicator, no-matches empty state, min 80 lines | ✓ VERIFIED | 113 lines, all required styles present |
 | `internal/tui/messages.go` | Updated messages including SSH finished message re-export, min 10 lines | ✓ VERIFIED | 22 lines, historyLoadedMsg added |
 | `internal/config/config.go` | Config with ReturnToTUI field | ✓ VERIFIED | ReturnToTUI bool field in config.go:16 |
-| `cmd/sshjesus/main.go` | Updated main passing config and cwd to TUI, min 40 lines | ✓ VERIFIED | 69 lines, tui.New called with historyPath and returnToTUI |
+| `cmd/ssherpa/main.go` | Updated main passing config and cwd to TUI, min 40 lines | ✓ VERIFIED | 69 lines, tui.New called with historyPath and returnToTUI |
 
 ### Key Link Verification
 
@@ -79,7 +79,7 @@ re_verification: false
 
 | From | To | Via | Status | Details |
 |------|-----|-----|--------|---------|
-| internal/history/history.go | ~/.ssh/sshjesus_history.json | JSON append-only file I/O | ✓ WIRED | os.OpenFile with O_APPEND at history.go:31 |
+| internal/history/history.go | ~/.ssh/ssherpa_history.json | JSON append-only file I/O | ✓ WIRED | os.OpenFile with O_APPEND at history.go:31 |
 | internal/ssh/connect.go | os/exec | exec.Command with terminal I/O | ✓ WIRED | cmd.Stdin/Stdout/Stderr = os.Stdin/Stdout/Stderr at connect.go:23-25 |
 
 #### Plan 02 Key Links
@@ -91,7 +91,7 @@ re_verification: false
 | internal/tui/model.go | sahilm/fuzzy | fuzzy.FindFrom for real-time search | ✓ WIRED | fuzzy.FindFrom called in model.go:199 |
 | internal/tui/model.go | internal/tui/keys.go | key.Matches for input routing | ✓ WIRED | key.Matches used throughout Update() method with m.keys |
 | internal/tui/keys.go | bubbles/help | help.KeyMap interface (ShortHelp, FullHelp) | ✓ WIRED | KeyMap.ShortHelp at keys.go:28, KeyMap.FullHelp at keys.go:33 |
-| cmd/sshjesus/main.go | internal/tui/model.go | tui.New with config options | ✓ WIRED | tui.New called in main.go:55 |
+| cmd/ssherpa/main.go | internal/tui/model.go | tui.New with config options | ✓ WIRED | tui.New called in main.go:55 |
 
 ### Requirements Coverage
 
@@ -115,7 +115,7 @@ No anti-patterns found. Scanned files:
 - internal/tui/styles.go
 - internal/tui/messages.go
 - internal/config/config.go
-- cmd/sshjesus/main.go
+- cmd/ssherpa/main.go
 
 Results:
 - No TODO/FIXME/HACK/PLACEHOLDER comments
@@ -132,7 +132,7 @@ While automated checks passed, the following aspects need human verification for
 #### 1. End-to-End SSH Connection Flow
 
 **Test:** 
-1. Build and run: `go run ./cmd/sshjesus/`
+1. Build and run: `go run ./cmd/ssherpa/`
 2. Select a server from the list
 3. Press Enter to connect
 
@@ -209,7 +209,7 @@ While automated checks passed, the following aspects need human verification for
 **Expected:**
 - Star indicators persist across launches
 - Last-connected-for-directory preselection works correctly
-- History file created at ~/.ssh/sshjesus_history.json with 0600 permissions
+- History file created at ~/.ssh/ssherpa_history.json with 0600 permissions
 
 **Why human:** Requires multiple app launches from different directories, cross-session state persistence
 

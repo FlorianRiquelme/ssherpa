@@ -7,14 +7,14 @@ import (
 	"path/filepath"
 
 	tea "github.com/charmbracelet/bubbletea"
-	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
-	"github.com/florianriquelme/sshjesus/internal/backend/onepassword"
-	"github.com/florianriquelme/sshjesus/internal/config"
-	"github.com/florianriquelme/sshjesus/internal/errors"
-	"github.com/florianriquelme/sshjesus/internal/project"
-	"github.com/florianriquelme/sshjesus/internal/sshconfig"
-	"github.com/florianriquelme/sshjesus/internal/sync"
-	"github.com/florianriquelme/sshjesus/internal/tui"
+	backendpkg "github.com/florianriquelme/ssherpa/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/backend/onepassword"
+	"github.com/florianriquelme/ssherpa/internal/config"
+	"github.com/florianriquelme/ssherpa/internal/errors"
+	"github.com/florianriquelme/ssherpa/internal/project"
+	"github.com/florianriquelme/ssherpa/internal/sshconfig"
+	"github.com/florianriquelme/ssherpa/internal/sync"
+	"github.com/florianriquelme/ssherpa/internal/tui"
 )
 
 func main() {
@@ -73,7 +73,7 @@ func main() {
 	// Determine history path
 	historyPath := ""
 	if homeDir != "" {
-		historyPath = filepath.Join(homeDir, ".ssh", "sshjesus_history.json")
+		historyPath = filepath.Join(homeDir, ".ssh", "ssherpa_history.json")
 	}
 
 	// Get return-to-TUI config option (default: false = exit after SSH)
@@ -128,7 +128,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		cachePath := filepath.Join(homeDir, ".ssh", "sshjesus_1password_cache.toml")
+		cachePath := filepath.Join(homeDir, ".ssh", "ssherpa_1password_cache.toml")
 		opBackend = onepassword.NewWithCache(client, cachePath)
 
 		// Load from cache (best-effort, non-fatal) - TUI will show cached data instantly
@@ -164,7 +164,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		cachePath := filepath.Join(homeDir, ".ssh", "sshjesus_1password_cache.toml")
+		cachePath := filepath.Join(homeDir, ".ssh", "ssherpa_1password_cache.toml")
 		opBackend = onepassword.NewWithCache(clientBoth, cachePath)
 
 		// Load from cache (best-effort, non-fatal) - SSH config data is always available
@@ -196,7 +196,7 @@ func main() {
 			if status == backendpkg.StatusAvailable && !sshIncludeGenerated {
 				servers, err := opBackend.ListServers(context.Background())
 				if err == nil {
-					includeFile := filepath.Join(homeDir, ".ssh", "sshjesus_config")
+					includeFile := filepath.Join(homeDir, ".ssh", "ssherpa_config")
 					if err := sync.WriteSSHIncludeFile(servers, includeFile); err != nil {
 						fmt.Fprintf(os.Stderr, "Warning: Failed to write SSH include file: %v\n", err)
 					}

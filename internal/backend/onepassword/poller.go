@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	backendpkg "github.com/florianriquelme/sshjesus/internal/backend"
+	backendpkg "github.com/florianriquelme/ssherpa/internal/backend"
 )
 
 // Poller periodically checks 1Password availability and auto-recovers when it becomes available.

@@ -76,7 +76,7 @@ According to SUMMARY.md (lines 173-179), human verification was **completed and 
 
 The checkpoint plan (07-02-PLAN.md lines 261-304) specified detailed verification steps:
 
-1. ✓ Launch sshjesus and check key discovery
+1. ✓ Launch ssherpa and check key discovery
 2. ✓ Test from detail view (K keybinding to open picker)
 3. ✓ Test from add form (Enter on IdentityFile field)
 4. ✓ Test from edit form (pre-selection and checkmark)

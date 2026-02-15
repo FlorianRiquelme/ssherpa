@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"github.com/florianriquelme/sshjesus/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/backend"
 )
 
 // renderStatusBar renders the 1Password status bar based on availability.

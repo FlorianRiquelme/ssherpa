@@ -35,7 +35,7 @@ Parse `~/.ssh/config` (and Include'd files) and display all SSH connections in a
 - Missing or empty `~/.ssh/config`: show friendly empty state message with guidance on creating one
 - Show loading indicator (spinner or status text) while parsing config files
 - Use accent colors to distinguish structural elements (hostnames, users, ports) — not monochrome, not overwhelming
-- Read sshjesus TOML app config to determine which backend to use (integrate with Phase 1 config system)
+- Read ssherpa TOML app config to determine which backend to use (integrate with Phase 1 config system)
 
 ### Claude's Discretion
 - Detail view layout style (right panel vs bottom panel vs inline expansion)

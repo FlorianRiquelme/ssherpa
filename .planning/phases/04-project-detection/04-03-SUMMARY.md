@@ -24,7 +24,7 @@ key_files:
     - internal/tui/model.go
     - internal/tui/keys.go
     - internal/tui/styles.go
-    - cmd/sshjesus/main.go
+    - cmd/ssherpa/main.go
     - go.mod
     - go.sum
 decisions:
@@ -134,7 +134,7 @@ func SuggestProjects(serverHostname string, projects []ProjectMember) []Suggesti
   - internal/tui/model.go
   - internal/tui/keys.go
   - internal/tui/styles.go
-  - cmd/sshjesus/main.go
+  - cmd/ssherpa/main.go
 
 **Implementation:**
 
@@ -211,7 +211,7 @@ AssignProject: key.NewBinding(
 5. Sends `projectCreatedMsg`
 6. Picker closes, badges update
 
-**Main entry point (`cmd/sshjesus/main.go`):**
+**Main entry point (`cmd/ssherpa/main.go`):**
 - Passes app config path to `tui.New()` for persistence
 
 ### Task 3: Verify project picker and full Phase 4 workflow
@@ -219,7 +219,7 @@ AssignProject: key.NewBinding(
 - **Verification:** Human checkpoint completed
 
 **Issue discovered during verification:**
-- **Bug:** TUI received SSH config path (`~/.ssh/config`) instead of app config path (`~/.config/sshjesus/config.toml`)
+- **Bug:** TUI received SSH config path (`~/.ssh/config`) instead of app config path (`~/.config/ssherpa/config.toml`)
 - **Impact:** Project assignments silently failed to persist
 - **Root cause:** `tui.New()` signature didn't include app config path parameter
 - **Fix commit:** 359a341 - Added `appConfigPath` parameter to `tui.New()`, updated `saveConfig()` to use correct path with fallback
@@ -248,10 +248,10 @@ AssignProject: key.NewBinding(
 **1. [Rule 3 - Blocking] App config path not passed to TUI**
 - **Found during:** Task 3 (human verification checkpoint)
 - **Issue:** `tui.New()` received SSH config path instead of app config path, causing `config.Save()` to write to wrong location. Assignments appeared to work in-memory but didn't persist across sessions.
-- **Fix:** Added `appConfigPath string` parameter to `tui.New()`, updated `cmd/sshjesus/main.go` to pass correct path, updated `saveConfig()` to use `m.appConfigPath` with fallback to temp directory.
+- **Fix:** Added `appConfigPath string` parameter to `tui.New()`, updated `cmd/ssherpa/main.go` to pass correct path, updated `saveConfig()` to use `m.appConfigPath` with fallback to temp directory.
 - **Files modified:**
   - internal/tui/model.go
-  - cmd/sshjesus/main.go
+  - cmd/ssherpa/main.go
 - **Commit:** 359a341
 
 ## Success Criteria Met
@@ -366,7 +366,7 @@ Ready for **Phase 5:** 1Password integration (backend implementation).
 - internal/tui/model.go modified
 - internal/tui/keys.go modified
 - internal/tui/styles.go modified
-- cmd/sshjesus/main.go modified
+- cmd/ssherpa/main.go modified
 
 ✅ Commit verification:
 - 40f7b2b exists (Task 1 RED)

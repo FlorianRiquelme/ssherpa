@@ -28,7 +28,7 @@ Features that set product apart. Not expected, but valued.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| **Git remote auto-detection** | Auto-discover project servers from git remote URLs | Medium | Parse git remotes, extract hosts, suggest configs - UNIQUE to sshjesus |
+| **Git remote auto-detection** | Auto-discover project servers from git remote URLs | Medium | Parse git remotes, extract hosts, suggest configs - UNIQUE to ssherpa |
 | **Project-based organization** | Group connections by project not flat list | Low | Auto-detect from git context or manual grouping |
 | **1Password backend integration** | Secure credential storage + team sharing | Medium | Use `op` CLI for credential retrieval |
 | **Pluggable credential backends** | Users can choose their vault (1Password, Vault, etc) | High | Abstract credential interface, multiple implementations |
@@ -170,7 +170,7 @@ Prioritize:
 **Key differentiators:**
 - **Git remote auto-detection** - No competitor has this
 - **Project-based organization** - More intuitive than tags for dev workflows
-- **Pluggable credential backends** - Only sshjesus treats credentials as pluggable
+- **Pluggable credential backends** - Only ssherpa treats credentials as pluggable
 - **1Password-first** - Leverages existing tool devs already use
 
 ## TUI-Specific Considerations

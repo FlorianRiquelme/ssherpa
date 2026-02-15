@@ -18,7 +18,7 @@ Phase 2 requires parsing SSH config files (including Include directives) and dis
 - **Server list layout:** Two lines per server entry — name + hostname on first line, user/port on second. Show: Name, Hostname, User, Port (key path reserved for detail view). Sorted alphabetically by Host name. Wildcard entries (Host *) displayed in a separate section at the bottom.
 - **Config parsing scope:** Follow Include directives recursively. Ignore Match blocks entirely — only parse Host blocks. Use an existing Go SSH config parser library (e.g., kevinburke/ssh_config). Malformed/unreadable entries shown in the list with a warning indicator (not silently skipped).
 - **Detail view behavior:** Enter key opens detail view (does NOT connect — that's Phase 3). Detail view shows ALL SSH config options set for the host (IdentityFile, ProxyJump, ForwardAgent, etc.). Includes which config file the entry was defined in (source tracking).
-- **Initial launch experience:** Missing/empty `~/.ssh/config` shows friendly empty state message with guidance. Show loading indicator (spinner or status text) while parsing. Use accent colors to distinguish structural elements (hostnames, users, ports). Read sshjesus TOML app config to determine which backend to use (integrate with Phase 1 config system).
+- **Initial launch experience:** Missing/empty `~/.ssh/config` shows friendly empty state message with guidance. Show loading indicator (spinner or status text) while parsing. Use accent colors to distinguish structural elements (hostnames, users, ports). Read ssherpa TOML app config to determine which backend to use (integrate with Phase 1 config system).
 
 ### Claude's Discretion
 - Detail view layout style (right panel vs bottom panel vs inline expansion)

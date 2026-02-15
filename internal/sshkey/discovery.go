@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/florianriquelme/sshjesus/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/domain"
 )
 
 // DiscoverFileKeys discovers SSH private keys in the specified directory (usually ~/.ssh/).

@@ -63,7 +63,7 @@ Expected: Shows deletion of ~11 lines containing the wildcard display logic
 
 **Step 4: Build to verify no syntax errors**
 
-Run: `go build ./cmd/sshjesus`
+Run: `go build ./cmd/ssherpa`
 
 Expected: Clean build with no errors
 
@@ -135,7 +135,7 @@ Expected: Shows deletion of ~14 additional lines
 
 **Step 4: Build to verify no syntax errors**
 
-Run: `go build ./cmd/sshjesus`
+Run: `go build ./cmd/ssherpa`
 
 Expected: Clean build with no errors
 
@@ -198,7 +198,7 @@ Expected: No results (type completely removed)
 
 **Step 4: Build to verify no compilation errors**
 
-Run: `go build ./cmd/sshjesus`
+Run: `go build ./cmd/ssherpa`
 
 Expected: Clean build with no errors
 
@@ -242,7 +242,7 @@ Host dev-*
 
 **Step 2: Test with wildcards present**
 
-Run: `./sshjesus`
+Run: `./ssherpa`
 
 **Verify:**
 - ✅ No wildcard entries shown in the list
@@ -270,7 +270,7 @@ If projects are configured in your setup:
 
 Remove wildcard entries from `~/.ssh/config`, leaving only regular hosts.
 
-Run: `./sshjesus`
+Run: `./ssherpa`
 
 **Verify:**
 - ✅ List displays normally
@@ -301,7 +301,7 @@ Expected: All tests pass, including wildcard detection tests
 
 **Step 3: Verify build**
 
-Run: `go build ./cmd/sshjesus`
+Run: `go build ./cmd/ssherpa`
 
 Expected: Clean build
 

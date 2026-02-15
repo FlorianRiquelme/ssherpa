@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/florianriquelme/sshjesus/internal/backend"
-	"github.com/florianriquelme/sshjesus/internal/domain"
-	"github.com/florianriquelme/sshjesus/internal/errors"
+	"github.com/florianriquelme/ssherpa/internal/backend"
+	"github.com/florianriquelme/ssherpa/internal/domain"
+	"github.com/florianriquelme/ssherpa/internal/errors"
 )
 
 // Backend implements backend.Backend and backend.Writer with thread-safe in-memory storage.
