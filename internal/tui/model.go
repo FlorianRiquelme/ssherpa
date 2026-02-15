@@ -61,6 +61,7 @@ type Model struct {
 	keys          KeyMap               // Key bindings
 	help          help.Model           // Help footer component
 	searchKeys    SearchKeyMap         // Key bindings for search mode help
+	searchNavKeys key.Binding          // Arrow-only navigation for search mode
 	historyPath   string               // Path to history file
 	returnToTUI   bool                 // Config: return to TUI after SSH (default false)
 	recentHosts   map[string]time.Time // Recent connections for star indicator
@@ -123,6 +124,8 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 	searchKeys := SearchKeyMap{
 		ClearSearch: keys.ClearSearch,
 	}
+	// Arrow-only navigation for search mode (excludes j/k which are valid search chars)
+	searchNavKeys := key.NewBinding(key.WithKeys("up", "down"))
 	helpModel := help.New()
 
 	// Build project map for fast lookup
@@ -144,6 +147,7 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 		keys:             keys,
 		help:             helpModel,
 		searchKeys:       searchKeys,
+		searchNavKeys:    searchNavKeys,
 		historyPath:      historyPath,
 		returnToTUI:      returnToTUI,
 		recentHosts:      make(map[string]time.Time),
@@ -950,6 +954,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, m.connectToHost(item.host)
 					}
 
+
+			// Arrow key navigation in search mode
+			case key.Matches(msg, m.searchNavKeys):
+				var cmd tea.Cmd
+				m.list, cmd = m.list.Update(msg)
+				cmds = append(cmds, cmd)
+
+			// Tab to view details from search mode
+			case key.Matches(msg, m.keys.Details):
+				selectedItem := m.list.SelectedItem()
+				if selectedItem == nil {
+					return m, nil
+				}
+				if item, ok := selectedItem.(hostItem); ok {
+					m.detailHost = &item.host
+					m.detailSource = m.hostSources[item.host.Name]
+					m.viewMode = ViewDetail
+				}
 				default:
 					// Pass all other keys to search input
 					var cmd tea.Cmd
