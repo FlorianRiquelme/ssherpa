@@ -2,6 +2,7 @@ package onepassword
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,6 +11,14 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestBackend_ImplementsSyncer(t *testing.T) {
+	mock := NewMockClient()
+	b := New(mock)
+
+	// Verify onepassword.Backend satisfies backend.Syncer
+	var _ backendpkg.Syncer = b
+}
 
 func TestSyncFromOnePassword_Success(t *testing.T) {
 	mock := NewMockClient()
@@ -65,7 +74,7 @@ func TestSyncFromOnePassword_Locked(t *testing.T) {
 	mock := NewMockClient()
 
 	// Simulate 1Password locked (session expired)
-	mock.SetError("ListVaults", assert.AnError)
+	mock.SetError("ListVaults", fmt.Errorf("session expired"))
 
 	tmpDir := t.TempDir()
 	cachePath := filepath.Join(tmpDir, "cache.toml")
@@ -77,12 +86,36 @@ func TestSyncFromOnePassword_Locked(t *testing.T) {
 	err := backend.SyncFromOnePassword(ctx)
 	require.Error(t, err)
 
-	// Status should be Locked (for session expired) or Unavailable (for generic error)
-	// Since we can't easily simulate the exact "session expired" error string,
-	// we'll accept either Locked or Unavailable
-	status := backend.GetStatus()
-	assert.True(t, status == backendpkg.StatusLocked || status == backendpkg.StatusUnavailable,
-		"Status should be Locked or Unavailable when sync fails")
+	assert.Equal(t, backendpkg.StatusLocked, backend.GetStatus())
+}
+
+func TestSyncFromOnePassword_NotSignedIn(t *testing.T) {
+	tests := []struct {
+		name     string
+		errorMsg string
+	}{
+		{"not currently signed in", "You are not currently signed in"},
+		{"no active session", "no active session found for account my"},
+		{"signin prompt", "Please run `op signin` to sign in"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mock := NewMockClient()
+			mock.SetError("ListVaults", fmt.Errorf("%s", tt.errorMsg))
+
+			tmpDir := t.TempDir()
+			cachePath := filepath.Join(tmpDir, "cache.toml")
+
+			backend := NewWithCache(mock, cachePath)
+
+			ctx := context.Background()
+			err := backend.SyncFromOnePassword(ctx)
+			require.Error(t, err)
+
+			assert.Equal(t, backendpkg.StatusNotSignedIn, backend.GetStatus())
+		})
+	}
 }
 
 func TestSyncFromOnePassword_Unavailable(t *testing.T) {
@@ -209,6 +242,7 @@ func TestStatusString(t *testing.T) {
 		{backendpkg.StatusUnknown, "Unknown"},
 		{backendpkg.StatusAvailable, "Available"},
 		{backendpkg.StatusLocked, "Locked"},
+		{backendpkg.StatusNotSignedIn, "NotSignedIn"},
 		{backendpkg.StatusUnavailable, "Unavailable"},
 	}
 

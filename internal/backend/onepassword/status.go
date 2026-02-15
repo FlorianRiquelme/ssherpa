@@ -24,6 +24,12 @@ func (b *Backend) setStatus(s backendpkg.BackendStatus) {
 	b.status = s
 }
 
+// SyncFromBackend implements backend.Syncer.
+// It delegates to SyncFromOnePassword for the actual sync logic.
+func (b *Backend) SyncFromBackend(ctx context.Context) error {
+	return b.SyncFromOnePassword(ctx)
+}
+
 // SyncFromOnePassword attempts to sync servers from 1Password.
 // On success: sets status to Available, populates cache, writes to TOML cache.
 // On error: inspects error type to set status to Locked or Unavailable.
@@ -31,11 +37,17 @@ func (b *Backend) SyncFromOnePassword(ctx context.Context) error {
 	// Try to list vaults as a health check
 	vaults, err := b.client.ListVaults(ctx)
 	if err != nil {
-		// Inspect error to determine if locked vs unavailable
+		// Inspect error to determine locked vs not-signed-in vs unavailable
 		errStr := strings.ToLower(err.Error())
-		if strings.Contains(errStr, "session expired") || strings.Contains(errStr, "locked") {
+		switch {
+		case strings.Contains(errStr, "session expired") || strings.Contains(errStr, "locked"):
 			b.setStatus(backendpkg.StatusLocked)
-		} else {
+		case strings.Contains(errStr, "not signed in") ||
+			strings.Contains(errStr, "not currently signed in") ||
+			strings.Contains(errStr, "no active session") ||
+			strings.Contains(errStr, "signin"):
+			b.setStatus(backendpkg.StatusNotSignedIn)
+		default:
 			b.setStatus(backendpkg.StatusUnavailable)
 		}
 		return &errors.BackendError{

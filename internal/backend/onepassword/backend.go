@@ -27,6 +27,7 @@ type Backend struct {
 var (
 	_ backendpkg.Backend = (*Backend)(nil)
 	_ backendpkg.Writer  = (*Backend)(nil)
+	_ backendpkg.Syncer  = (*Backend)(nil)
 )
 
 // New creates a new 1Password backend with the given client.
