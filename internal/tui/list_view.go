@@ -74,22 +74,3 @@ func (h hostItem) Description() string {
 
 	return secondaryStyle.Render(fmt.Sprintf("User: %s | Port: %s", user, port))
 }
-
-// separatorItem is a non-interactive list item that displays a separator.
-// Used to separate wildcard entries from regular hosts.
-type separatorItem struct{}
-
-// FilterValue returns empty string (excluded from search).
-func (s separatorItem) FilterValue() string {
-	return ""
-}
-
-// Title returns the separator text.
-func (s separatorItem) Title() string {
-	return separatorStyle.Render("--- Wildcard Entries ---")
-}
-
-// Description returns empty string (no second line for separator).
-func (s separatorItem) Description() string {
-	return ""
-}
