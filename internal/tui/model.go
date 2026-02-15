@@ -636,19 +636,6 @@ func (m *Model) rebuildListItems() {
 		items = append(items, m.createHostItem(hwp.host, hwp.projects, hostProjectMap))
 	}
 
-	// 4. Wildcards at bottom
-	if len(wildcards) > 0 {
-		items = append(items, separatorItem{})
-		for _, host := range wildcards {
-			_, isRecent := m.recentHosts[host.Name]
-			items = append(items, hostItem{
-				host:          host,
-				lastConnected: isRecent,
-				projectBadges: nil,
-			})
-		}
-	}
-
 	m.list.SetItems(items)
 	m.preselectLastConnectedHost(items)
 }
