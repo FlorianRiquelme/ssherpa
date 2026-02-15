@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 ## Current Position
 
 Phase: 8 of 8 (Distribution) — IN PROGRESS
-Plan: 2 of 2 complete
-Status: Phase 8 Plan 02 Complete — Release automation configured
-Last activity: 2026-02-15 — Completed Phase 08 Plan 02: GoReleaser v2 configuration, GitHub Actions release workflow, and curl install script for automated multi-platform binary distribution with Homebrew tap integration.
+Plan: 2 of 3 complete
+Status: Phase 8 Plans 01-02 Complete — CLI flags, onboarding, and release automation configured
+Last activity: 2026-02-15 — Completed Phase 08 Plan 01: Version package with ldflags injection, CLI flags (--version, --setup), and first-run onboarding flow with SSH config detection and optional 1Password setup.
 
 Progress: [████████████████████████████████████████████████████████████████████████████████████████████████] 98%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 18 (plus 06-05 partial: 2/3 tasks)
-- Average duration: 613.7 seconds
-- Total execution time: 3.14 hours
+- Total plans completed: 19 (plus 06-05 partial: 2/3 tasks)
+- Average duration: 597.4 seconds
+- Total execution time: 3.18 hours
 
 **By Phase:**
 
@@ -34,17 +34,17 @@ Progress: [███████████████████████
 | 05    | 3     | 525s  | 175.0s   |
 | 06    | 4     | 1538s | 384.5s   |
 | 07    | 2     | 1554s | 777.0s   |
-| 08    | 1     | 138s  | 138.0s   |
+| 08    | 2     | 320s  | 160.0s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
+| 08    | 01   | 182s     | 2     | 3     |
 | 08    | 02   | 138s     | 2     | 3     |
 | 07    | 02   | 900s     | 3     | 9     |
 | 07    | 01   | 654s     | 1     | 8     |
 | 06    | 05   | 252s     | 2/3   | 4     |
-| 06    | 04   | 570s     | 2     | 14    |
 
 ## Accumulated Context
 
@@ -128,6 +128,9 @@ Recent decisions affecting current work:
 - [Phase 07-02]: Checkmark only for non-empty paths (agent keys with empty Path don't false-match)
 - [Phase 07-02]: Always parse SSH config for IdentityAgent (independent of backend mode)
 - [Phase 07-02]: Re-discover keys after hosts load (initial nil, re-trigger with full host context)
+- [Phase 08-01]: ldflags injection for version info (standard Go practice for embedding build metadata)
+- [Phase 08-01]: OnboardingDone field in config (simple boolean flag prevents re-showing onboarding)
+- [Phase 08-01]: SSH config host counting via kevinburke/ssh_config (reuses existing dependency, reliable parsing)
 - [Phase 08-02]: GoReleaser v2 for release automation (multi-platform builds, Homebrew tap, checksums)
 - [Phase 08-02]: Auto-push Homebrew formula to separate tap repository (TAP_GITHUB_TOKEN enables cross-repo push)
 - [Phase 08-02]: CGO_ENABLED=0 for all builds (pure Go binaries with no C dependencies)
@@ -154,7 +157,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-15 (Phase 08 Plan 02 complete)
-Stopped at: Completed 08-02-PLAN.md — GoReleaser configuration, GitHub Actions release workflow, and curl install script created. Ready for Phase 08 Plan 03 or wrap-up.
+Last session: 2026-02-15 (Phase 08 in progress)
+Stopped at: Completed 08-01-PLAN.md — CLI flags (--version, --setup) and first-run onboarding flow with SSH config detection. Plans 01-02 complete. Plan 03 remaining (Documentation).
 Resume file: None
-Resume command: Continue with remaining Phase 08 plans or finalize distribution
+Resume command: `/gsd:execute-phase 08` for Plan 03
