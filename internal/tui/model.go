@@ -426,6 +426,9 @@ func serversToSSHHosts(servers []*domain.Server) ([]sshconfig.SSHHost, map[strin
 			identityFiles = []string{srv.IdentityFile}
 		}
 
+		// Detect wildcards in backend server names (e.g., "*" or "*.example.com")
+		isWildcard := strings.Contains(name, "*") || strings.Contains(name, "?")
+
 		host := sshconfig.SSHHost{
 			Name:         name,
 			Hostname:     srv.Host,
@@ -435,7 +438,7 @@ func serversToSSHHosts(servers []*domain.Server) ([]sshconfig.SSHHost, map[strin
 			AllOptions:   allOptions,
 			SourceFile:   "", // Backend servers have no source file
 			SourceLine:   0,
-			IsWildcard:   false, // Backend servers are never wildcards
+			IsWildcard:   isWildcard,
 			ParseError:   nil,
 		}
 
