@@ -50,7 +50,7 @@ All artifacts from both plans verified:
 | internal/domain/validation.go | Validation methods on domain types | ✓ VERIFIED | 39 lines, contains Validate() for all three types |
 | internal/errors/errors.go | Sentinel errors and BackendError type with Unwrap() | ✓ VERIFIED | 45 lines, exports 8 sentinel errors, BackendError implements Unwrap() |
 | internal/backend/backend.go | Backend, Writer, Filterer interfaces | ✓ VERIFIED | 83 lines, defines all three interfaces with doc comments |
-| go.mod | Go module definition | ✓ VERIFIED | Exists, contains "module github.com/florianriquelme/sshjesus" |
+| go.mod | Go module definition | ✓ VERIFIED | Exists, contains "module github.com/florianriquelme/ssherpa" |
 | internal/backend/mock/mock.go | Thread-safe in-memory Backend + Writer implementation | ✓ VERIFIED | 452 lines, implements both interfaces with sync.RWMutex |
 | internal/backend/mock/mock_test.go | Comprehensive tests for mock backend CRUD and error paths | ✓ VERIFIED | 565 lines, 25 tests covering CRUD, errors, concurrency, copy semantics |
 | internal/config/config.go | XDG-based TOML config loading and saving | ✓ VERIFIED | 102 lines, uses xdg package and toml parsing |
@@ -154,7 +154,7 @@ None. All verification can be performed programmatically via compilation, tests,
 
 ### What This Phase Achieves
 
-Phase 1 establishes the **complete architectural foundation** for sshjesus:
+Phase 1 establishes the **complete architectural foundation** for ssherpa:
 
 1. **Domain Layer**: Storage-agnostic types (Server, Project, Credential) with validation
 2. **Backend Abstraction**: Minimal interface contract + optional capabilities (Writer, Filterer)

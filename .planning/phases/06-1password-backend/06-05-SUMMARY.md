@@ -13,7 +13,7 @@ dependency_graph:
     - setup-wizard-flow
     - migration-wizard-flow
   affects:
-    - cmd/sshjesus/main.go
+    - cmd/ssherpa/main.go
     - internal/config/config.go
 
 tech_stack:
@@ -30,7 +30,7 @@ key_files:
     - internal/tui/migration.go
   modified:
     - internal/config/config.go
-    - cmd/sshjesus/main.go
+    - cmd/ssherpa/main.go
 
 decisions:
   - "Wizard as separate tea.Program before main TUI (clean separation)"
@@ -87,7 +87,7 @@ Implemented `MigrationWizard` Bubbletea model with scanning/selection/migration 
 
 1. **Scanning Step** - Searches 1Password vaults for:
    - Items with category "Server" or "SSH"
-   - WITHOUT "sshjesus" tag (unmanaged items)
+   - WITHOUT "ssherpa" tag (unmanaged items)
    - Parses fields to determine completeness
 
 2. **Selection Step** - Checkbox list with indicators:
@@ -98,7 +98,7 @@ Implemented `MigrationWizard` Bubbletea model with scanning/selection/migration 
    - Pre-selects all complete items by default
 
 3. **Migration Step** - Tags selected items:
-   - Adds "sshjesus" tag to items
+   - Adds "ssherpa" tag to items
    - Normalizes field labels (hostname, user, port)
    - Handles incomplete items with inline prompts
 
@@ -121,9 +121,9 @@ None - plan executed as written. Both wizards implemented with placeholder logic
 
 **Verification:**
 - `grep "SetupWizard" internal/tui/wizard.go` - wizard type exists
-- `grep "Backend.*==" cmd/sshjesus/main.go` - empty backend check present
+- `grep "Backend.*==" cmd/ssherpa/main.go` - empty backend check present
 - `grep "MigrationWizard" internal/tui/migration.go` - migration wizard type exists
-- `grep "sshjesus" internal/tui/migration.go` - tag filtering logic present
+- `grep "ssherpa" internal/tui/migration.go` - tag filtering logic present
 
 **Manual Testing Required (Task 3 - Checkpoint):**
 Tasks 1 and 2 provide the UI scaffolding. Task 3 requires human verification with real 1Password desktop app to test:
@@ -161,7 +161,7 @@ Tasks 1 and 2 provide the UI scaffolding. Task 3 requires human verification wit
 ## Commits
 
 1. **abfa422** - feat(06-05): implement setup wizard for backend selection and 1Password configuration
-   - Files: internal/tui/wizard.go (new), internal/config/config.go, cmd/sshjesus/main.go
+   - Files: internal/tui/wizard.go (new), internal/config/config.go, cmd/ssherpa/main.go
 
 2. **061a4b8** - feat(06-05): implement migration wizard for existing 1Password SSH items
    - Files: internal/tui/migration.go (new)

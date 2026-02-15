@@ -1,6 +1,6 @@
 ---
 created: 2026-02-14T20:50:41.880Z
-title: Rename tool from sshjesus to ssherpa
+title: Rename tool from ssherpa to ssherpa
 area: general
 files:
   - .planning/STATE.md
@@ -10,14 +10,14 @@ files:
 
 ## Problem
 
-The tool is currently named "sshjesus" throughout the codebase, documentation, and planning files. It needs to be renamed to "ssherpa" before Phase 8 (Distribution) begins. This affects:
+The tool is currently named "ssherpa" throughout the codebase, documentation, and planning files. It needs to be renamed to "ssherpa" before Phase 8 (Distribution) begins. This affects:
 
 - Go module path and package references
 - Binary name and CLI commands
 - All planning documents and roadmap references
 - README and user-facing documentation
-- 1Password tag conventions (currently "sshjesus" tag for server discovery)
-- SSH config paths (e.g., `~/.ssh/sshjesus_config`)
+- 1Password tag conventions (currently "ssherpa" tag for server discovery)
+- SSH config paths (e.g., `~/.ssh/ssherpa_config`)
 - Repository name and git remote URLs
 
 ## Solution

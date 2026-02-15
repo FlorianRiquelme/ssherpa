@@ -1,13 +1,13 @@
 # Project Research Summary
 
-**Project:** sshjesus
+**Project:** ssherpa
 **Domain:** SSH Connection Management TUI with Pluggable Credential Backends
 **Researched:** 2026-02-14
 **Confidence:** HIGH
 
 ## Executive Summary
 
-sshjesus is a terminal-based SSH connection manager that differentiates itself through git-based project organization and pluggable credential backends (1Password first). Research shows this domain is well-established with multiple competitors (Termius, sshm, lazyssh), but none offer automatic project detection from git remotes or first-class vault integration. The recommended approach uses Go with Bubbletea v2 for the TUI, the official 1Password SDK for credentials, and hexagonal architecture for pluggable backends.
+ssherpa is a terminal-based SSH connection manager that differentiates itself through git-based project organization and pluggable credential backends (1Password first). Research shows this domain is well-established with multiple competitors (Termius, sshm, lazyssh), but none offer automatic project detection from git remotes or first-class vault integration. The recommended approach uses Go with Bubbletea v2 for the TUI, the official 1Password SDK for credentials, and hexagonal architecture for pluggable backends.
 
 The technical foundation is solid: Go's ecosystem for CLI tools is mature, Bubbletea v2 is production-ready despite being in beta, and the 1Password SDK provides official support. The main challenges aren't technical but operational: SSH key lifecycle management (preventing forgotten credentials), credential security in the plugin architecture (agent-blind design required), and Bubbletea's async patterns (avoiding blocking the event loop). These pitfalls have clear solutions and must be addressed from day one - retrofitting security and async patterns is expensive.
 
@@ -47,7 +47,7 @@ Research shows clear differentiation opportunity through git-based project organ
 - Connection status indicators
 
 **Should have (differentiators):**
-- Git remote auto-detection for project organization (UNIQUE to sshjesus)
+- Git remote auto-detection for project organization (UNIQUE to ssherpa)
 - 1Password backend integration for secure credentials
 - Pluggable credential backend interface
 - Team credential sharing via vault

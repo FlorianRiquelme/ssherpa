@@ -27,7 +27,7 @@ key_files:
     - internal/tui/styles.go
     - internal/tui/messages.go
     - internal/config/config.go
-    - cmd/sshjesus/main.go
+    - cmd/ssherpa/main.go
 decisions:
   - id: always-on-search-bar
     choice: Search bar always visible at top of screen
@@ -97,7 +97,7 @@ _Note: Task 1 was a comprehensive implementation touching 8 files with 548 inser
 - `internal/tui/messages.go` (+9 lines) - Added historyLoadedMsg for preselection data
 - `internal/config/config.go` (+5 lines) - Added ReturnToTUI bool field (default false = exit after SSH)
 - `internal/tui/detail_view.go` (+1 line) - Updated help footer text to reflect Tab/i key assignment
-- `cmd/sshjesus/main.go` (+11 lines) - Pass historyPath and returnToTUI to TUI constructor
+- `cmd/ssherpa/main.go` (+11 lines) - Pass historyPath and returnToTUI to TUI constructor
 
 ## Implementation Highlights
 

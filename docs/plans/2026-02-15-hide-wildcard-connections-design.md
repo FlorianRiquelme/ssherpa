@@ -60,7 +60,7 @@ The wildcard detection in the parser is clean, well-tested, and may be useful fo
 
 1. **With wildcards in SSH config:**
    - Add test entries: `Host *`, `Host *.example.com`, `Host dev-*`
-   - Launch sshjesus TUI
+   - Launch ssherpa TUI
    - **Verify:** No wildcard entries shown, no separator displayed
    - **Verify:** Regular hosts still display correctly
 

@@ -383,7 +383,7 @@ import (
 func GetHistoryPath() string {
     home, _ := os.UserHomeDir()
     // Store alongside SSH config
-    return filepath.Join(home, ".ssh", "sshjesus_history.json")
+    return filepath.Join(home, ".ssh", "ssherpa_history.json")
 }
 
 func RecordConnection(host config.SSHHost) error {
@@ -1125,7 +1125,7 @@ func recordConnection(hostName, hostname, user string) error {
 
     // Open in append mode
     f, err := os.OpenFile(
-        "~/.ssh/sshjesus_history.json",
+        "~/.ssh/ssherpa_history.json",
         os.O_CREATE|os.O_APPEND|os.O_WRONLY,
         0600,
     )
@@ -1140,7 +1140,7 @@ func recordConnection(hostName, hostname, user string) error {
 }
 
 func getLastForPath(path string) (*HistoryEntry, error) {
-    f, err := os.Open("~/.ssh/sshjesus_history.json")
+    f, err := os.Open("~/.ssh/ssherpa_history.json")
     if err != nil {
         if os.IsNotExist(err) {
             return nil, nil
@@ -1207,7 +1207,7 @@ func getLastForPath(path string) (*HistoryEntry, error) {
 4. **History file location: ~/.ssh/ vs XDG dirs?**
    - What we know: `~/.ssh/` keeps SSH-related data together, XDG is "proper" but spreads config across dirs
    - What's unclear: User preference, whether XDG compliance matters for this tool
-   - Recommendation: Use **`~/.ssh/sshjesus_history.json`** — keeps everything SSH-related in one place, easier to find/backup, follows OpenSSH config pattern
+   - Recommendation: Use **`~/.ssh/ssherpa_history.json`** — keeps everything SSH-related in one place, easier to find/backup, follows OpenSSH config pattern
 
 5. **Return-to-TUI config option naming?**
    - What we know: Default is "exit after SSH", need a flag to stay in TUI instead

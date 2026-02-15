@@ -382,8 +382,8 @@ func (u *UndoBuffer) UndoLast() (DeletedHost, bool) {
 **Why it happens:** Requirement says "session undo buffer" — deletions aren't stored on disk for recovery after app restart.
 
 **How to avoid:**
-1. Show clear messaging: "Undo available until you close sshjesus" or undo buffer indicator in status bar.
-2. Consider persisting to temp file (`~/.cache/sshjesus/undo.json`) for cross-session recovery (Claude's discretion).
+1. Show clear messaging: "Undo available until you close ssherpa" or undo buffer indicator in status bar.
+2. Consider persisting to temp file (`~/.cache/ssherpa/undo.json`) for cross-session recovery (Claude's discretion).
 
 **Warning signs:** User bug reports like "undo doesn't work after I restart."
 
@@ -613,7 +613,7 @@ func (m ConfirmDeleteModel) View() string {
 
 | Old Approach | Current Approach | When Changed | Impact |
 |--------------|------------------|--------------|--------|
-| Manual SSH config editing | TUI-based config management | 2020+ | Tools like `assh`, `storm` popularized; sshjesus fits this trend |
+| Manual SSH config editing | TUI-based config management | 2020+ | Tools like `assh`, `storm` popularized; ssherpa fits this trend |
 | String-based config writes | AST-preserving parsers | 2018+ (kevinburke/ssh_config) | Comments no longer lost during programmatic edits |
 | Sync validation on every keystroke | Blur validation (validate on field exit) | 2022+ (UX research) | Reduced interruption, better form completion rates |
 | `ioutil.WriteFile` for configs | Atomic writes with `renameio` | 2019+ (renameio release) | Prevents corruption from crashes/kills during write |
@@ -673,7 +673,7 @@ func (m ConfirmDeleteModel) View() string {
 
 **Recommendation:**
 - **Start with session-only undo** (simpler, matches requirement).
-- **Future enhancement:** Persist to `~/.cache/sshjesus/undo.json` (max 10 deletes, 24-hour TTL). Requires additional UX for "recovering old deletes."
+- **Future enhancement:** Persist to `~/.cache/ssherpa/undo.json` (max 10 deletes, 24-hour TTL). Requires additional UX for "recovering old deletes."
 
 ---
 

@@ -22,7 +22,7 @@ key_files:
     - internal/tui/list_view.go
     - internal/tui/messages.go
     - internal/tui/styles.go
-    - cmd/sshjesus/main.go
+    - cmd/ssherpa/main.go
 decisions:
   - decision: "Inline badges (not section headers or collapsible sections)"
     rationale: "Simpler implementation, clearer visual hierarchy, works at any terminal width"
@@ -47,7 +47,7 @@ metrics:
 
 ## Objective Achieved
 
-Transformed the flat server list into a project-organized view with visual badges, intelligent grouping, and search prioritization. When launched from a git repository, servers from the current project automatically float to the top. This is the core UX differentiator of sshjesus.
+Transformed the flat server list into a project-organized view with visual badges, intelligent grouping, and search prioritization. When launched from a git repository, servers from the current project automatically float to the top. This is the core UX differentiator of ssherpa.
 
 ## Tasks Completed
 
@@ -60,7 +60,7 @@ Transformed the flat server list into a project-organized view with visual badge
   - internal/tui/list_view.go
   - internal/tui/messages.go
   - internal/tui/styles.go
-  - cmd/sshjesus/main.go
+  - cmd/ssherpa/main.go
 
 **Implementation:**
 
@@ -70,7 +70,7 @@ Transformed the flat server list into a project-organized view with visual badge
 - Uses lipgloss AdaptiveColor from project colors
 - Padding(0, 1) for inline display
 
-**Main entry point (`cmd/sshjesus/main.go`):**
+**Main entry point (`cmd/ssherpa/main.go`):**
 - Calls `project.DetectCurrentProject()` at startup
 - Loads `config.Projects` from TOML config
 - Passes both `currentProjectID` and `projects` to `tui.New()`
@@ -181,7 +181,7 @@ None - plan executed exactly as written.
 - `internal/tui/list_view.go` - Project badge display in Title()
 - `internal/tui/messages.go` - Project separator item
 - `internal/tui/styles.go` - Badge and separator styles
-- `cmd/sshjesus/main.go` - Project detection at startup
+- `cmd/ssherpa/main.go` - Project detection at startup
 
 ## Decisions Made
 
@@ -220,7 +220,7 @@ The project detection foundation (Phase 4) provides the context-awareness that w
 - internal/tui/list_view.go modified
 - internal/tui/messages.go modified
 - internal/tui/styles.go modified
-- cmd/sshjesus/main.go modified
+- cmd/ssherpa/main.go modified
 
 ✅ Commit verification:
 - 494ac77 exists (Task 1 implementation)

@@ -127,7 +127,7 @@ var _ backend.Writer = (*Backend)(nil)
   - TOML struct tags for serialization
 - **DefaultConfig()**: Returns Config with Version 1, empty Backend (signals setup needed)
 - **Validate()**: Rejects empty Backend (setup wizard deferred to Phase 2+)
-- **DefaultPath()**: Returns XDG config path (`xdg.ConfigFile("sshjesus/config.toml")`)
+- **DefaultPath()**: Returns XDG config path (`xdg.ConfigFile("ssherpa/config.toml")`)
 - **Load(path string)**:
   - If path empty, searches XDG config directories
   - Returns ErrConfigNotFound if file doesn't exist

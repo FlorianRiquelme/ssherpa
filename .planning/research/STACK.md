@@ -1,6 +1,6 @@
 # Technology Stack
 
-**Project:** sshjesus
+**Project:** ssherpa
 **Researched:** 2026-02-14
 **Overall Confidence:** HIGH
 
@@ -43,7 +43,7 @@
 - **Use koanf if:** Configuration needs are simple, want minimal dependencies, need custom providers
 - **Use Viper if:** Standard configuration patterns, tight Cobra integration needed, team familiarity
 
-**For sshjesus:** Recommend **Viper** - Standard choice, Cobra integration, config file + env vars pattern matches SSH tool conventions
+**For ssherpa:** Recommend **Viper** - Standard choice, Cobra integration, config file + env vars pattern matches SSH tool conventions
 
 **Confidence:** HIGH for Cobra (industry standard), MEDIUM for Viper (koanf is viable alternative)
 
@@ -167,9 +167,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 ## Project Structure
 
 ```
-sshjesus/
+ssherpa/
 ├── cmd/
-│   └── sshjesus/
+│   └── ssherpa/
 │       └── main.go          # Minimal main, wire up deps
 ├── internal/
 │   ├── tui/                 # Bubbletea models/views
@@ -195,8 +195,8 @@ sshjesus/
 **GoReleaser Configuration:**
 ```yaml
 builds:
-  - main: ./cmd/sshjesus
-    binary: sshjesus
+  - main: ./cmd/ssherpa
+    binary: ssherpa
     goos: [linux, darwin, windows]
     goarch: [amd64, arm64]
 

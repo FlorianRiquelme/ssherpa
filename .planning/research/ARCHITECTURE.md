@@ -63,9 +63,9 @@ External Dependencies:
 ## Recommended Project Structure
 
 ```
-sshjesus/
+ssherpa/
 ├── cmd/
-│   └── sshjesus/
+│   └── ssherpa/
 │       └── main.go              # Entry point, wires up dependencies
 ├── internal/
 │   ├── tui/                     # TUI layer (presentation)
@@ -95,7 +95,7 @@ sshjesus/
 
 ### Structure Rationale
 
-- **cmd/sshjesus/:** Single binary entry point, keeps main package clean and focused on wiring
+- **cmd/ssherpa/:** Single binary entry point, keeps main package clean and focused on wiring
 - **internal/tui/:** Encapsulates all Bubbletea-specific code, models, and styling separate from business logic
 - **internal/core/:** Pure business logic with no TUI dependencies, making it testable and reusable
 - **internal/adapters/:** Each backend gets its own package, clear separation, easy to add new backends
@@ -345,7 +345,7 @@ func (m Model) fetchServersCmd() tea.Cmd {
 
 ```go
 // WRONG
-import "github.com/you/sshjesus/internal/adapters/onepassword"
+import "github.com/you/ssherpa/internal/adapters/onepassword"
 
 type Model struct {
     backend *onepassword.OnePasswordAdapter  // Tight coupling!
@@ -501,5 +501,5 @@ Based on dependency analysis, recommended implementation sequence:
 - [Terminal UI: BubbleTea vs Ratatui](https://www.glukhov.org/post/2026/02/tui-frameworks-bubbletea-go-vs-ratatui-rust/) - Framework comparison
 
 ---
-*Architecture research for: sshjesus SSH management TUI*
+*Architecture research for: ssherpa SSH management TUI*
 *Researched: 2026-02-14*

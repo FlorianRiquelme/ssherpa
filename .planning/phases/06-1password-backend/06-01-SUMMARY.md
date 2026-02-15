@@ -35,7 +35,7 @@ decisions:
   - title: Lowercase "server" category
     rationale: Matches 1Password API expectations for item categories
     alternatives: "Server" with capital (failed tests)
-  - title: Tag-based discovery with "sshjesus" tag
+  - title: Tag-based discovery with "ssherpa" tag
     rationale: Simple filtering mechanism, case-insensitive matching for robustness
     alternatives: Dedicated vault (limits flexibility), naming convention (fragile)
   - title: Skip vaults with errors
@@ -86,7 +86,7 @@ Core 1Password backend adapter that enables reading/writing server configs to 1P
 1Password item structure:
 - **Category:** "server"
 - **Title:** DisplayName
-- **Tags:** Includes "sshjesus" (case-insensitive)
+- **Tags:** Includes "ssherpa" (case-insensitive)
 - **Fields:** hostname, user, port, identity_file, remote_project_path, project_tags, proxy_jump
 
 Conversion features:
@@ -94,7 +94,7 @@ Conversion features:
 - **Port Default:** Defaults to 22 if not specified
 - **Project Tags:** Comma-separated string split into ProjectIDs array
 - **Round-Trip Lossless:** ServerToItem -> ItemToServer preserves all data
-- **Tag Deduplication:** Ensures single "sshjesus" tag, no duplicates
+- **Tag Deduplication:** Ensures single "ssherpa" tag, no duplicates
 
 ### Backend Architecture
 
@@ -124,7 +124,7 @@ Conversion features:
 - Minimal item conversion (hostname+user only, port defaults to 22)
 - Missing hostname/user validation
 - Round-trip lossless conversion
-- Case-insensitive "sshjesus" tag detection
+- Case-insensitive "ssherpa" tag detection
 - Tag deduplication
 
 **Backend Tests (9):**
@@ -189,7 +189,7 @@ Conversion features:
 ```bash
 $ go test ./internal/backend/onepassword/... -v -count=1
 PASS
-ok      github.com/florianriquelme/sshjesus/internal/backend/onepassword        0.237s
+ok      github.com/florianriquelme/ssherpa/internal/backend/onepassword        0.237s
 ```
 
 **Project compiles:**
@@ -221,17 +221,17 @@ VaultID           string   // line 23 in server.go
 ## Key Files
 
 **Created:**
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/client.go` - SDK client wrapper with Client interface, SDKClient implementation
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/client_test.go` - MockClient implementation with error injection
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/mapping.go` - ItemToServer, ServerToItem, HasSshjesusTag functions
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/mapping_test.go` - 9 mapping tests with 100% coverage
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/backend.go` - Backend implementation with 14 interface methods
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/backend_test.go` - 9 backend tests covering CRUD and errors
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/client.go` - SDK client wrapper with Client interface, SDKClient implementation
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/client_test.go` - MockClient implementation with error injection
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/mapping.go` - ItemToServer, ServerToItem, HasSshjesusTag functions
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/mapping_test.go` - 9 mapping tests with 100% coverage
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/backend.go` - Backend implementation with 14 interface methods
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/backend_test.go` - 9 backend tests covering CRUD and errors
 
 **Modified:**
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/domain/server.go` - Added RemoteProjectPath and VaultID fields
-- `/Users/florianriquelme/Repos/mine/sshjesus/go.mod` - Added 1Password SDK v0.4.0-beta.2 dependency
-- `/Users/florianriquelme/Repos/mine/sshjesus/go.sum` - Dependency checksums
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/domain/server.go` - Added RemoteProjectPath and VaultID fields
+- `/Users/florianriquelme/Repos/mine/ssherpa/go.mod` - Added 1Password SDK v0.4.0-beta.2 dependency
+- `/Users/florianriquelme/Repos/mine/ssherpa/go.sum` - Dependency checksums
 
 ## Next Steps (from ROADMAP)
 
@@ -247,7 +247,7 @@ VaultID           string   // line 23 in server.go
 - Handle 1Password-specific errors in TUI
 
 **Plan 06-04:** Sync command implementation
-- Implement `sshjesus sync` command
+- Implement `ssherpa sync` command
 - Trigger ListServers to sync from 1Password
 - Display sync progress and results
 

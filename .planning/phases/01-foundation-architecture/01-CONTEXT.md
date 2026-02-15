@@ -18,7 +18,7 @@ Establish the pluggable backend architecture with domain models (Server, Project
 - VPN requirement flag lets the TUI warn users before connecting to a server that needs VPN
 - **Project** = named group of servers (e.g., "payments-api"). Git remote URL is one detection method, but servers can also be manually assigned to projects
 - A server can belong to **multiple projects** (shared infra spanning teams)
-- **Credential** = auth reference, not a secret store. Points to a key file path, SSH agent, or marks "password auth". Actual secrets live in the filesystem, 1Password, or agent — not in sshjesus
+- **Credential** = auth reference, not a secret store. Points to a key file path, SSH agent, or marks "password auth". Actual secrets live in the filesystem, 1Password, or agent — not in ssherpa
 
 ### Backend capabilities
 - Backends handle **storage only** (CRUD for servers, projects, credentials). Operational tasks (connectivity checks, import, sync) live outside the backend interface
@@ -28,7 +28,7 @@ Establish the pluggable backend architecture with domain models (Server, Project
 
 ### Multi-backend strategy
 - **One backend active at a time** — user picks ssh config OR 1Password, not both simultaneously
-- Backend selection via **config file** (~/.config/sshjesus or similar)
+- Backend selection via **config file** (~/.config/ssherpa or similar)
 - **First run with no config → interactive setup wizard** prompts user to pick a backend and creates the config file
 - **Switching backends via TUI settings screen** — discoverable, not just config file editing
 

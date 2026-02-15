@@ -46,7 +46,7 @@ Phase 04 successfully delivers automatic project detection from git remotes with
 | internal/tui/badges.go | Project badge rendering with inline colored labels | ✓ VERIFIED | Exports RenderProjectBadge; white text on colored background; lipgloss styling |
 | internal/tui/model.go | TUI model with project-aware grouping and search | ✓ VERIFIED | Contains currentProjectID field; rebuildListItems() groups by project; filterHosts() prioritizes current project |
 | internal/tui/list_view.go | Host items with project badge display | ✓ VERIFIED | Contains projectBadges field in hostItem; Title() renders badges inline after hostname |
-| cmd/sshjesus/main.go | Main entry point passing project context to TUI | ✓ VERIFIED | Contains DetectCurrentProject() call at line 56; passes currentProjectID to tui.New() |
+| cmd/ssherpa/main.go | Main entry point passing project context to TUI | ✓ VERIFIED | Contains DetectCurrentProject() call at line 56; passes currentProjectID to tui.New() |
 
 #### Plan 04-03: Project Picker & Manual Assignment
 
@@ -71,7 +71,7 @@ Phase 04 successfully delivers automatic project detection from git remotes with
 
 | From | To | Via | Status | Details |
 |------|----|----|--------|---------|
-| cmd/sshjesus/main.go | internal/project/detector.go | project.DetectCurrentProject() at startup | ✓ WIRED | Line 56: `project.DetectCurrentProject()` |
+| cmd/ssherpa/main.go | internal/project/detector.go | project.DetectCurrentProject() at startup | ✓ WIRED | Line 56: `project.DetectCurrentProject()` |
 | internal/tui/model.go | internal/project/colors.go | project.ProjectColor for badge rendering | ✓ WIRED | Line 499: `project.ProjectColor(pc.ID)` |
 | internal/tui/model.go | internal/config/config.go | config.ProjectConfig for project data | ✓ WIRED | Field types and config.Load/Save calls throughout |
 | internal/tui/list_view.go | internal/tui/badges.go | RenderProjectBadge in Title() | ✓ WIRED | Line 45: `RenderProjectBadge(badge.name, badge.color)` |
@@ -134,7 +134,7 @@ From ROADMAP.md Phase 4 Requirements:
 - Issue: App config path not passed to TUI, assignments didn't persist
 - Root cause: tui.New() received SSH config path instead of app config path
 - Fix: Added appConfigPath parameter to tui.New() (commit 359a341)
-- Result: Assignments now persist correctly to ~/.config/sshjesus/config.toml
+- Result: Assignments now persist correctly to ~/.config/ssherpa/config.toml
 
 ## Overall Status: PASSED
 

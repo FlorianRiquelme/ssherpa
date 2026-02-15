@@ -135,14 +135,14 @@ All success criteria met:
 ## Files Changed
 
 **Created:**
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/sshconfig/parser.go`
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/sshconfig/parser_test.go`
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/sshconfig/backend.go`
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/sshconfig/backend_test.go`
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/sshconfig/parser.go`
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/sshconfig/parser_test.go`
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/sshconfig/backend.go`
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/sshconfig/backend_test.go`
 
 **Modified:**
-- `/Users/florianriquelme/Repos/mine/sshjesus/go.mod`
-- `/Users/florianriquelme/Repos/mine/sshjesus/go.sum`
+- `/Users/florianriquelme/Repos/mine/ssherpa/go.mod`
+- `/Users/florianriquelme/Repos/mine/ssherpa/go.sum`
 
 ## Task Commits
 
@@ -164,10 +164,10 @@ All success criteria met:
 ## Self-Check: PASSED
 
 **Files created:**
-- ✅ FOUND: /Users/florianriquelme/Repos/mine/sshjesus/internal/sshconfig/parser.go
-- ✅ FOUND: /Users/florianriquelme/Repos/mine/sshjesus/internal/sshconfig/parser_test.go
-- ✅ FOUND: /Users/florianriquelme/Repos/mine/sshjesus/internal/sshconfig/backend.go
-- ✅ FOUND: /Users/florianriquelme/Repos/mine/sshjesus/internal/sshconfig/backend_test.go
+- ✅ FOUND: /Users/florianriquelme/Repos/mine/ssherpa/internal/sshconfig/parser.go
+- ✅ FOUND: /Users/florianriquelme/Repos/mine/ssherpa/internal/sshconfig/parser_test.go
+- ✅ FOUND: /Users/florianriquelme/Repos/mine/ssherpa/internal/sshconfig/backend.go
+- ✅ FOUND: /Users/florianriquelme/Repos/mine/ssherpa/internal/sshconfig/backend_test.go
 
 **Commits exist:**
 - ✅ FOUND: c43e38f (Task 1 - SSH config parser wrapper)

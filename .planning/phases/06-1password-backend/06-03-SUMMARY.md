@@ -63,7 +63,7 @@ metrics:
 
 ## What Was Built
 
-Offline fallback system with availability polling that ensures sshjesus never blocks users when 1Password is locked or unavailable:
+Offline fallback system with availability polling that ensures ssherpa never blocks users when 1Password is locked or unavailable:
 
 1. **Status Tracking:** BackendStatus enum (Unknown/Available/Locked/Unavailable) with thread-safe get/set
 2. **Sync Separation:** SyncFromOnePassword explicitly fetches from 1Password, ListServers returns cached data
@@ -207,13 +207,13 @@ None - plan executed exactly as written.
 ```bash
 $ go test ./internal/backend/onepassword/... -v -count=1
 PASS
-ok      github.com/florianriquelme/sshjesus/internal/backend/onepassword        1.790s
+ok      github.com/florianriquelme/ssherpa/internal/backend/onepassword        1.790s
 ```
 
 **Race detector clean:**
 ```bash
 $ go test -race ./internal/backend/onepassword/...
-ok      github.com/florianriquelme/sshjesus/internal/backend/onepassword        2.929s
+ok      github.com/florianriquelme/ssherpa/internal/backend/onepassword        2.929s
 ```
 
 **Project compiles:**
@@ -242,15 +242,15 @@ $ go build ./...
 ## Key Files
 
 **Created:**
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/status.go` - BackendStatus enum, SyncFromOnePassword, LoadFromCache, GetStatus/setStatus
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/status_test.go` - 8 tests for status transitions and cache loading
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/poller.go` - Poller type, NewPoller, Start/Stop, poll logic, write debouncing
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/poller_test.go` - 6 tests for availability detection and clean shutdown
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/sync/toml_cache.go` - WriteTOMLCache, ReadTOMLCache, ServerCache type with TOML tags
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/status.go` - BackendStatus enum, SyncFromOnePassword, LoadFromCache, GetStatus/setStatus
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/status_test.go` - 8 tests for status transitions and cache loading
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/poller.go` - Poller type, NewPoller, Start/Stop, poll logic, write debouncing
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/poller_test.go` - 6 tests for availability detection and clean shutdown
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/sync/toml_cache.go` - WriteTOMLCache, ReadTOMLCache, ServerCache type with TOML tags
 
 **Modified:**
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/backend.go` - Added status, cachePath, poller, lastWrite fields; updated ListServers to return cached data; updated Close() for graceful shutdown; updated CreateServer/UpdateServer/DeleteServer to call UpdateLastWrite()
-- `/Users/florianriquelme/Repos/mine/sshjesus/internal/backend/onepassword/backend_test.go` - Updated existing tests to call SyncFromOnePassword explicitly before ListServers
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/backend.go` - Added status, cachePath, poller, lastWrite fields; updated ListServers to return cached data; updated Close() for graceful shutdown; updated CreateServer/UpdateServer/DeleteServer to call UpdateLastWrite()
+- `/Users/florianriquelme/Repos/mine/ssherpa/internal/backend/onepassword/backend_test.go` - Updated existing tests to call SyncFromOnePassword explicitly before ListServers
 
 ## Next Steps (from ROADMAP)
 

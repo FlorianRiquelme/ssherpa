@@ -6,7 +6,7 @@
 
 ## Summary
 
-Phase 6 implements a 1Password backend that stores SSH server configurations in 1Password items, syncing them to local storage (both SSH config include file and sshjesus TOML) for offline availability. The 1Password Go SDK (v0.4.0-beta.2) supports two authentication methods: desktop app integration (with biometric/OS-level auth prompts) and service accounts (for automation). The architecture uses tag-based discovery (`sshjesus` tag) to identify managed items across all accessible vaults, enabling vault-per-customer organization without hardcoded vault configuration.
+Phase 6 implements a 1Password backend that stores SSH server configurations in 1Password items, syncing them to local storage (both SSH config include file and ssherpa TOML) for offline availability. The 1Password Go SDK (v0.4.0-beta.2) supports two authentication methods: desktop app integration (with biometric/OS-level auth prompts) and service accounts (for automation). The architecture uses tag-based discovery (`ssherpa` tag) to identify managed items across all accessible vaults, enabling vault-per-customer organization without hardcoded vault configuration.
 
 **Primary recommendation:** Use 1Password SDK with desktop app integration for primary authentication (better UX, no token management), implement continuous sync to local storage (SSH config include file + TOML), detect when 1Password becomes unavailable and gracefully fall back to cached servers with clear UI indicators.
 
@@ -33,18 +33,18 @@ Phase 6 implements a 1Password backend that stores SSH server configurations in 
 - When a server exists in both ssh-config AND 1Password, 1Password wins
 
 #### Team sharing model
-- sshjesus scans ALL accessible vaults (not configured to specific vaults)
-- Items are discoverable via a specific tag (e.g., `sshjesus`) — that's how sshjesus identifies its managed items
-- Existing vault-per-customer organization stays as-is — sshjesus works with whatever vault structure exists
-- Migration wizard offered to convert existing unstructured SSH items to sshjesus format with proper tags
+- ssherpa scans ALL accessible vaults (not configured to specific vaults)
+- Items are discoverable via a specific tag (e.g., `ssherpa`) — that's how ssherpa identifies its managed items
+- Existing vault-per-customer organization stays as-is — ssherpa works with whatever vault structure exists
+- Migration wizard offered to convert existing unstructured SSH items to ssherpa format with proper tags
 - Real-time sync — changes by team members appear immediately
 - Personal vault items are supported — users can tag items in their Private vault for personal-only servers
 
 #### Sync to local storage
 - 1Password is the source of truth; synced down to local for offline/fallback
-- Sync targets: both `~/.ssh/sshjesus_config` (include file) AND sshjesus local TOML config
-- SSH config sync uses a separate include file (`~/.ssh/sshjesus_config`) with an `Include` directive added to `~/.ssh/config` — fully isolated, never touches user's existing SSH entries
-- Local TOML gets the extra sshjesus-specific fields (project path, project tags, custom metadata)
+- Sync targets: both `~/.ssh/ssherpa_config` (include file) AND ssherpa local TOML config
+- SSH config sync uses a separate include file (`~/.ssh/ssherpa_config`) with an `Include` directive added to `~/.ssh/config` — fully isolated, never touches user's existing SSH entries
+- Local TOML gets the extra ssherpa-specific fields (project path, project tags, custom metadata)
 - Sync triggers: on launch + on every change (add/edit/remove in 1Password)
 - Conflict detection: if a server exists in both 1Password and user's original ssh-config (not the synced include file), show a warning and let the user decide
 
@@ -57,7 +57,7 @@ Phase 6 implements a 1Password backend that stores SSH server configurations in 
 ### Claude's Discretion
 - 1Password SDK authentication approach (desktop app integration, service accounts)
 - Item field mapping and custom field naming in 1Password
-- Tag naming convention for sshjesus-managed items
+- Tag naming convention for ssherpa-managed items
 - Sync conflict resolution UI details
 - Include directive placement strategy in ssh-config
 - Polling interval for auto-detect when 1Password becomes available
@@ -75,7 +75,7 @@ Phase 6 implements a 1Password backend that stores SSH server configurations in 
 | `github.com/1Password/onepassword-sdk-go` | v0.4.0-beta.2 | 1Password SDK integration | Official SDK, supports desktop app auth (macOS/Windows/Linux), vault/item CRUD, tag-based filtering |
 | `github.com/kevinburke/ssh_config` | v1.4.0+ | Write SSH config include file | Already in use (Phase 2), preserves formatting, handles Include directives |
 | `github.com/google/renameio/v2` | v2.0+ | Atomic file writes | Already in use (Phase 5), prevents corruption during sync |
-| `github.com/BurntSushi/toml` | Latest | Parse/write TOML config | Already in use (Phase 1), for local sshjesus TOML storage |
+| `github.com/BurntSushi/toml` | Latest | Parse/write TOML config | Already in use (Phase 1), for local ssherpa TOML storage |
 
 ### Supporting
 
@@ -117,7 +117,7 @@ internal/
 │   │   └── auth.go           # Desktop app integration
 │   └── sshconfig/            # Existing SSH config backend
 ├── sync/                      # NEW: Local cache management
-│   ├── ssh_include.go        # Write ~/.ssh/sshjesus_config
+│   ├── ssh_include.go        # Write ~/.ssh/ssherpa_config
 │   ├── toml_cache.go         # Write local TOML cache
 │   └── conflict.go           # Conflict detection logic
 └── ui/                        # TUI (existing)
@@ -145,7 +145,7 @@ func NewDesktopAppClient(accountName string) (*onepassword.Client, error) {
     client, err := onepassword.NewClient(
         ctx,
         onepassword.WithDesktopAppIntegration(accountName),
-        onepassword.WithIntegrationInfo("sshjesus", "v0.1.0"),
+        onepassword.WithIntegrationInfo("ssherpa", "v0.1.0"),
     )
     if err != nil {
         return nil, fmt.Errorf("create 1Password client: %w", err)
@@ -167,7 +167,7 @@ func GetAccountName() string {
 
 ### Pattern 2: Tag-Based Item Discovery
 
-**What:** Filter 1Password items by tag (`sshjesus`) to identify managed servers
+**What:** Filter 1Password items by tag (`ssherpa`) to identify managed servers
 
 **When to use:** To discover servers across ALL accessible vaults without hardcoding vault IDs
 
@@ -190,7 +190,7 @@ func ListManagedServers(client *onepassword.Client) ([]*domain.Server, error) {
 
     var servers []*domain.Server
 
-    // Search each vault for items with "sshjesus" tag
+    // Search each vault for items with "ssherpa" tag
     for {
         vault, err := vaults.Next()
         if errors.Is(err, onepassword.ErrorIteratorDone) {
@@ -217,8 +217,8 @@ func ListManagedServers(client *onepassword.Client) ([]*domain.Server, error) {
                 continue
             }
 
-            // Check for "sshjesus" tag
-            if hasTag(item.Tags, "sshjesus") {
+            // Check for "ssherpa" tag
+            if hasTag(item.Tags, "ssherpa") {
                 server, err := itemToServer(item)
                 if err != nil {
                     log.Printf("skip item %s: %v", item.Title, err)
@@ -248,7 +248,7 @@ func hasTag(tags []string, target string) bool {
 
 **What:** Store SSH server config in 1Password item using custom fields
 
-**When to use:** Converting between 1Password item format and sshjesus domain model
+**When to use:** Converting between 1Password item format and ssherpa domain model
 
 **Example:**
 ```go
@@ -268,7 +268,7 @@ import "github.com/1Password/onepassword-sdk-go"
 //   - proxy_jump (text, optional)
 //   - forward_agent (text, "yes" or "no")
 //   - extra_config (concealed, free-form SSH directives)
-// - Tags: ["sshjesus"]
+// - Tags: ["ssherpa"]
 
 func itemToServer(item *onepassword.Item) (*domain.Server, error) {
     server := &domain.Server{
@@ -328,7 +328,7 @@ func serverToItem(server *domain.Server, vaultID string) *onepassword.Item {
         Title:    server.DisplayName,
         Category: onepassword.Server,
         VaultID:  vaultID,
-        Tags:     append(server.Tags, "sshjesus"),
+        Tags:     append(server.Tags, "ssherpa"),
         Fields: []*onepassword.ItemField{
             {Label: "hostname", Value: server.Host, Type: onepassword.FieldTypeText},
             {Label: "user", Value: server.User, Type: onepassword.FieldTypeText},
@@ -386,13 +386,13 @@ func SyncToLocalStorage(servers []*domain.Server) error {
     return nil
 }
 
-// Write ~/.ssh/sshjesus_config (SSH include file)
+// Write ~/.ssh/ssherpa_config (SSH include file)
 func syncToSSHConfig(servers []*domain.Server) error {
     home, _ := os.UserHomeDir()
-    includePath := filepath.Join(home, ".ssh", "sshjesus_config")
+    includePath := filepath.Join(home, ".ssh", "ssherpa_config")
 
     var buf bytes.Buffer
-    buf.WriteString("# Generated by sshjesus - DO NOT EDIT MANUALLY\n")
+    buf.WriteString("# Generated by ssherpa - DO NOT EDIT MANUALLY\n")
     buf.WriteString("# Source: 1Password\n\n")
 
     for _, server := range servers {
@@ -432,9 +432,9 @@ func syncToSSHConfig(servers []*domain.Server) error {
     return renameio.WriteFile(includePath, buf.Bytes(), 0600)
 }
 
-// Write local TOML cache (sshjesus-specific fields)
+// Write local TOML cache (ssherpa-specific fields)
 func syncToTOML(servers []*domain.Server) error {
-    configDir, _ := xdg.ConfigFile("sshjesus")
+    configDir, _ := xdg.ConfigFile("ssherpa")
     cachePath := filepath.Join(configDir, "1password_cache.toml")
 
     type TOMLCache struct {
@@ -459,7 +459,7 @@ func syncToTOML(servers []*domain.Server) error {
 func EnsureSSHInclude() error {
     home, _ := os.UserHomeDir()
     configPath := filepath.Join(home, ".ssh", "config")
-    includePath := filepath.Join(home, ".ssh", "sshjesus_config")
+    includePath := filepath.Join(home, ".ssh", "ssherpa_config")
 
     // Read current config
     content, err := os.ReadFile(configPath)
@@ -476,7 +476,7 @@ func EnsureSSHInclude() error {
 
     // Prepend Include directive (ensures it's evaluated first)
     var buf bytes.Buffer
-    buf.WriteString("# sshjesus 1Password integration\n")
+    buf.WriteString("# ssherpa 1Password integration\n")
     buf.WriteString(includeDirective + "\n\n")
     buf.Write(content)
 
@@ -484,7 +484,7 @@ func EnsureSSHInclude() error {
 }
 ```
 
-**Key insight:** SSH include file enables standard SSH commands to work (`ssh prod-web-01`). TOML cache stores sshjesus-specific fields (project path, tags) that don't fit in SSH config.
+**Key insight:** SSH include file enables standard SSH commands to work (`ssh prod-web-01`). TOML cache stores ssherpa-specific fields (project path, tags) that don't fit in SSH config.
 
 ### Pattern 5: Offline Fallback with Auto-Recovery
 
@@ -657,7 +657,7 @@ type Conflict struct {
 }
 
 func DetectConflicts(onePasswordServers []*domain.Server) ([]Conflict, error) {
-    // Parse user's original SSH config (NOT sshjesus_config include)
+    // Parse user's original SSH config (NOT ssherpa_config include)
     home, _ := os.UserHomeDir()
     configPath := filepath.Join(home, ".ssh", "config")
 
@@ -670,8 +670,8 @@ func DetectConflicts(onePasswordServers []*domain.Server) ([]Conflict, error) {
     sshHosts := make(map[string]*domain.Server)
     for _, host := range cfg.Hosts {
         for _, pattern := range host.Patterns {
-            // Skip sshjesus_config entries (our own Include)
-            if strings.Contains(pattern.String(), "sshjesus") {
+            // Skip ssherpa_config entries (our own Include)
+            if strings.Contains(pattern.String(), "ssherpa") {
                 continue
             }
 
@@ -747,15 +747,15 @@ func DetectConflicts(onePasswordServers []*domain.Server) ([]Conflict, error) {
 
 ### Pitfall 2: Tag Case Sensitivity
 
-**What goes wrong:** User tags item with "SSHJesus" but app searches for "sshjesus". Item not found.
+**What goes wrong:** User tags item with "SSHJesus" but app searches for "ssherpa". Item not found.
 
 **Why it happens:** 1Password tags are case-sensitive in API but displayed case-insensitively in UI.
 
 **How to avoid:**
-- Use case-insensitive tag comparison: `strings.EqualFold(tag, "sshjesus")`.
-- Document canonical tag name in wizard: "Tag items with: sshjesus (lowercase)".
+- Use case-insensitive tag comparison: `strings.EqualFold(tag, "ssherpa")`.
+- Document canonical tag name in wizard: "Tag items with: ssherpa (lowercase)".
 
-**Warning signs:** Items tagged in 1Password app don't appear in sshjesus.
+**Warning signs:** Items tagged in 1Password app don't appear in ssherpa.
 
 ---
 
@@ -823,12 +823,12 @@ func DetectConflicts(onePasswordServers []*domain.Server) ([]Conflict, error) {
 
 **What goes wrong:** User sets remote project path in 1Password. SSH config include file doesn't contain it (SSH has no directive for "change directory after login").
 
-**Why it happens:** Remote project path is a sshjesus-specific feature. SSH config can't express "cd to path on login".
+**Why it happens:** Remote project path is a ssherpa-specific feature. SSH config can't express "cd to path on login".
 
 **How to avoid:**
 - Store remote project path in local TOML cache only (not SSH config include).
-- When user connects via sshjesus TUI, execute: `ssh user@host -t 'cd /remote/path && $SHELL'`.
-- Document limitation: "Remote project path only works when connecting through sshjesus TUI."
+- When user connects via ssherpa TUI, execute: `ssh user@host -t 'cd /remote/path && $SHELL'`.
+- Document limitation: "Remote project path only works when connecting through ssherpa TUI."
 
 **Warning signs:** User expects `ssh prod-web` (standard SSH command) to land in project dir, but it doesn't.
 
@@ -856,7 +856,7 @@ func main() {
     client, err := onepassword.NewClient(
         ctx,
         onepassword.WithDesktopAppIntegration(accountName),
-        onepassword.WithIntegrationInfo("sshjesus", "v0.1.0"),
+        onepassword.WithIntegrationInfo("ssherpa", "v0.1.0"),
     )
     if err != nil {
         log.Fatalf("create client: %v", err)
@@ -910,7 +910,7 @@ func NewServiceAccountClient() (*onepassword.Client, error) {
     client, err := onepassword.NewClient(
         ctx,
         onepassword.WithServiceAccountToken(token),
-        onepassword.WithIntegrationInfo("sshjesus", "v0.1.0"),
+        onepassword.WithIntegrationInfo("ssherpa", "v0.1.0"),
     )
     if err != nil {
         return nil, fmt.Errorf("create client: %w", err)
@@ -933,7 +933,7 @@ func CreateServerItem(client *onepassword.Client, server *domain.Server, vaultID
         Title:    server.DisplayName,
         Category: onepassword.Server,
         VaultID:  vaultID,
-        Tags:     []string{"sshjesus"},
+        Tags:     []string{"ssherpa"},
         Fields: []*onepassword.ItemField{
             {
                 Label: "hostname",
@@ -1101,7 +1101,7 @@ func ListServersWithTag(client *onepassword.Client, tag string) ([]*domain.Serve
 
 **What's unclear:**
 - When v1.0 will release (stable API).
-- Risk of breaking changes during sshjesus v1 development.
+- Risk of breaking changes during ssherpa v1 development.
 
 **Recommendation:**
 - **Accept beta risk** — desktop app integration is killer feature (no token management).
@@ -1150,7 +1150,7 @@ func ListServersWithTag(client *onepassword.Client, tag string) ([]*domain.Serve
 ### 4. Migration Wizard UX
 
 **What we know:**
-- Requirement: "Migration wizard offered to convert existing unstructured SSH items to sshjesus format with proper tags."
+- Requirement: "Migration wizard offered to convert existing unstructured SSH items to ssherpa format with proper tags."
 - Existing items may lack required fields (hostname, user).
 
 **What's unclear:**
@@ -1159,12 +1159,12 @@ func ListServersWithTag(client *onepassword.Client, tag string) ([]*domain.Serve
 
 **Recommendation:**
 - **Interactive migration:**
-  1. Scan all vaults for items matching "SSH" or "Server" category without `sshjesus` tag.
+  1. Scan all vaults for items matching "SSH" or "Server" category without `ssherpa` tag.
   2. Show list with checkboxes: "Select items to migrate."
   3. For each selected item:
-     - If hostname/user present: Add `sshjesus` tag, done.
+     - If hostname/user present: Add `ssherpa` tag, done.
      - If missing: Show form to fill in required fields, then tag.
-  4. Summary: "Migrated 15 items to sshjesus format."
+  4. Summary: "Migrated 15 items to ssherpa format."
 - Save migration state (don't re-offer on next launch).
 
 ---
@@ -1232,8 +1232,8 @@ When planning Phase 6, ensure the plan addresses:
 - [ ] Vault permission checks before writes
 
 **Sync:**
-- [ ] Sync to `~/.ssh/sshjesus_config` (SSH include file)
-- [ ] Sync to local TOML cache (sshjesus-specific fields)
+- [ ] Sync to `~/.ssh/ssherpa_config` (SSH include file)
+- [ ] Sync to local TOML cache (ssherpa-specific fields)
 - [ ] Ensure Include directive in `~/.ssh/config`
 - [ ] Atomic writes with renameio (reuse Phase 5 pattern)
 - [ ] Sync triggers: startup + periodic polling
@@ -1247,7 +1247,7 @@ When planning Phase 6, ensure the plan addresses:
 **Conflict Detection:**
 - [ ] Compare 1Password servers with SSH config hosts
 - [ ] Show warning for duplicates (1Password always wins)
-- [ ] Exclude sshjesus_config from conflict detection
+- [ ] Exclude ssherpa_config from conflict detection
 
 **Migration:**
 - [ ] Wizard to tag existing SSH items

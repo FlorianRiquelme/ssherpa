@@ -27,7 +27,7 @@ Users can search/filter the server list and connect to a selected server via sys
 - On SSH connection failure: let SSH's native error output display in the terminal, then return to TUI on keypress
 
 ### Post-connection experience
-- Default behavior: after SSH session ends, sshjesus exits entirely (user returns to their shell)
+- Default behavior: after SSH session ends, ssherpa exits entirely (user returns to their shell)
 - This is configurable — option to return to TUI instead of exiting (stored in app config)
 - On relaunch: preselect the last server connected from the current working directory path
 - Last-connected indicator shown next to servers you've recently connected to (subtle marker or timestamp)
@@ -55,7 +55,7 @@ Users can search/filter the server list and connect to a selected server via sys
 ## Specific Ideas
 
 - Connection should feel like running `ssh` directly — zero friction, silent handoff, native error output
-- The "last connected from this path" preselection enables a rapid reconnect workflow: cd into project, launch sshjesus, hit Enter
+- The "last connected from this path" preselection enables a rapid reconnect workflow: cd into project, launch ssherpa, hit Enter
 - Non-Vim users should never feel lost — arrow keys and persistent footer bar make it immediately usable
 
 </specifics>

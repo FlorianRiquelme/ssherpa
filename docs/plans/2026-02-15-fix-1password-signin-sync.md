@@ -209,12 +209,12 @@ Expected: All PASS
 
 **Step 2: Build the binary**
 
-Run: `go build -o sshjesus ./cmd/sshjesus`
+Run: `go build -o ssherpa ./cmd/ssherpa`
 Expected: PASS
 
 **Step 3: Manual smoke test (optional)**
 
-1. Run `./sshjesus`
+1. Run `./ssherpa`
 2. If 1Password CLI is not signed in, banner should show "Press 's' to sign in"
 3. Press 's', complete sign-in
 4. Banner should clear immediately and servers should appear
