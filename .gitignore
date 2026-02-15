@@ -1,0 +1,6 @@
+# Git worktrees
+.worktrees/
+
+# Build artifacts
+sshjesus
+ssherpa
