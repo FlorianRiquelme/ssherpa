@@ -688,21 +688,6 @@ func (m *Model) rebuildListItemsSimple(hostProjectMap map[string][]config.Projec
 		}
 	}
 
-	// Add separator if there are wildcards
-	if len(wildcards) > 0 {
-		items = append(items, separatorItem{})
-
-		// Add wildcard hosts
-		for _, host := range wildcards {
-			_, isRecent := m.recentHosts[host.Name]
-			items = append(items, hostItem{
-				host:          host,
-				lastConnected: isRecent,
-				projectBadges: nil,
-			})
-		}
-	}
-
 	m.list.SetItems(items)
 	m.preselectLastConnectedHost(items)
 }
