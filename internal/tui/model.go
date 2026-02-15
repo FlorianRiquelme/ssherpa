@@ -823,9 +823,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.statusMsg = "Sign-in failed"
 		} else {
 			m.statusMsg = "Signed in to 1Password!"
-			// Trigger immediate server list refresh
+			// Trigger immediate sync to refresh status and servers
 			if m.appBackend != nil {
-				return m, loadBackendServersCmd(m.appBackend)
+				return m, syncBackendCmd(m.appBackend)
 			}
 		}
 		return m, nil
