@@ -149,10 +149,12 @@ Plans:
   3. GitHub releases include checksums and installation instructions
   4. Binary runs on all supported platforms without additional dependencies
   5. Terminal compatibility tested across iTerm2, Alacritty, Windows Terminal, and tmux
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 08-01: TBD during planning
+- [ ] 08-01-PLAN.md — Version package, CLI flags (--version, --setup), and first-run onboarding
+- [ ] 08-02-PLAN.md — GoReleaser config, GitHub Actions release workflow, and curl install script
+- [ ] 08-03-PLAN.md — README, VHS demo tape, and end-to-end distribution verification
 
 ## Progress
 
@@ -168,4 +170,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Config Management | 3/3 | ✓ Complete | 2026-02-14 |
 | 6. 1Password Backend | 5/5 | ✓ Complete | 2026-02-14 |
 | 7. SSH Key Selection | 2/2 | ✓ Complete | 2026-02-14 |
-| 8. Distribution | 0/TBD | Not started | - |
+| 8. Distribution | 0/3 | Not started | - |
