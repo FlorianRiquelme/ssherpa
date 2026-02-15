@@ -95,7 +95,7 @@ func TestWriteTOMLCache_PreservesRemoteProjectPath(t *testing.T) {
 	tmpDir := t.TempDir()
 	cachePath := filepath.Join(tmpDir, "cache.toml")
 
-	// Create server with RemoteProjectPath (sshjesus-specific field)
+	// Create server with RemoteProjectPath (ssherpa-specific field)
 	servers := []*domain.Server{
 		{
 			ID:                "srv-001",

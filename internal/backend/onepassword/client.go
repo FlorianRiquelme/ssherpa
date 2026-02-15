@@ -17,7 +17,7 @@ type Client interface {
 	Close() error
 }
 
-// Vault represents a 1Password vault with minimal fields needed by sshjesus.
+// Vault represents a 1Password vault with minimal fields needed by ssherpa.
 type Vault struct {
 	ID   string
 	Name string

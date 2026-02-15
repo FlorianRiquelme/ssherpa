@@ -81,19 +81,19 @@ func ServerToItem(server *domain.Server, vaultID string) *Item {
 		Fields:   make([]ItemField, 0),
 	}
 
-	// Ensure "sshjesus" tag is present (deduplicate)
+	// Ensure "ssherpa" tag is present (deduplicate)
 	hasSshjesusTag := false
 	for _, tag := range server.Tags {
-		if strings.EqualFold(tag, "sshjesus") {
+		if strings.EqualFold(tag, "ssherpa") {
 			hasSshjesusTag = true
 		} else {
 			item.Tags = append(item.Tags, tag)
 		}
 	}
 	if !hasSshjesusTag {
-		item.Tags = append([]string{"sshjesus"}, item.Tags...)
+		item.Tags = append([]string{"ssherpa"}, item.Tags...)
 	} else {
-		item.Tags = append([]string{"sshjesus"}, item.Tags...)
+		item.Tags = append([]string{"ssherpa"}, item.Tags...)
 	}
 
 	// Add fields
@@ -152,10 +152,10 @@ func ServerToItem(server *domain.Server, vaultID string) *Item {
 	return item
 }
 
-// HasSshjesusTag checks if the tags slice contains "sshjesus" (case-insensitive).
+// HasSshjesusTag checks if the tags slice contains "ssherpa" (case-insensitive).
 func HasSshjesusTag(tags []string) bool {
 	for _, tag := range tags {
-		if strings.EqualFold(tag, "sshjesus") {
+		if strings.EqualFold(tag, "ssherpa") {
 			return true
 		}
 	}

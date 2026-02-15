@@ -14,7 +14,7 @@ func TestItemToServer_Complete(t *testing.T) {
 		Title:    "Production API",
 		VaultID:  "vault-456",
 		Category: "server",
-		Tags:     []string{"sshjesus", "production"},
+		Tags:     []string{"ssherpa", "production"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "api.example.com", FieldType: "Text"},
 			{Title: "user", Value: "deploy", FieldType: "Text"},
@@ -49,7 +49,7 @@ func TestItemToServer_Minimal(t *testing.T) {
 		Title:    "Dev Server",
 		VaultID:  "vault-123",
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "dev.example.com", FieldType: "Text"},
 			{Title: "user", Value: "ubuntu", FieldType: "Text"},
@@ -77,7 +77,7 @@ func TestItemToServer_MissingHostname(t *testing.T) {
 		Title:    "Invalid Server",
 		VaultID:  "vault-123",
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "user", Value: "ubuntu", FieldType: "Text"},
 		},
@@ -94,7 +94,7 @@ func TestItemToServer_MissingUser(t *testing.T) {
 		Title:    "Invalid Server",
 		VaultID:  "vault-123",
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "test.example.com", FieldType: "Text"},
 		},
@@ -127,7 +127,7 @@ func TestServerToItem_RoundTrip(t *testing.T) {
 	assert.Equal(t, "Roundtrip Server", item.Title)
 	assert.Equal(t, "vault-rt", item.VaultID)
 	assert.Equal(t, "server", item.Category)
-	assert.Contains(t, item.Tags, "sshjesus")
+	assert.Contains(t, item.Tags, "ssherpa")
 
 	// Convert back to server
 	recovered, err := ItemToServer(item)
@@ -154,22 +154,22 @@ func TestHasSshjesusTag_CaseInsensitive(t *testing.T) {
 	}{
 		{
 			name:     "lowercase",
-			tags:     []string{"sshjesus", "production"},
+			tags:     []string{"ssherpa", "production"},
 			expected: true,
 		},
 		{
 			name:     "uppercase",
-			tags:     []string{"SSHJESUS", "dev"},
+			tags:     []string{"SSHERPA", "dev"},
 			expected: true,
 		},
 		{
 			name:     "mixed case",
-			tags:     []string{"SshJesus", "test"},
+			tags:     []string{"SsHeRpA", "test"},
 			expected: true,
 		},
 		{
 			name:     "camel case",
-			tags:     []string{"production", "SshJesus"},
+			tags:     []string{"production", "Ssherpa"},
 			expected: true,
 		},
 		{
@@ -209,7 +209,7 @@ func TestServerToItem_EnsuresSshjesusTag(t *testing.T) {
 
 	item := ServerToItem(server, "vault-123")
 
-	assert.Contains(t, item.Tags, "sshjesus", "Should always include sshjesus tag")
+	assert.Contains(t, item.Tags, "ssherpa", "Should always include ssherpa tag")
 }
 
 func TestServerToItem_DeduplicatesSshjesusTag(t *testing.T) {
@@ -219,19 +219,19 @@ func TestServerToItem_DeduplicatesSshjesusTag(t *testing.T) {
 		Host:        "dupe.example.com",
 		User:        "user",
 		Port:        22,
-		Tags:        []string{"sshjesus", "production"},
+		Tags:        []string{"ssherpa", "production"},
 		VaultID:     "vault-123",
 	}
 
 	item := ServerToItem(server, "vault-123")
 
-	// Count occurrences of sshjesus tag
+	// Count occurrences of ssherpa tag
 	count := 0
 	for _, tag := range item.Tags {
-		if tag == "sshjesus" {
+		if tag == "ssherpa" {
 			count++
 		}
 	}
 
-	assert.Equal(t, 1, count, "Should only have one sshjesus tag, not duplicated")
+	assert.Equal(t, 1, count, "Should only have one ssherpa tag, not duplicated")
 }

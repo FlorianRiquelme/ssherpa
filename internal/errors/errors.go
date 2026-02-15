@@ -36,7 +36,7 @@ func (e *BackendError) Unwrap() error {
 }
 
 // Re-export standard library error functions for convenience.
-// Allows callers to import only sshjesus/internal/errors instead of both packages.
+// Allows callers to import only ssherpa/internal/errors instead of both packages.
 var (
 	Is     = errors.Is
 	As     = errors.As

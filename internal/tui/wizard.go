@@ -223,7 +223,7 @@ func (w SetupWizard) View() string {
 func (w SetupWizard) renderWelcome() string {
 	var b strings.Builder
 
-	title := titleStyle.Render("Welcome to sshjesus!")
+	title := titleStyle.Render("Welcome to ssherpa!")
 	b.WriteString(title + "\n\n")
 
 	b.WriteString("Choose your backend:\n\n")
@@ -296,11 +296,11 @@ func (w SetupWizard) renderMigrationOffer() string {
 	b.WriteString(title + "\n\n")
 
 	b.WriteString(fmt.Sprintf("We found %d SSH/Server items in your 1Password vaults\n", w.migrationItemCount))
-	b.WriteString("that are not yet managed by sshjesus.\n\n")
+	b.WriteString("that are not yet managed by ssherpa.\n\n")
 
 	options := []string{
-		"Run migration wizard    Tag existing items for sshjesus",
-		"Skip for now            You can migrate later with 'sshjesus migrate'",
+		"Run migration wizard    Tag existing items for ssherpa",
+		"Skip for now            You can migrate later with 'ssherpa migrate'",
 	}
 
 	for i, opt := range options {
@@ -350,7 +350,7 @@ func (w SetupWizard) renderSummary() string {
 	b.WriteString("\n")
 	configPath := w.configPath
 	if configPath == "" {
-		configPath = "~/.config/sshjesus/config.toml"
+		configPath = "~/.config/ssherpa/config.toml"
 	}
 	b.WriteString(fmt.Sprintf("Config path: %s\n", wizardDimStyle.Render(configPath)))
 
@@ -359,7 +359,7 @@ func (w SetupWizard) renderSummary() string {
 		b.WriteString(wizardErrorStyle.Render(fmt.Sprintf("Error saving config: %s", w.err.Error())) + "\n")
 		b.WriteString(wizardDimStyle.Render("Press Enter to retry"))
 	} else {
-		b.WriteString(wizardDimStyle.Render("Press Enter to start sshjesus"))
+		b.WriteString(wizardDimStyle.Render("Press Enter to start ssherpa"))
 	}
 
 	return wizardBoxStyle.Render(b.String())

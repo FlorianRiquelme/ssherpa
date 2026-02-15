@@ -158,7 +158,7 @@ func TestListItems(t *testing.T) {
 				"id": "item1",
 				"title": "Server 1",
 				"category": "SERVER",
-				"tags": ["sshjesus"],
+				"tags": ["ssherpa"],
 				"vault": {"id": "vault1"},
 				"fields": [
 					{"id": "f1", "label": "hostname", "type": "STRING", "value": "example.com"}
@@ -225,7 +225,7 @@ func TestGetItem(t *testing.T) {
 				"id": "item1",
 				"title": "Test Server",
 				"category": "SERVER",
-				"tags": ["sshjesus", "prod"],
+				"tags": ["ssherpa", "prod"],
 				"vault": {"id": "vault1"},
 				"fields": [
 					{"id": "f1", "label": "hostname", "type": "STRING", "value": "example.com", "section": {"id": "s1"}},
@@ -301,7 +301,7 @@ func TestCreateItem(t *testing.T) {
 				VaultID:  "vault1",
 				Title:    "New Server",
 				Category: "server",
-				Tags:     []string{"sshjesus"},
+				Tags:     []string{"ssherpa"},
 				Fields: []ItemField{
 					{Title: "hostname", Value: "example.com"},
 					{Title: "user", Value: "root"},
@@ -312,7 +312,7 @@ func TestCreateItem(t *testing.T) {
 				"id": "newitem1",
 				"title": "New Server",
 				"category": "SERVER",
-				"tags": ["sshjesus"],
+				"tags": ["ssherpa"],
 				"vault": {"id": "vault1"},
 				"fields": [
 					{"id": "f1", "label": "hostname", "type": "STRING", "value": "example.com"},
@@ -346,7 +346,7 @@ func TestCreateItem(t *testing.T) {
 					"--title", tt.item.Title,
 				}
 				if len(tt.item.Tags) > 0 {
-					createArgs = append(createArgs, "--tags", "sshjesus")
+					createArgs = append(createArgs, "--tags", "ssherpa")
 				}
 				if len(tt.item.Fields) > 0 {
 					createArgs = append(createArgs, "--")

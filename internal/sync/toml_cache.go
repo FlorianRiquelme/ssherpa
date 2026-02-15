@@ -12,7 +12,7 @@ import (
 )
 
 // CachedServer represents a server in the TOML cache.
-// This includes sshjesus-specific fields that don't fit in SSH config.
+// This includes ssherpa-specific fields that don't fit in SSH config.
 type CachedServer struct {
 	ID                string   `toml:"id"`
 	DisplayName       string   `toml:"display_name"`
@@ -36,7 +36,7 @@ type TOMLCache struct {
 }
 
 // WriteTOMLCache writes the server list to a TOML cache file.
-// This cache stores sshjesus-specific fields that don't fit in SSH config
+// This cache stores ssherpa-specific fields that don't fit in SSH config
 // (RemoteProjectPath, ProjectIDs, VaultID, etc.).
 func WriteTOMLCache(servers []*domain.Server, cachePath string) error {
 	// Convert domain.Server list to CachedServer list
@@ -65,7 +65,7 @@ func WriteTOMLCache(servers []*domain.Server, cachePath string) error {
 	}
 
 	// Encode as TOML
-	tmpFile, err := os.CreateTemp("", "sshjesus-cache-*.toml")
+	tmpFile, err := os.CreateTemp("", "ssherpa-cache-*.toml")
 	if err != nil {
 		return fmt.Errorf("create temp file: %w", err)
 	}

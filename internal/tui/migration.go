@@ -324,7 +324,7 @@ func (m MigrationWizard) scanForItems() tea.Cmd {
 		// In real implementation:
 		// 1. List all vaults
 		// 2. For each vault, list items with category "Server" or "SSH"
-		// 3. Filter items WITHOUT "sshjesus" tag
+		// 3. Filter items WITHOUT "ssherpa" tag
 		// 4. Parse fields to determine completeness (hostname + user)
 
 		return scanCompleteMsg{
@@ -354,7 +354,7 @@ func (m MigrationWizard) migrateSelected() tea.Cmd {
 		// In real implementation:
 		// 1. For each selected item:
 		//    a. If incomplete, prompt for missing fields (inline form)
-		//    b. Add "sshjesus" tag to item
+		//    b. Add "ssherpa" tag to item
 		//    c. Normalize field labels (hostname, user, port, etc.)
 		//    d. Call client.UpdateItem()
 		// 2. Track results (success/failure per item)

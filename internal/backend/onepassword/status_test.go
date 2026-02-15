@@ -34,7 +34,7 @@ func TestSyncFromOnePassword_Success(t *testing.T) {
 		Title:    "Production Server",
 		VaultID:  vaultID,
 		Category: "server",
-		Tags:     []string{"sshjesus"},
+		Tags:     []string{"ssherpa"},
 		Fields: []ItemField{
 			{Title: "hostname", Value: "prod.example.com"},
 			{Title: "user", Value: "deploy"},

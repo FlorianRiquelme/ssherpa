@@ -67,7 +67,7 @@ func (c *Config) Validate() error {
 // DefaultPath returns the default config file path using XDG config directories.
 // Creates parent directories if they don't exist.
 func DefaultPath() (string, error) {
-	path, err := xdg.ConfigFile("sshjesus/config.toml")
+	path, err := xdg.ConfigFile("ssherpa/config.toml")
 	if err != nil {
 		return "", fmt.Errorf("failed to determine default config path: %w", err)
 	}
@@ -81,7 +81,7 @@ func DefaultPath() (string, error) {
 func Load(path string) (*Config, error) {
 	// If no path provided, search XDG config directories
 	if path == "" {
-		searchPath, err := xdg.SearchConfigFile("sshjesus/config.toml")
+		searchPath, err := xdg.SearchConfigFile("ssherpa/config.toml")
 		if err != nil {
 			// SearchConfigFile returns error if file not found
 			return nil, errors.ErrConfigNotFound

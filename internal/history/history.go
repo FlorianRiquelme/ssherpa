@@ -23,7 +23,7 @@ func DefaultHistoryPath() string {
 	if err != nil {
 		return ""
 	}
-	return filepath.Join(home, ".ssh", "sshjesus_history.json")
+	return filepath.Join(home, ".ssh", "ssherpa_history.json")
 }
 
 // RecordConnection appends a connection record to the history file
