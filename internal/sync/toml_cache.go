@@ -26,6 +26,7 @@ type CachedServer struct {
 	VaultID           string   `toml:"vault_id"`
 	Tags              []string `toml:"tags,omitempty"`
 	Notes             string   `toml:"notes,omitempty"`
+	Source            string   `toml:"source,omitempty"`
 }
 
 // TOMLCache represents the entire TOML cache file structure.
@@ -58,6 +59,7 @@ func WriteTOMLCache(servers []*domain.Server, cachePath string) error {
 			VaultID:           srv.VaultID,
 			Tags:              srv.Tags,
 			Notes:             srv.Notes,
+			Source:            srv.Source,
 		}
 		cache.Servers = append(cache.Servers, cached)
 	}
@@ -125,6 +127,7 @@ func ReadTOMLCache(cachePath string) ([]*domain.Server, error) {
 			VaultID:           cached.VaultID,
 			Tags:              cached.Tags,
 			Notes:             cached.Notes,
+			Source:            cached.Source,
 		}
 		servers = append(servers, srv)
 	}

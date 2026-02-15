@@ -16,6 +16,7 @@ func ItemToServer(item *Item) (*domain.Server, error) {
 		DisplayName: item.Title,
 		VaultID:     item.VaultID,
 		Port:        22, // default port
+		Source:      "1password",
 	}
 
 	// Extract fields by title (case-insensitive)

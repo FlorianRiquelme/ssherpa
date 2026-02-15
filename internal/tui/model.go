@@ -89,6 +89,8 @@ type Model struct {
 	discoveredKeys    []sshkey.SSHKey  // All discovered SSH keys (from file/agent/1Password)
 	keyPicker         *SSHKeyPicker    // SSH key picker overlay (nil when not showing)
 	showingKeyPicker  bool             // Whether key picker is visible
+	hostSources       map[string]string // Maps host name to source (e.g., "ssh-config", "1password")
+	detailSource      string           // Source of the currently displayed detail host
 }
 
 // New creates a new TUI model.
@@ -180,18 +182,26 @@ func loadConfigCmd(path string) tea.Cmd {
 		hosts, err := sshconfig.ParseSSHConfig(path)
 		if err != nil {
 			return configLoadedMsg{
-				hosts: nil,
-				items: nil,
-				err:   err,
+				hosts:   nil,
+				items:   nil,
+				sources: nil,
+				err:     err,
 			}
+		}
+
+		// Build sources map for all hosts (all from ssh-config)
+		sources := make(map[string]string, len(hosts))
+		for _, host := range hosts {
+			sources[host.Name] = "ssh-config"
 		}
 
 		// NOTE: We don't build list items here anymore.
 		// The model will rebuild them after applying history data.
 		return configLoadedMsg{
-			hosts: hosts,
-			items: nil,
-			err:   nil,
+			hosts:   hosts,
+			items:   nil,
+			sources: sources,
+			err:     nil,
 		}
 	}
 }
@@ -328,11 +338,12 @@ func loadBackendServersCmd(backend backend.Backend) tea.Cmd {
 		}
 
 		// Convert domain.Server to SSHHost at TUI boundary
-		hosts := serversToSSHHosts(servers)
+		hosts, sources := serversToSSHHosts(servers)
 		return configLoadedMsg{
-			hosts: hosts,
-			items: nil,
-			err:   nil,
+			hosts:   hosts,
+			items:   nil,
+			sources: sources,
+			err:     nil,
 		}
 	}
 }
@@ -369,8 +380,10 @@ func syncBackendWithTimeoutCmd(b backend.Backend, timeout time.Duration) tea.Cmd
 
 // serversToSSHHosts converts domain.Server models to TUI-internal SSHHost representations.
 // This function defines the domain → TUI boundary, keeping TUI independent of domain models.
-func serversToSSHHosts(servers []*domain.Server) []sshconfig.SSHHost {
+// Returns hosts and a map of host name to source (e.g., "ssh-config", "1password").
+func serversToSSHHosts(servers []*domain.Server) ([]sshconfig.SSHHost, map[string]string) {
 	hosts := make([]sshconfig.SSHHost, 0, len(servers))
+	sources := make(map[string]string, len(servers))
 
 	for _, srv := range servers {
 		// Use DisplayName if available, otherwise fallback to Host
@@ -423,9 +436,14 @@ func serversToSSHHosts(servers []*domain.Server) []sshconfig.SSHHost {
 		}
 
 		hosts = append(hosts, host)
+
+		// Track source for this host
+		if srv.Source != "" {
+			sources[name] = srv.Source
+		}
 	}
 
-	return hosts
+	return hosts, sources
 }
 
 // hostSource implements fuzzy.Source for SSHHost slices.
@@ -784,7 +802,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// Update viewport dimensions if in detail mode
 		if m.viewMode == ViewDetail && m.detailHost != nil {
 			m.viewport = viewport.New(msg.Width, msg.Height)
-			content := renderDetailView(m.detailHost, m.width, m.height)
+			content := renderDetailView(m.detailHost, m.detailSource, m.width, m.height)
 			m.viewport.SetContent(content)
 		}
 
@@ -797,6 +815,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.hosts != nil {
 			m.allHosts = msg.hosts
 			m.filterHosts() // Initial filter (shows all)
+
+			// Store source mapping
+			if msg.sources != nil {
+				m.hostSources = msg.sources
+			}
 
 			// Re-discover keys now that hosts are loaded (includes IdentityFile references)
 			cmds = append(cmds, discoverKeysCmd(m.allHosts))
@@ -949,8 +972,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.viewMode = ViewDetail
 						m.detailHost = &item.host
 
+						// Look up source for this host
+						if m.hostSources != nil {
+							m.detailSource = m.hostSources[item.host.Name]
+						}
+
 						m.viewport = viewport.New(m.width, m.height)
-						content := renderDetailView(m.detailHost, m.width, m.height)
+						content := renderDetailView(m.detailHost, m.detailSource, m.width, m.height)
 						m.viewport.SetContent(content)
 					}
 
@@ -1211,7 +1239,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case hostKeyUpdatedMsg:
 		// Update detail view with new host data
 		m.detailHost = &msg.host
-		m.viewport.SetContent(renderDetailView(&msg.host, m.width, m.height))
+		m.viewport.SetContent(renderDetailView(&msg.host, m.detailSource, m.width, m.height))
 
 		// Show status message
 		if msg.cleared {

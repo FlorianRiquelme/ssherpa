@@ -21,4 +21,5 @@ type Server struct {
 	ProjectIDs        []string // server belongs to multiple projects
 	RemoteProjectPath string   // remote path on server for 'ssh user@host -t "cd /path && $SHELL"'
 	VaultID           string   // 1Password vault ID for write operations (empty for non-1P servers)
+	Source            string   // backend that provided this server (e.g., "ssh-config", "1password")
 }

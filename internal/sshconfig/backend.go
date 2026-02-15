@@ -183,6 +183,7 @@ func (b *Backend) toServer(host SSHHost) domain.Server {
 		User:        host.User,
 		Port:        parsePort(host.Port),
 		Tags:        []string{}, // SSH config has no tag concept
+		Source:      "ssh-config",
 	}
 
 	// Use Host as fallback if Hostname is empty (SSH behavior)

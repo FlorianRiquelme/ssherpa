@@ -12,9 +12,10 @@ import (
 // configLoadedMsg is sent after async SSH config parsing completes.
 // Carries the parsed hosts and any error that occurred during parsing.
 type configLoadedMsg struct {
-	hosts []sshconfig.SSHHost
-	items []list.Item
-	err   error
+	hosts   []sshconfig.SSHHost
+	items   []list.Item
+	sources map[string]string // Maps host name to source (e.g., "ssh-config", "1password")
+	err     error
 }
 
 // historyLoadedMsg is sent after async history loading completes.

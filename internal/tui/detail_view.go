@@ -9,10 +9,8 @@ import (
 )
 
 // renderDetailView renders the full-screen detail view for a selected host.
-// Shows all SSH config options, source file, and error info.
-// Note: This function signature needs to stay simple for compatibility.
-// Enriched key display will be added when we have access to discoveredKeys in the model.
-func renderDetailView(host *sshconfig.SSHHost, width, height int) string {
+// Shows all SSH config options, source backend, source file, and error info.
+func renderDetailView(host *sshconfig.SSHHost, source string, width, height int) string {
 	if host == nil {
 		return emptyStateStyle.Render("No host selected")
 	}
@@ -30,7 +28,13 @@ func renderDetailView(host *sshconfig.SSHHost, width, height int) string {
 		b.WriteString("\n")
 	}
 
-	// Source tracking
+	// Backend source
+	if source != "" {
+		b.WriteString(secondaryStyle.Render(fmt.Sprintf("Source: %s", source)))
+		b.WriteString("\n")
+	}
+
+	// Source file tracking (for ssh-config backend)
 	if host.SourceFile != "" {
 		sourceInfo := fmt.Sprintf("Defined in: %s", host.SourceFile)
 		if host.SourceLine > 0 {
