@@ -30,7 +30,6 @@ type Config struct {
 	Version        int                   `toml:"version"`                        // Config schema version for future migrations
 	Backend        string                `toml:"backend"`                        // Backend identifier: "sshconfig", "onepassword", "both"
 	ReturnToTUI    bool                  `toml:"return_to_tui_after_disconnect"` // Return to TUI after SSH session ends (default: false = exit to shell)
-	OnboardingDone bool                  `toml:"onboarding_done,omitempty"`      // Whether first-run onboarding has completed
 	MigrationDone  bool                  `toml:"migration_done,omitempty"`       // Whether migration wizard has been completed or skipped
 	OnePassword    OnePasswordConfig     `toml:"onepassword"`                    // 1Password backend settings
 	Projects       []ProjectConfig       `toml:"project"`                        // Projects (TOML array-of-tables: [[project]])
