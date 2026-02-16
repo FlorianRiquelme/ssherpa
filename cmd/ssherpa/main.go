@@ -23,11 +23,18 @@ func main() {
 	// Parse CLI flags BEFORE any backend initialization
 	versionFlag := flag.Bool("version", false, "Show version information")
 	setupFlag := flag.Bool("setup", false, "Run setup wizard")
+	fieldsFlag := flag.Bool("fields", false, "Show 1Password field reference")
 	flag.Parse()
 
 	// Handle --version flag
 	if *versionFlag {
 		fmt.Println(version.Detailed())
+		os.Exit(0)
+	}
+
+	// Handle --fields flag
+	if *fieldsFlag {
+		fmt.Print(tui.RenderFieldReferencePlain())
 		os.Exit(0)
 	}
 

@@ -227,4 +227,15 @@ var (
 	keyFingerprintStyle = lipgloss.NewStyle().
 				Foreground(secondaryColor).
 				Italic(true)
+
+	// Help overlay styles
+	helpOverlayStyle = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(accentColor).
+				Padding(1, 2).
+				Width(72)
+
+	helpFooterStyle = lipgloss.NewStyle().
+			Foreground(secondaryColor).
+			Italic(true)
 )
