@@ -70,11 +70,11 @@ func WriteTOMLCache(servers []*domain.Server, cachePath string) error {
 		return fmt.Errorf("create temp file: %w", err)
 	}
 	tmpPath := tmpFile.Name()
-	defer os.Remove(tmpPath) // Clean up temp file
+	defer func() { _ = os.Remove(tmpPath) }() // Clean up temp file
 
 	encoder := toml.NewEncoder(tmpFile)
 	if err := encoder.Encode(cache); err != nil {
-		tmpFile.Close()
+		_ = tmpFile.Close()
 		return fmt.Errorf("encode TOML: %w", err)
 	}
 

@@ -19,7 +19,7 @@ Host server1
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -58,7 +58,7 @@ Host server3
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -104,7 +104,7 @@ Host server1
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -126,7 +126,7 @@ Host server1
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -151,7 +151,7 @@ Host server1
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -170,7 +170,7 @@ Host server1
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -193,7 +193,7 @@ Host server1
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -212,7 +212,7 @@ Host server1
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -231,7 +231,7 @@ Host server1
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -285,7 +285,7 @@ Host server5
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -324,7 +324,7 @@ Host myserver.com
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -346,7 +346,7 @@ Match host prod-*
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)
@@ -370,7 +370,7 @@ Host server1
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	b, err := New(tmpFile)
 	require.NoError(t, err)

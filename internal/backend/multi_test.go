@@ -27,7 +27,7 @@ func TestMultiBackend_MergesServers(t *testing.T) {
 
 	// Create multi-backend
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// List servers - should get all 3
 	ctx := context.Background()
@@ -61,7 +61,7 @@ func TestMultiBackend_DeduplicatesByPriority(t *testing.T) {
 
 	// Create multi-backend with A, then B (B has higher priority)
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// List servers - should get 2 servers (one "prod-web", one "staging")
 	ctx := context.Background()
@@ -99,7 +99,7 @@ func TestMultiBackend_CaseInsensitiveDedup(t *testing.T) {
 
 	// Create multi-backend with A, then B (B has higher priority)
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// List servers - should get only 1 server (deduped)
 	ctx := context.Background()
@@ -121,7 +121,7 @@ func TestMultiBackend_WriterDelegation(t *testing.T) {
 
 	// Create multi-backend with A, then B
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// Create a server via multi-backend
 	ctx := context.Background()
@@ -182,7 +182,7 @@ func TestMultiBackend_GetServer_HighestPriorityFirst(t *testing.T) {
 
 	// Create multi-backend with A, then B (B has higher priority)
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// GetServer should try highest priority first (backend B)
 	ctx := context.Background()
@@ -197,7 +197,7 @@ func TestMultiBackend_GetServer_NotFound(t *testing.T) {
 	backendB := mock.New()
 
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// Try to get a non-existent server
 	ctx := context.Background()
@@ -220,7 +220,7 @@ func TestMultiBackend_ListProjects_Aggregates(t *testing.T) {
 	}, nil)
 
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// List projects - should get both (no dedup for projects)
 	ctx := context.Background()
@@ -238,10 +238,10 @@ func TestMultiBackend_SkipsErrorBackends(t *testing.T) {
 
 	// Backend B is closed (will error)
 	backendB := mock.New()
-	backendB.Close()
+	_ = backendB.Close()
 
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// List servers - should only get from backend A (skip B's error)
 	ctx := context.Background()
@@ -259,7 +259,7 @@ func TestMultiBackend_UpdateServerDelegation(t *testing.T) {
 	}, nil, nil)
 
 	multi := backend.NewMultiBackend(backendA)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// Update server via Writer interface
 	ctx := context.Background()
@@ -290,7 +290,7 @@ func TestMultiBackend_DeleteServerDelegation(t *testing.T) {
 	}, nil, nil)
 
 	multi := backend.NewMultiBackend(backendA)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// Delete server via Writer interface
 	ctx := context.Background()
@@ -341,7 +341,7 @@ func TestMultiBackend_FiltersOutSsherpaGeneratedServers(t *testing.T) {
 
 	// Create multi-backend with A, then B (B has higher priority)
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// List servers - should get 2 servers (not 3)
 	// "manual-host" from SSH config and "my-server" from 1Password
@@ -394,7 +394,7 @@ func TestMultiBackend_RenamedOnePasswordItemNoDuplicate(t *testing.T) {
 
 	// Create multi-backend with A, then B (B has higher priority)
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// List servers - should get 1 server with DisplayName="new-name" from 1Password
 	// The stale "old-name" mirror should be filtered out
@@ -414,7 +414,7 @@ func TestMultiBackend_GetProject_NotFound(t *testing.T) {
 	backendB := mock.New()
 
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	ctx := context.Background()
 	_, err := multi.GetProject(ctx, "nonexistent")
@@ -434,7 +434,7 @@ func TestMultiBackend_GetProject_HighestPriorityFirst(t *testing.T) {
 	}, nil)
 
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	ctx := context.Background()
 	project, err := multi.GetProject(ctx, "proj1")
@@ -454,7 +454,7 @@ func TestMultiBackend_ListCredentials_Aggregates(t *testing.T) {
 	})
 
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	ctx := context.Background()
 	creds, err := multi.ListCredentials(ctx)
@@ -467,7 +467,7 @@ func TestMultiBackend_GetCredential_NotFound(t *testing.T) {
 	backendB := mock.New()
 
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	ctx := context.Background()
 	_, err := multi.GetCredential(ctx, "nonexistent")
@@ -487,7 +487,7 @@ func TestMultiBackend_GetCredential_HighestPriorityFirst(t *testing.T) {
 	})
 
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	ctx := context.Background()
 	cred, err := multi.GetCredential(ctx, "cred1")
@@ -500,7 +500,7 @@ func TestMultiBackend_CreateProjectDelegation(t *testing.T) {
 	backendB := mock.New()
 
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	ctx := context.Background()
 	project := &domain.Project{ID: "proj-new", Name: "New Project"}
@@ -523,7 +523,7 @@ func TestMultiBackend_CreateCredentialDelegation(t *testing.T) {
 	backendB := mock.New()
 
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	ctx := context.Background()
 	cred := &domain.Credential{ID: "cred-new", Name: "New Key"}
@@ -558,7 +558,7 @@ func TestMultiBackend_GetOnePasswordBackend_NotFound(t *testing.T) {
 	backendB := mock.New()
 
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	result := multi.GetOnePasswordBackend()
 	assert.Nil(t, result)
@@ -571,7 +571,7 @@ func TestMultiBackend_UpdateProjectDelegation(t *testing.T) {
 	}, nil)
 
 	multi := backend.NewMultiBackend(backendA)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	ctx := context.Background()
 	updated := &domain.Project{ID: "proj1", Name: "Updated"}
@@ -591,7 +591,7 @@ func TestMultiBackend_DeleteProjectDelegation(t *testing.T) {
 	}, nil)
 
 	multi := backend.NewMultiBackend(backendA)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	ctx := context.Background()
 	err := multi.DeleteProject(ctx, "proj1")
@@ -608,7 +608,7 @@ func TestMultiBackend_UpdateCredentialDelegation(t *testing.T) {
 	})
 
 	multi := backend.NewMultiBackend(backendA)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	ctx := context.Background()
 	updated := &domain.Credential{ID: "cred1", Name: "Updated"}
@@ -628,7 +628,7 @@ func TestMultiBackend_DeleteCredentialDelegation(t *testing.T) {
 	})
 
 	multi := backend.NewMultiBackend(backendA)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	ctx := context.Background()
 	err := multi.DeleteCredential(ctx, "cred1")
@@ -657,7 +657,7 @@ func TestMultiBackend_PureSshConfigServersNotFiltered(t *testing.T) {
 
 	// Create multi-backend with A, then B
 	multi := backend.NewMultiBackend(backendA, backendB)
-	defer multi.Close()
+	defer func() { _ = multi.Close() }()
 
 	// List servers - should get 1 server
 	// User-authored SSH config entries are never filtered

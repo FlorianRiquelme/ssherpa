@@ -44,7 +44,7 @@ func ParseSSHConfig(path string) ([]SSHHost, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open SSH config: %w", err)
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	// Parse the config using kevinburke/ssh_config
 	cfg, err := ssh_config.Decode(f)

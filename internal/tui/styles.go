@@ -90,19 +90,8 @@ var (
 	separatorStyle = lipgloss.NewStyle().
 			Foreground(borderColor)
 
-	// Search bar container style
-	searchBarStyle = lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(borderColor).
-			Padding(0, 1)
-
 	// Search label style (accent color)
 	searchLabelStyle = lipgloss.NewStyle().
-				Foreground(accentColor).
-				Bold(true)
-
-	// Star indicator for last-connected server
-	starIndicatorStyle = lipgloss.NewStyle().
 				Foreground(accentColor).
 				Bold(true)
 
@@ -111,11 +100,6 @@ var (
 			Foreground(secondaryColor).
 			Italic(true).
 			Padding(2, 4)
-
-	// Project separator between current and other projects
-	projectSeparatorStyle = lipgloss.NewStyle().
-				Foreground(secondaryColor).
-				Italic(true)
 
 	// Picker overlay styles
 	pickerBorderStyle = lipgloss.NewStyle().

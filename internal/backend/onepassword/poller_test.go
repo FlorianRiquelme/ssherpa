@@ -58,7 +58,7 @@ func TestPoller_DetectsAvailability(t *testing.T) {
 	time.Sleep(200 * time.Millisecond)
 
 	// Stop poller
-	backend.Close()
+	_ = backend.Close()
 
 	// Verify status changed to Available
 	mu.Lock()
@@ -115,7 +115,7 @@ func TestPoller_DetectsUnavailability(t *testing.T) {
 	time.Sleep(200 * time.Millisecond)
 
 	// Stop poller
-	backend.Close()
+	_ = backend.Close()
 
 	// Verify status changed to Unavailable
 	mu.Lock()
@@ -204,13 +204,13 @@ func TestPoller_SkipsSyncAfterRecentWrite(t *testing.T) {
 	assert.Len(t, servers, 1)
 
 	// Stop poller
-	backend.Close()
+	_ = backend.Close()
 }
 
 func TestPoller_ConfigurableInterval(t *testing.T) {
 	// Set environment variable for test
-	os.Setenv("SSHJESUS_1PASSWORD_POLL_INTERVAL", "200ms")
-	defer os.Unsetenv("SSHJESUS_1PASSWORD_POLL_INTERVAL")
+	_ = os.Setenv("SSHJESUS_1PASSWORD_POLL_INTERVAL", "200ms")
+	defer func() { _ = os.Unsetenv("SSHJESUS_1PASSWORD_POLL_INTERVAL") }()
 
 	mock := NewMockClient()
 	tmpDir := t.TempDir()
@@ -236,7 +236,7 @@ func TestPoller_ConfigurableInterval(t *testing.T) {
 	time.Sleep(500 * time.Millisecond)
 
 	// Stop poller
-	backend.Close()
+	_ = backend.Close()
 
 	// Verify interval is roughly 200ms (with some tolerance)
 	mu.Lock()

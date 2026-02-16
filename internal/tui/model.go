@@ -362,21 +362,6 @@ func loadBackendServersCmd(backend backend.Backend) tea.Cmd {
 	}
 }
 
-// syncBackendCmd triggers a backend sync and returns the new status.
-// Used after sign-in to immediately refresh data and status.
-func syncBackendCmd(b backend.Backend) tea.Cmd {
-	return func() tea.Msg {
-		if syncer, ok := b.(backend.Syncer); ok {
-			ctx := context.Background()
-			syncer.SyncFromBackend(ctx)
-			// Error is OK - status is set appropriately by SyncFromBackend
-			return OnePasswordStatusMsg{Status: syncer.GetStatus()}
-		}
-		// Backend doesn't support sync - no-op
-		return nil
-	}
-}
-
 // syncBackendWithTimeoutCmd triggers a backend sync with a custom timeout.
 // Used for authentication: the op CLI triggers the native 1Password biometric dialog,
 // and the user needs time to approve it.
@@ -385,7 +370,7 @@ func syncBackendWithTimeoutCmd(b backend.Backend, timeout time.Duration) tea.Cmd
 		if syncer, ok := b.(backend.Syncer); ok {
 			ctx, cancel := context.WithTimeout(context.Background(), timeout)
 			defer cancel()
-			syncer.SyncFromBackend(ctx)
+			_ = syncer.SyncFromBackend(ctx)
 			return OnePasswordStatusMsg{Status: syncer.GetStatus()}
 		}
 		return nil
@@ -643,14 +628,12 @@ func (m *Model) rebuildListItems() {
 	// Organize hosts: recently used at top, rest alphabetically
 	var recentHosts []hostWithProject // Hosts with recent connections (top of list)
 	var otherHosts []hostWithProject  // All other hosts (sorted alphabetically)
-	var wildcards []sshconfig.SSHHost // Wildcards at bottom
 
 	for _, idx := range m.filteredIdx {
 		host := m.allHosts[idx]
 
 		// Wildcards always go to bottom
 		if host.IsWildcard {
-			wildcards = append(wildcards, host)
 			continue
 		}
 
@@ -1715,7 +1698,6 @@ Press 'q' to quit
 
 	case ViewDetail:
 		if m.detailHost == nil {
-			m.viewMode = ViewList
 			return m.list.View()
 		}
 
@@ -1738,7 +1720,6 @@ Press 'q' to quit
 
 	case ViewAdd, ViewEdit:
 		if m.serverForm == nil {
-			m.viewMode = ViewList
 			return m.list.View()
 		}
 
@@ -1761,7 +1742,6 @@ Press 'q' to quit
 
 	case ViewDelete:
 		if m.deleteConfirm == nil {
-			m.viewMode = ViewList
 			return m.list.View()
 		}
 		// Center the delete confirmation overlay

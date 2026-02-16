@@ -114,7 +114,7 @@ func main() {
 
 	// Construct backend based on configuration
 	var backend backendpkg.Backend
-	var opStatus backendpkg.BackendStatus = backendpkg.StatusUnknown
+	var opStatus = backendpkg.StatusUnknown
 	var opBackend *onepassword.Backend
 
 	switch backendType {
@@ -146,10 +146,7 @@ func main() {
 		opBackend = onepassword.NewWithCache(client, cachePath)
 
 		// Load from cache (best-effort, non-fatal) - TUI will show cached data instantly
-		if cacheErr := opBackend.LoadFromCache(); cacheErr != nil {
-			// No cache available, TUI will start with empty list
-			// Background sync will populate data when it completes
-		}
+		_ = opBackend.LoadFromCache()
 
 		backend = opBackend
 		opStatus = opBackend.GetStatus()
@@ -179,10 +176,7 @@ func main() {
 		opBackend = onepassword.NewWithCache(clientBoth, cachePath)
 
 		// Load from cache (best-effort, non-fatal) - SSH config data is always available
-		if cacheErr := opBackend.LoadFromCache(); cacheErr != nil {
-			// No cache available, TUI will show SSH config servers only
-			// Background sync will add 1Password servers when it completes
-		}
+		_ = opBackend.LoadFromCache()
 
 		backend = backendpkg.NewMultiBackend(sshBackend, opBackend)
 		opStatus = opBackend.GetStatus()
@@ -222,10 +216,10 @@ func main() {
 			}
 		}
 		opBackend.StartPolling(0, statusCallback) // 0 = use default interval from env or 5m
-		defer opBackend.Close()
+		defer func() { _ = opBackend.Close() }()
 	} else {
 		// Close backend on exit
-		defer backend.Close()
+		defer func() { _ = backend.Close() }()
 	}
 
 	if _, err := p.Run(); err != nil {

@@ -111,10 +111,7 @@ func (b *Backend) SyncFromOnePassword(ctx context.Context) error {
 
 	// Write to TOML cache for offline fallback
 	if b.cachePath != "" {
-		if err := sync.WriteTOMLCache(servers, b.cachePath); err != nil {
-			// Log but don't fail sync - cache write is best-effort
-			// In production, would use proper logging here
-		}
+		_ = sync.WriteTOMLCache(servers, b.cachePath)
 	}
 
 	return nil

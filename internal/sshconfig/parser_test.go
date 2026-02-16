@@ -30,7 +30,7 @@ Host server3
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	hosts, err := ParseSSHConfig(tmpFile)
 	require.NoError(t, err)
@@ -87,7 +87,7 @@ Host prod-*
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	hosts, err := ParseSSHConfig(tmpFile)
 	require.NoError(t, err)
@@ -118,7 +118,7 @@ func TestParseSSHConfig_MissingFile(t *testing.T) {
 
 func TestParseSSHConfig_EmptyFile(t *testing.T) {
 	tmpFile := createTempConfig(t, "")
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	hosts, err := ParseSSHConfig(tmpFile)
 	require.NoError(t, err)
@@ -133,7 +133,7 @@ Match host prod-*
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	hosts, err := ParseSSHConfig(tmpFile)
 	require.NoError(t, err) // Should NOT return fatal error
@@ -157,7 +157,7 @@ Host server1
 `
 
 	tmpFile := createTempConfig(t, content)
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	hosts, err := ParseSSHConfig(tmpFile)
 	require.NoError(t, err)

@@ -52,7 +52,7 @@ func TestRecordConnection_AppendsToExistingFile(t *testing.T) {
 	// Verify both entries exist
 	f, err := os.Open(historyPath)
 	require.NoError(t, err)
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	decoder := json.NewDecoder(f)
 	var entries []HistoryEntry
@@ -108,7 +108,7 @@ func TestGetLastConnectedForPath_NoMatch(t *testing.T) {
 	}
 	err = json.NewEncoder(f).Encode(entry)
 	require.NoError(t, err)
-	f.Close()
+	_ = f.Close()
 
 	result, err := GetLastConnectedForPath(historyPath, "/some/path")
 	require.NoError(t, err)
@@ -132,7 +132,7 @@ func TestGetLastConnectedForPath_FindsMatch(t *testing.T) {
 	}
 	err = json.NewEncoder(f).Encode(entry)
 	require.NoError(t, err)
-	f.Close()
+	_ = f.Close()
 
 	result, err := GetLastConnectedForPath(historyPath, targetPath)
 	require.NoError(t, err)
@@ -170,7 +170,7 @@ func TestGetLastConnectedForPath_FindsMostRecent(t *testing.T) {
 	}
 	err = json.NewEncoder(f).Encode(newEntry)
 	require.NoError(t, err)
-	f.Close()
+	_ = f.Close()
 
 	result, err := GetLastConnectedForPath(historyPath, targetPath)
 	require.NoError(t, err)
@@ -200,7 +200,7 @@ func TestGetLastConnectedForPath_SkipsMalformedLines(t *testing.T) {
 	}
 	err = json.NewEncoder(f).Encode(entry)
 	require.NoError(t, err)
-	f.Close()
+	_ = f.Close()
 
 	result, err := GetLastConnectedForPath(historyPath, targetPath)
 	require.NoError(t, err)
@@ -249,7 +249,7 @@ func TestGetRecentHosts_ReturnsUniqueHostsWithLatestTimestamp(t *testing.T) {
 	}
 	err = json.NewEncoder(f).Encode(otherEntry)
 	require.NoError(t, err)
-	f.Close()
+	_ = f.Close()
 
 	result, err := GetRecentHosts(historyPath, 10)
 	require.NoError(t, err)
@@ -293,7 +293,7 @@ func TestGetRecentHosts_MalformedLines(t *testing.T) {
 	}
 	err = json.NewEncoder(f).Encode(entry)
 	require.NoError(t, err)
-	f.Close()
+	_ = f.Close()
 
 	result, err := GetRecentHosts(historyPath, 10)
 	require.NoError(t, err)

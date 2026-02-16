@@ -32,7 +32,7 @@ func discoverKeysFromSocket(socketPath string, source KeySource) ([]SSHKey, erro
 	if err != nil {
 		return []SSHKey{}, nil
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 
 	agentClient := agent.NewClient(conn)
 

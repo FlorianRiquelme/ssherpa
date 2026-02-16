@@ -32,7 +32,7 @@ func RecordConnection(path, hostName, hostname, user string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	workingDir, err := os.Getwd()
 	if err != nil {
@@ -63,7 +63,7 @@ func GetLastConnectedForPath(historyPath, workingDir string) (*HistoryEntry, err
 		}
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	var entries []HistoryEntry
 	scanner := bufio.NewScanner(f)
@@ -100,7 +100,7 @@ func GetRecentHosts(historyPath string, limit int) (map[string]time.Time, error)
 		}
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	hostMap := make(map[string]time.Time)
 	scanner := bufio.NewScanner(f)

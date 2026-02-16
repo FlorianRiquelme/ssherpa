@@ -11,10 +11,10 @@ import (
 func TestDiscoverAgentKeys_NoSocket(t *testing.T) {
 	// Save original env var
 	originalSocket := os.Getenv("SSH_AUTH_SOCK")
-	defer os.Setenv("SSH_AUTH_SOCK", originalSocket)
+	defer func() { _ = os.Setenv("SSH_AUTH_SOCK", originalSocket) }()
 
 	// Clear SSH_AUTH_SOCK
-	os.Unsetenv("SSH_AUTH_SOCK")
+	_ = os.Unsetenv("SSH_AUTH_SOCK")
 
 	keys, err := DiscoverAgentKeys()
 	require.NoError(t, err, "should not error when agent unavailable")
@@ -24,10 +24,10 @@ func TestDiscoverAgentKeys_NoSocket(t *testing.T) {
 func TestDiscoverAgentKeys_InvalidSocket(t *testing.T) {
 	// Save original env var
 	originalSocket := os.Getenv("SSH_AUTH_SOCK")
-	defer os.Setenv("SSH_AUTH_SOCK", originalSocket)
+	defer func() { _ = os.Setenv("SSH_AUTH_SOCK", originalSocket) }()
 
 	// Set invalid socket path
-	os.Setenv("SSH_AUTH_SOCK", "/nonexistent/socket/path")
+	_ = os.Setenv("SSH_AUTH_SOCK", "/nonexistent/socket/path")
 
 	keys, err := DiscoverAgentKeys()
 	require.NoError(t, err, "should not error when agent unreachable")

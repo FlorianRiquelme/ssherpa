@@ -59,7 +59,7 @@ func TestDetectCurrentProject_NotGitRepo(t *testing.T) {
 	// Change to temp dir
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
-	defer os.Chdir(originalDir)
+	defer func() { _ = os.Chdir(originalDir) }()
 
 	err = os.Chdir(tempDir)
 	require.NoError(t, err)
@@ -83,7 +83,7 @@ func TestDetectCurrentProject_NoOriginRemote(t *testing.T) {
 	// Change to temp dir
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
-	defer os.Chdir(originalDir)
+	defer func() { _ = os.Chdir(originalDir) }()
 
 	err = os.Chdir(tempDir)
 	require.NoError(t, err)
@@ -124,7 +124,7 @@ func TestDetectCurrentProject_WithOrigin(t *testing.T) {
 	// Change to temp dir
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
-	defer os.Chdir(originalDir)
+	defer func() { _ = os.Chdir(originalDir) }()
 
 	err = os.Chdir(tempDir)
 	require.NoError(t, err)
@@ -154,7 +154,7 @@ func TestDetectCurrentProject_HTTPSOrigin(t *testing.T) {
 	// Change to temp dir
 	originalDir, err := os.Getwd()
 	require.NoError(t, err)
-	defer os.Chdir(originalDir)
+	defer func() { _ = os.Chdir(originalDir) }()
 
 	err = os.Chdir(tempDir)
 	require.NoError(t, err)

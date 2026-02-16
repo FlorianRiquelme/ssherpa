@@ -136,11 +136,7 @@ func (w SetupWizard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case onePasswordCheckCompleteMsg:
 		// 1Password check completed
 		w.checking = false
-		w.checkResult = onePasswordCheckResult{
-			available: msg.available,
-			vaults:    msg.vaults,
-			error:     msg.error,
-		}
+		w.checkResult = onePasswordCheckResult(msg)
 		w.vaults = msg.vaults
 
 		// Advance to the setup screen (shows success or failure)

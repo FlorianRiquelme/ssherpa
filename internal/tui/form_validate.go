@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -77,39 +75,6 @@ func validatePort(value string) string {
 	}
 
 	return ""
-}
-
-// validateIdentityFile validates the identity file path.
-// Returns empty string if valid, error message otherwise.
-// IdentityFile is optional (empty is valid).
-func validateIdentityFile(value string) string {
-	trimmed := strings.TrimSpace(value)
-	if trimmed == "" {
-		// Empty is valid (no identity file specified)
-		return ""
-	}
-
-	// Expand ~ to home directory
-	expandedPath := expandHomeDir(trimmed)
-
-	// Check if file exists
-	if _, err := os.Stat(expandedPath); os.IsNotExist(err) {
-		return fmt.Sprintf("File not found: %s", expandedPath)
-	}
-
-	return ""
-}
-
-// expandHomeDir expands ~ to the user's home directory.
-func expandHomeDir(path string) string {
-	if strings.HasPrefix(path, "~/") {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return path // Return original if can't get home dir
-		}
-		return filepath.Join(homeDir, path[2:])
-	}
-	return path
 }
 
 // checkDNS performs a DNS lookup on the hostname with a 2-second timeout.

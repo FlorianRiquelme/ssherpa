@@ -46,11 +46,6 @@ func (m *mockExecutor) setResponse(name string, args []string, stdout, stderr []
 	}
 }
 
-func (m *mockExecutor) getCallCount(name string, args []string) int {
-	key := name + " " + concatenateArgs(args)
-	return m.callCount[key]
-}
-
 func concatenateArgs(args []string) string {
 	result := ""
 	for i, arg := range args {
