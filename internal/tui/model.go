@@ -838,37 +838,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Store all hosts and initialize filtered index
 		if msg.hosts != nil {
-			// If we already have hosts, merge new ones by appending to bottom
-			if len(m.allHosts) > 0 {
-				// Build a set of existing host names for quick lookup
-				existingHosts := make(map[string]bool)
-				for _, host := range m.allHosts {
-					existingHosts[host.Name] = true
-				}
-
-				// Append only new hosts to the bottom
-				for _, host := range msg.hosts {
-					if !existingHosts[host.Name] {
-						m.allHosts = append(m.allHosts, host)
-					}
-				}
-			} else {
-				// First load - just set the hosts
-				m.allHosts = msg.hosts
-			}
+			// Full replacement — the backend (multi or ssh-config) returns the
+			// complete server list on every call, so stale entries are dropped
+			// automatically. Merging caused phantom duplicates when 1Password
+			// items were renamed (old cached name + new name both kept).
+			m.allHosts = msg.hosts
 
 			m.filterHosts() // Initial filter (shows all)
 
-			// Store source mapping
+			// Full replacement of source mapping
 			if msg.sources != nil {
-				// Merge source mappings instead of replacing
-				if m.hostSources == nil {
-					m.hostSources = msg.sources
-				} else {
-					for name, source := range msg.sources {
-						m.hostSources[name] = source
-					}
-				}
+				m.hostSources = msg.sources
 			}
 
 			// Re-discover keys now that hosts are loaded (includes IdentityFile references)
