@@ -4,3 +4,8 @@
 # Build artifacts
 sshjesus
 /ssherpa
+dist/
+
+# Planning and docs
+.planning/
+docs/plans/
