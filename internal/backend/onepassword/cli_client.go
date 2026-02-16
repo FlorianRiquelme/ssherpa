@@ -112,30 +112,66 @@ func (c *CLIClient) ListVaults(ctx context.Context) ([]Vault, error) {
 }
 
 // ListItems retrieves all items in a vault using the op CLI.
-// Note: This uses the same N+1 pattern as the SDK client for consistency.
+// This method requests full item data to avoid N+1 queries.
 func (c *CLIClient) ListItems(ctx context.Context, vaultID string) ([]Item, error) {
 	output, err := c.runOP(ctx, "item", "list", "--vault", vaultID, "--format", "json")
 	if err != nil {
 		return nil, fmt.Errorf("failed to list items in vault %s: %w", vaultID, err)
 	}
 
-	var itemOverviews []struct {
-		ID string `json:"id"`
+	var cliItems []struct {
+		ID       string   `json:"id"`
+		Title    string   `json:"title"`
+		Category string   `json:"category"`
+		Tags     []string `json:"tags"`
+		Vault    struct {
+			ID string `json:"id"`
+		} `json:"vault"`
+		Fields []struct {
+			ID      string  `json:"id"`
+			Label   string  `json:"label"`
+			Type    string  `json:"type"`
+			Value   string  `json:"value"`
+			Section *struct {
+				ID string `json:"id"`
+			} `json:"section"`
+		} `json:"fields"`
 	}
 
-	if err := json.Unmarshal(output, &itemOverviews); err != nil {
+	if err := json.Unmarshal(output, &cliItems); err != nil {
 		return nil, fmt.Errorf("failed to parse item list response: %w", err)
 	}
 
-	// Fetch full details for each item (N+1 pattern like SDK)
-	items := make([]Item, 0, len(itemOverviews))
-	for _, overview := range itemOverviews {
-		item, err := c.GetItem(ctx, vaultID, overview.ID)
-		if err != nil {
-			// Skip items we can't fetch (might be deleted concurrently)
-			continue
+	// Convert CLI items to our Item structure
+	items := make([]Item, 0, len(cliItems))
+	for _, cliItem := range cliItems {
+		item := Item{
+			ID:       cliItem.ID,
+			Title:    cliItem.Title,
+			VaultID:  cliItem.Vault.ID,
+			Category: strings.ToLower(cliItem.Category),
+			Tags:     cliItem.Tags,
+			Fields:   make([]ItemField, 0, len(cliItem.Fields)),
 		}
-		items = append(items, *item)
+
+		// Map fields
+		for _, f := range cliItem.Fields {
+			var sectionID *string
+			if f.Section != nil {
+				sectionID = &f.Section.ID
+			}
+
+			field := ItemField{
+				ID:        f.ID,
+				Title:     f.Label,
+				SectionID: sectionID,
+				Value:     f.Value,
+				FieldType: mapCLIFieldType(f.Type),
+			}
+			item.Fields = append(item.Fields, field)
+		}
+
+		items = append(items, item)
 	}
 
 	return items, nil

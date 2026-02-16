@@ -139,34 +139,39 @@ func TestListVaults(t *testing.T) {
 
 func TestListItems(t *testing.T) {
 	tests := []struct {
-		name           string
-		vaultID        string
-		listResponse   string
-		getItemResp    string
-		wantErr        bool
-		wantCount      int
-		expectGetCalls int
+		name         string
+		vaultID      string
+		listResponse string
+		wantErr      bool
+		wantCount    int
 	}{
 		{
 			name:    "successful list with items",
 			vaultID: "vault1",
 			listResponse: `[
-				{"id": "item1"},
-				{"id": "item2"}
+				{
+					"id": "item1",
+					"title": "Server 1",
+					"category": "SERVER",
+					"tags": ["ssherpa"],
+					"vault": {"id": "vault1"},
+					"fields": [
+						{"id": "f1", "label": "hostname", "type": "STRING", "value": "example.com"}
+					]
+				},
+				{
+					"id": "item2",
+					"title": "Server 2",
+					"category": "SERVER",
+					"tags": ["ssherpa"],
+					"vault": {"id": "vault1"},
+					"fields": [
+						{"id": "f2", "label": "hostname", "type": "STRING", "value": "example2.com"}
+					]
+				}
 			]`,
-			getItemResp: `{
-				"id": "item1",
-				"title": "Server 1",
-				"category": "SERVER",
-				"tags": ["ssherpa"],
-				"vault": {"id": "vault1"},
-				"fields": [
-					{"id": "f1", "label": "hostname", "type": "STRING", "value": "example.com"}
-				]
-			}`,
-			wantErr:        false,
-			wantCount:      2,
-			expectGetCalls: 2,
+			wantErr:   false,
+			wantCount: 2,
 		},
 		{
 			name:         "empty item list",
@@ -186,11 +191,6 @@ func TestListItems(t *testing.T) {
 			}
 
 			mock.setResponse("op", []string{"item", "list", "--vault", tt.vaultID, "--format", "json"}, []byte(tt.listResponse), nil, nil)
-
-			if tt.expectGetCalls > 0 {
-				mock.setResponse("op", []string{"item", "get", "item1", "--vault", tt.vaultID, "--format", "json"}, []byte(tt.getItemResp), nil, nil)
-				mock.setResponse("op", []string{"item", "get", "item2", "--vault", tt.vaultID, "--format", "json"}, []byte(tt.getItemResp), nil, nil)
-			}
 
 			items, err := client.ListItems(context.Background(), tt.vaultID)
 

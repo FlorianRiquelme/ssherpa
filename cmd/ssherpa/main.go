@@ -214,7 +214,7 @@ func main() {
 				}
 			}
 		}
-		opBackend.StartPolling(0, statusCallback) // 0 = use default interval from env or 5s
+		opBackend.StartPolling(0, statusCallback) // 0 = use default interval from env or 5m
 		defer opBackend.Close()
 	} else {
 		// Close backend on exit

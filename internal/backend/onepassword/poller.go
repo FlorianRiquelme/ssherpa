@@ -20,12 +20,12 @@ type Poller struct {
 }
 
 // NewPoller creates a new poller for the backend.
-// interval: how often to poll (use 0 to read from SSHJESUS_1PASSWORD_POLL_INTERVAL env var, defaults to 5s)
+// interval: how often to poll (use 0 to read from SSHJESUS_1PASSWORD_POLL_INTERVAL env var, defaults to 5m)
 // onChange: optional callback invoked when status changes (nil = no callback)
 func NewPoller(backend *Backend, interval time.Duration, onChange func(backendpkg.BackendStatus)) *Poller {
 	// Check environment variable for interval override
 	if interval == 0 {
-		interval = 5 * time.Second // default
+		interval = 5 * time.Minute // default - poll every 5 minutes
 		if envInterval := os.Getenv("SSHJESUS_1PASSWORD_POLL_INTERVAL"); envInterval != "" {
 			if parsed, err := time.ParseDuration(envInterval); err == nil {
 				interval = parsed
