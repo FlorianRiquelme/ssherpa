@@ -134,8 +134,8 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 	searchKeys := SearchKeyMap{
 		ClearSearch: keys.ClearSearch,
 	}
-	// Arrow-only navigation for search mode (excludes j/k which are valid search chars)
-	searchNavKeys := key.NewBinding(key.WithKeys("up", "down"))
+	// Navigation for search mode (includes j/k so they move the cursor instead of typing)
+	searchNavKeys := key.NewBinding(key.WithKeys("up", "down", "j", "k"))
 	helpModel := help.New()
 
 	// Build project map for fast lookup
@@ -953,6 +953,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if m.searchFocused {
+				// Clear status message on any key press in search mode
+				m.statusMsg = ""
+
 				// Search mode key handling
 				switch {
 				case key.Matches(msg, m.keys.ClearSearch):
@@ -974,24 +977,132 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, m.connectToHost(item.host)
 					}
 
+				// Arrow/j/k navigation in search mode
+				case key.Matches(msg, m.searchNavKeys):
+					var cmd tea.Cmd
+					m.list, cmd = m.list.Update(msg)
+					cmds = append(cmds, cmd)
 
-			// Arrow key navigation in search mode
-			case key.Matches(msg, m.searchNavKeys):
-				var cmd tea.Cmd
-				m.list, cmd = m.list.Update(msg)
-				cmds = append(cmds, cmd)
+				// Tab to view details from search mode
+				case key.Matches(msg, m.keys.Details):
+					selectedItem := m.list.SelectedItem()
+					if selectedItem == nil {
+						return m, nil
+					}
+					if item, ok := selectedItem.(hostItem); ok {
+						m.detailHost = &item.host
+						m.detailSource = m.hostSources[item.host.Name]
+						m.viewMode = ViewDetail
+					}
 
-			// Tab to view details from search mode
-			case key.Matches(msg, m.keys.Details):
-				selectedItem := m.list.SelectedItem()
-				if selectedItem == nil {
-					return m, nil
-				}
-				if item, ok := selectedItem.(hostItem); ok {
-					m.detailHost = &item.host
-					m.detailSource = m.hostSources[item.host.Name]
-					m.viewMode = ViewDetail
-				}
+				case key.Matches(msg, m.keys.Quit):
+					// q: quit from search mode
+					return m, tea.Quit
+
+				case key.Matches(msg, m.keys.Help):
+					// ?: toggle help overlay from search mode
+					if m.showingHelp {
+						m.showingHelp = false
+						m.helpOverlay = nil
+					} else {
+						overlay := NewHelpOverlay(m.width, m.height)
+						m.helpOverlay = &overlay
+						m.showingHelp = true
+					}
+
+				case key.Matches(msg, m.keys.AddServer):
+					// a: open add server form from search mode
+					form := NewServerForm(m.configPath)
+					if has1PasswordKeys(m.discoveredKeys) {
+						form.fields[4].input.Placeholder = "Default (1Password agent) - Press Enter to select key"
+					}
+					m.serverForm = &form
+					m.viewMode = ViewAdd
+
+				case key.Matches(msg, m.keys.EditServer):
+					// e: open edit server form from search mode
+					selectedItem := m.list.SelectedItem()
+					if selectedItem == nil {
+						return m, nil
+					}
+					if item, ok := selectedItem.(hostItem); ok {
+						form := NewEditServerForm(m.configPath, item.host)
+						m.serverForm = &form
+						m.viewMode = ViewEdit
+					}
+
+				case key.Matches(msg, m.keys.AssignProject):
+					// p: open project picker from search mode
+					selectedItem := m.list.SelectedItem()
+					if selectedItem == nil {
+						return m, nil
+					}
+					if item, ok := selectedItem.(hostItem); ok {
+						m.showingPicker = true
+						picker := m.createPickerForHost(item.host.Name)
+						m.picker = &picker
+					}
+
+				case key.Matches(msg, m.keys.DeleteServer):
+					// d: open delete confirmation from search mode
+					selectedItem := m.list.SelectedItem()
+					if selectedItem == nil {
+						return m, nil
+					}
+					if item, ok := selectedItem.(hostItem); ok {
+						confirm := NewDeleteConfirm(item.host.Name, m.configPath)
+						m.deleteConfirm = &confirm
+						m.viewMode = ViewDelete
+					}
+
+				case key.Matches(msg, m.keys.Undo):
+					// u: undo last delete from search mode
+					if m.undoBuffer.IsEmpty() {
+						return m, nil
+					}
+					entry, ok := m.undoBuffer.Pop()
+					if !ok {
+						return m, nil
+					}
+					return m, func() tea.Msg {
+						err := RestoreHost(entry.ConfigPath, entry.RawLines)
+						if err != nil {
+							return undoErrorMsg{err: err}
+						}
+						return undoCompletedMsg{alias: entry.Alias}
+					}
+
+				case key.Matches(msg, m.keys.SignIn):
+					// s: trigger 1Password sign-in from search mode
+					if m.appBackend != nil {
+						m.statusMsg = "Authenticating with 1Password..."
+						return m, syncBackendWithTimeoutCmd(m.appBackend, 60*time.Second)
+					}
+
+				case key.Matches(msg, m.keys.GoToTop):
+					// g/Home: jump to top from search mode
+					m.list.Select(0)
+
+				case key.Matches(msg, m.keys.GoToBottom):
+					// G/End: jump to bottom from search mode
+					m.list.Select(len(m.list.Items()) - 1)
+
+				case key.Matches(msg, m.keys.HalfPageUp):
+					// Ctrl+u: half page up from search mode
+					listHeight := m.list.Height()
+					halfPage := listHeight / 2
+					for i := 0; i < halfPage; i++ {
+						m.list.CursorUp()
+					}
+
+				case key.Matches(msg, m.keys.HalfPageDown):
+					// Ctrl+d: half page down from search mode
+					listHeight := m.list.Height()
+					halfPage := listHeight / 2
+					for i := 0; i < halfPage; i++ {
+						m.list.CursorDown()
+					}
+
 				default:
 					// Pass all other keys to search input
 					var cmd tea.Cmd
