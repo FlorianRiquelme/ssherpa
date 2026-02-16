@@ -260,6 +260,47 @@ func TestGetRecentHosts_ReturnsUniqueHostsWithLatestTimestamp(t *testing.T) {
 	assert.WithinDuration(t, newTime, server1Time, 1*time.Second)
 }
 
+func TestDefaultHistoryPath(t *testing.T) {
+	path := DefaultHistoryPath()
+	assert.NotEmpty(t, path)
+	assert.Contains(t, path, ".ssh")
+	assert.Contains(t, path, "ssherpa_history.json")
+}
+
+func TestRecordConnection_InvalidPath(t *testing.T) {
+	err := RecordConnection("/nonexistent-dir/sub/history.json", "host", "1.2.3.4", "user")
+	require.Error(t, err)
+}
+
+func TestGetRecentHosts_MalformedLines(t *testing.T) {
+	tmpDir := t.TempDir()
+	historyPath := filepath.Join(tmpDir, "history.json")
+
+	f, err := os.OpenFile(historyPath, os.O_CREATE|os.O_WRONLY, 0600)
+	require.NoError(t, err)
+
+	// Write malformed line
+	_, err = f.WriteString("{bad json}\n")
+	require.NoError(t, err)
+
+	// Write valid entry
+	entry := HistoryEntry{
+		Timestamp:  time.Now(),
+		WorkingDir: "/path",
+		HostName:   "server1",
+		Hostname:   "10.0.0.1",
+		User:       "user1",
+	}
+	err = json.NewEncoder(f).Encode(entry)
+	require.NoError(t, err)
+	f.Close()
+
+	result, err := GetRecentHosts(historyPath, 10)
+	require.NoError(t, err)
+	assert.Len(t, result, 1)
+	assert.Contains(t, result, "server1")
+}
+
 func TestGetRecentHosts_NoFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	historyPath := filepath.Join(tmpDir, "nonexistent.json")

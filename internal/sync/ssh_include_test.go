@@ -348,6 +348,94 @@ func TestEnsureIncludeDirective_Idempotent(t *testing.T) {
 	assert.Equal(t, 1, includeCount, "Include directive should appear exactly once")
 }
 
+func TestWriteSSHIncludeFile_ForwardAgentFromTag(t *testing.T) {
+	tmpDir := t.TempDir()
+	includePath := filepath.Join(tmpDir, "ssherpa_config")
+
+	server := &domain.Server{
+		ID:          "srv-fa-tag",
+		DisplayName: "forward-agent-tag",
+		Host:        "fa.example.com",
+		User:        "admin",
+		Port:        22,
+		Tags:        []string{"production", "ForwardAgent"},
+	}
+
+	err := WriteSSHIncludeFile([]*domain.Server{server}, includePath)
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(includePath)
+	require.NoError(t, err)
+
+	assert.Contains(t, string(content), "ForwardAgent yes")
+}
+
+func TestWriteSSHIncludeFile_ForwardAgentFromNotes(t *testing.T) {
+	tmpDir := t.TempDir()
+	includePath := filepath.Join(tmpDir, "ssherpa_config")
+
+	server := &domain.Server{
+		ID:          "srv-fa-notes",
+		DisplayName: "forward-agent-notes",
+		Host:        "fa2.example.com",
+		User:        "admin",
+		Port:        22,
+		Notes:       "This server needs ForwardAgent enabled",
+	}
+
+	err := WriteSSHIncludeFile([]*domain.Server{server}, includePath)
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(includePath)
+	require.NoError(t, err)
+
+	assert.Contains(t, string(content), "ForwardAgent yes")
+}
+
+func TestWriteSSHIncludeFile_NoForwardAgent(t *testing.T) {
+	tmpDir := t.TempDir()
+	includePath := filepath.Join(tmpDir, "ssherpa_config")
+
+	server := &domain.Server{
+		ID:          "srv-no-fa",
+		DisplayName: "no-forward-agent",
+		Host:        "nofa.example.com",
+		User:        "admin",
+		Port:        22,
+		Tags:        []string{"production"},
+		Notes:       "Regular server",
+	}
+
+	err := WriteSSHIncludeFile([]*domain.Server{server}, includePath)
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(includePath)
+	require.NoError(t, err)
+
+	assert.NotContains(t, string(content), "ForwardAgent")
+}
+
+func TestWriteSSHIncludeFile_PortZero(t *testing.T) {
+	tmpDir := t.TempDir()
+	includePath := filepath.Join(tmpDir, "ssherpa_config")
+
+	server := &domain.Server{
+		ID:          "srv-port0",
+		DisplayName: "port-zero",
+		Host:        "zero.example.com",
+		User:        "admin",
+		Port:        0,
+	}
+
+	err := WriteSSHIncludeFile([]*domain.Server{server}, includePath)
+	require.NoError(t, err)
+
+	content, err := os.ReadFile(includePath)
+	require.NoError(t, err)
+
+	assert.NotContains(t, string(content), "Port ")
+}
+
 func TestEnsureIncludeDirective_CaseInsensitive(t *testing.T) {
 	// Create temp directory for test
 	tmpDir := t.TempDir()

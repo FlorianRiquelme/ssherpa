@@ -270,6 +270,137 @@ func TestConfigWithProjects_MultipleRemoteURLs(t *testing.T) {
 	assert.Equal(t, original.Projects[0].GitRemoteURLs, reloaded.Projects[0].GitRemoteURLs)
 }
 
+func TestConfigValidate_InvalidBackend(t *testing.T) {
+	cfg := &Config{
+		Version: 1,
+		Backend: "invalid",
+	}
+
+	err := cfg.Validate()
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid backend")
+	assert.Contains(t, err.Error(), "invalid")
+}
+
+func TestConfigValidate_AllValidBackends(t *testing.T) {
+	for _, b := range []string{"sshconfig", "onepassword", "both"} {
+		cfg := &Config{Version: 1, Backend: b}
+		err := cfg.Validate()
+		assert.NoError(t, err, "backend %q should be valid", b)
+	}
+}
+
+func TestSaveAndReload_OnePasswordConfig(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "config.toml")
+
+	original := &Config{
+		Version: 1,
+		Backend: "onepassword",
+		OnePassword: OnePasswordConfig{
+			AccountName: "my-team.1password.com",
+			CachePath:   "/tmp/op-cache",
+		},
+	}
+
+	err := Save(original, configPath)
+	require.NoError(t, err)
+
+	reloaded, err := Load(configPath)
+	require.NoError(t, err)
+
+	assert.Equal(t, "my-team.1password.com", reloaded.OnePassword.AccountName)
+	assert.Equal(t, "/tmp/op-cache", reloaded.OnePassword.CachePath)
+}
+
+func TestSaveAndReload_ReturnToTUI(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "config.toml")
+
+	original := &Config{
+		Version:     1,
+		Backend:     "sshconfig",
+		ReturnToTUI: true,
+	}
+
+	err := Save(original, configPath)
+	require.NoError(t, err)
+
+	reloaded, err := Load(configPath)
+	require.NoError(t, err)
+
+	assert.True(t, reloaded.ReturnToTUI)
+}
+
+func TestSaveAndReload_MigrationDone(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "config.toml")
+
+	original := &Config{
+		Version:       1,
+		Backend:       "both",
+		MigrationDone: true,
+	}
+
+	err := Save(original, configPath)
+	require.NoError(t, err)
+
+	reloaded, err := Load(configPath)
+	require.NoError(t, err)
+
+	assert.True(t, reloaded.MigrationDone)
+}
+
+func TestSave_CreatesFile(t *testing.T) {
+	tempDir := t.TempDir()
+	configPath := filepath.Join(tempDir, "subdir", "config.toml")
+
+	// Create the subdir first (Save uses os.Create which doesn't create parents)
+	err := os.MkdirAll(filepath.Dir(configPath), 0755)
+	require.NoError(t, err)
+
+	cfg := &Config{
+		Version: 1,
+		Backend: "sshconfig",
+	}
+
+	err = Save(cfg, configPath)
+	require.NoError(t, err)
+
+	// Verify file exists and can be loaded
+	reloaded, err := Load(configPath)
+	require.NoError(t, err)
+	assert.Equal(t, "sshconfig", reloaded.Backend)
+}
+
+func TestDefaultPath(t *testing.T) {
+	path, err := DefaultPath()
+	require.NoError(t, err)
+	assert.Contains(t, path, "ssherpa")
+	assert.Contains(t, path, "config.toml")
+}
+
+func TestLoad_EmptyPathNoConfig(t *testing.T) {
+	// When no config exists in XDG dirs, Load("") returns ErrConfigNotFound
+	// This relies on XDG not having our config, which is typical in test envs
+	// We can't easily control XDG in unit tests, so we test with explicit path
+	tmpDir := t.TempDir()
+	nonExistent := filepath.Join(tmpDir, "nope.toml")
+
+	cfg, err := Load(nonExistent)
+	require.Error(t, err)
+	assert.Nil(t, cfg)
+	assert.ErrorIs(t, err, errors.ErrConfigNotFound)
+}
+
+func TestSave_InvalidPath(t *testing.T) {
+	cfg := &Config{Version: 1, Backend: "sshconfig"}
+
+	err := Save(cfg, "/nonexistent-dir-xyz/sub/config.toml")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "failed to create config file")
+}
+
 func TestConfigWithProjects_ServerNames(t *testing.T) {
 	tempDir := t.TempDir()
 	configPath := filepath.Join(tempDir, "config.toml")

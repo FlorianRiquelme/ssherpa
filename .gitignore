@@ -6,6 +6,9 @@ sshjesus
 /ssherpa
 dist/
 
+# Test coverage
+*.out
+
 # Planning and docs
 .planning/
 .claude/

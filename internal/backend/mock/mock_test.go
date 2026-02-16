@@ -559,6 +559,225 @@ func TestCreateServerStoresCopy(t *testing.T) {
 	assert.Equal(t, "Test Server", retrieved.DisplayName)
 }
 
+// ===== Seed Tests =====
+
+func TestSeed(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	servers := []*domain.Server{
+		{ID: "srv-1", Host: "host1.com", User: "user1", Port: 22, DisplayName: "Server 1"},
+		{ID: "srv-2", Host: "host2.com", User: "user2", Port: 22, DisplayName: "Server 2"},
+	}
+	projects := []*domain.Project{
+		{ID: "prj-1", Name: "Project 1"},
+	}
+	credentials := []*domain.Credential{
+		{ID: "cred-1", Name: "Cred 1", Type: domain.CredentialKeyFile, KeyFilePath: "/key"},
+	}
+
+	b.Seed(servers, projects, credentials)
+
+	// Verify servers
+	list, err := b.ListServers(ctx)
+	require.NoError(t, err)
+	assert.Len(t, list, 2)
+
+	// Verify projects
+	prj, err := b.GetProject(ctx, "prj-1")
+	require.NoError(t, err)
+	assert.Equal(t, "Project 1", prj.Name)
+
+	// Verify credentials
+	cred, err := b.GetCredential(ctx, "cred-1")
+	require.NoError(t, err)
+	assert.Equal(t, "Cred 1", cred.Name)
+}
+
+func TestSeed_StoresCopies(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	srv := &domain.Server{ID: "srv-1", Host: "original.com", User: "user", Port: 22, DisplayName: "Srv"}
+	b.Seed([]*domain.Server{srv}, nil, nil)
+
+	// Mutate original after seeding
+	srv.Host = "mutated.com"
+
+	// Should return the original value
+	retrieved, err := b.GetServer(ctx, "srv-1")
+	require.NoError(t, err)
+	assert.Equal(t, "original.com", retrieved.Host)
+}
+
+// ===== String Tests =====
+
+func TestString(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	s := b.String()
+	assert.Contains(t, s, "Mock Backend")
+	assert.Contains(t, s, "servers: 0")
+	assert.Contains(t, s, "projects: 0")
+	assert.Contains(t, s, "credentials: 0")
+	assert.Contains(t, s, "closed: false")
+
+	// Add some data and check again
+	_ = b.CreateServer(ctx, &domain.Server{ID: "srv-1", Host: "h", User: "u", DisplayName: "d"})
+	_ = b.CreateProject(ctx, &domain.Project{ID: "prj-1", Name: "p"})
+	s = b.String()
+	assert.Contains(t, s, "servers: 1")
+	assert.Contains(t, s, "projects: 1")
+
+	// Close and verify
+	_ = b.Close()
+	s = b.String()
+	assert.Contains(t, s, "closed: true")
+}
+
+// ===== Closed Backend - Extended Tests =====
+
+func TestClosedBackend_Projects(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	err := b.Close()
+	require.NoError(t, err)
+
+	_, err = b.GetProject(ctx, "prj-1")
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrBackendUnavailable))
+
+	_, err = b.ListProjects(ctx)
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrBackendUnavailable))
+
+	err = b.CreateProject(ctx, &domain.Project{ID: "prj-1", Name: "p"})
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrBackendUnavailable))
+
+	err = b.UpdateProject(ctx, &domain.Project{ID: "prj-1", Name: "p"})
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrBackendUnavailable))
+
+	err = b.DeleteProject(ctx, "prj-1")
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrBackendUnavailable))
+}
+
+func TestClosedBackend_Credentials(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	err := b.Close()
+	require.NoError(t, err)
+
+	_, err = b.GetCredential(ctx, "cred-1")
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrBackendUnavailable))
+
+	_, err = b.ListCredentials(ctx)
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrBackendUnavailable))
+
+	err = b.CreateCredential(ctx, &domain.Credential{ID: "cred-1", Name: "c"})
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrBackendUnavailable))
+
+	err = b.UpdateCredential(ctx, &domain.Credential{ID: "cred-1", Name: "c"})
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrBackendUnavailable))
+
+	err = b.DeleteCredential(ctx, "cred-1")
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrBackendUnavailable))
+}
+
+// ===== Not Found - Extended Tests =====
+
+func TestCreateProjectDuplicate(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	prj := &domain.Project{ID: "prj-1", Name: "Project"}
+	err := b.CreateProject(ctx, prj)
+	require.NoError(t, err)
+
+	err = b.CreateProject(ctx, prj)
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrDuplicateID))
+}
+
+func TestUpdateProjectNotFound(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	err := b.UpdateProject(ctx, &domain.Project{ID: "nonexistent", Name: "p"})
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrProjectNotFound))
+}
+
+func TestDeleteProjectNotFound(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	err := b.DeleteProject(ctx, "nonexistent")
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrProjectNotFound))
+}
+
+func TestCreateCredentialDuplicate(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	cred := &domain.Credential{ID: "cred-1", Name: "Cred"}
+	err := b.CreateCredential(ctx, cred)
+	require.NoError(t, err)
+
+	err = b.CreateCredential(ctx, cred)
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrDuplicateID))
+}
+
+func TestUpdateCredentialNotFound(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	err := b.UpdateCredential(ctx, &domain.Credential{ID: "nonexistent", Name: "c"})
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrCredentialNotFound))
+}
+
+func TestDeleteCredentialNotFound(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	err := b.DeleteCredential(ctx, "nonexistent")
+	require.Error(t, err)
+	assert.True(t, errors.Is(err, backendErrors.ErrCredentialNotFound))
+}
+
+func TestListProjectsEmpty(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	list, err := b.ListProjects(ctx)
+	require.NoError(t, err)
+	assert.NotNil(t, list)
+	assert.Len(t, list, 0)
+}
+
+func TestListCredentialsEmpty(t *testing.T) {
+	b := New()
+	ctx := context.Background()
+
+	list, err := b.ListCredentials(ctx)
+	require.NoError(t, err)
+	assert.NotNil(t, list)
+	assert.Len(t, list, 0)
+}
+
 // ===== Interface Verification =====
 
 var _ backend.Backend = (*Backend)(nil)

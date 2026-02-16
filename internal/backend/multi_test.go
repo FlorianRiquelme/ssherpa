@@ -409,6 +409,235 @@ func TestMultiBackend_RenamedOnePasswordItemNoDuplicate(t *testing.T) {
 	assert.Equal(t, "op-abc123", servers[0].ID, "Should have 1Password ID")
 }
 
+func TestMultiBackend_GetProject_NotFound(t *testing.T) {
+	backendA := mock.New()
+	backendB := mock.New()
+
+	multi := backend.NewMultiBackend(backendA, backendB)
+	defer multi.Close()
+
+	ctx := context.Background()
+	_, err := multi.GetProject(ctx, "nonexistent")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not found")
+}
+
+func TestMultiBackend_GetProject_HighestPriorityFirst(t *testing.T) {
+	backendA := mock.New()
+	backendA.Seed(nil, []*domain.Project{
+		{ID: "proj1", Name: "Project A"},
+	}, nil)
+
+	backendB := mock.New()
+	backendB.Seed(nil, []*domain.Project{
+		{ID: "proj1", Name: "Project B"},
+	}, nil)
+
+	multi := backend.NewMultiBackend(backendA, backendB)
+	defer multi.Close()
+
+	ctx := context.Background()
+	project, err := multi.GetProject(ctx, "proj1")
+	require.NoError(t, err)
+	assert.Equal(t, "Project B", project.Name, "Should return from highest-priority backend")
+}
+
+func TestMultiBackend_ListCredentials_Aggregates(t *testing.T) {
+	backendA := mock.New()
+	backendA.Seed(nil, nil, []*domain.Credential{
+		{ID: "cred1", Name: "Key A"},
+	})
+
+	backendB := mock.New()
+	backendB.Seed(nil, nil, []*domain.Credential{
+		{ID: "cred2", Name: "Key B"},
+	})
+
+	multi := backend.NewMultiBackend(backendA, backendB)
+	defer multi.Close()
+
+	ctx := context.Background()
+	creds, err := multi.ListCredentials(ctx)
+	require.NoError(t, err)
+	assert.Len(t, creds, 2)
+}
+
+func TestMultiBackend_GetCredential_NotFound(t *testing.T) {
+	backendA := mock.New()
+	backendB := mock.New()
+
+	multi := backend.NewMultiBackend(backendA, backendB)
+	defer multi.Close()
+
+	ctx := context.Background()
+	_, err := multi.GetCredential(ctx, "nonexistent")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "not found")
+}
+
+func TestMultiBackend_GetCredential_HighestPriorityFirst(t *testing.T) {
+	backendA := mock.New()
+	backendA.Seed(nil, nil, []*domain.Credential{
+		{ID: "cred1", Name: "Cred A"},
+	})
+
+	backendB := mock.New()
+	backendB.Seed(nil, nil, []*domain.Credential{
+		{ID: "cred1", Name: "Cred B"},
+	})
+
+	multi := backend.NewMultiBackend(backendA, backendB)
+	defer multi.Close()
+
+	ctx := context.Background()
+	cred, err := multi.GetCredential(ctx, "cred1")
+	require.NoError(t, err)
+	assert.Equal(t, "Cred B", cred.Name, "Should return from highest-priority backend")
+}
+
+func TestMultiBackend_CreateProjectDelegation(t *testing.T) {
+	backendA := mock.New()
+	backendB := mock.New()
+
+	multi := backend.NewMultiBackend(backendA, backendB)
+	defer multi.Close()
+
+	ctx := context.Background()
+	project := &domain.Project{ID: "proj-new", Name: "New Project"}
+
+	err := multi.CreateProject(ctx, project)
+	require.NoError(t, err)
+
+	// Should delegate to first Writer-capable backend (A)
+	p, err := backendA.GetProject(ctx, "proj-new")
+	require.NoError(t, err)
+	assert.Equal(t, "New Project", p.Name)
+
+	// Should NOT be in B
+	_, err = backendB.GetProject(ctx, "proj-new")
+	assert.Error(t, err)
+}
+
+func TestMultiBackend_CreateCredentialDelegation(t *testing.T) {
+	backendA := mock.New()
+	backendB := mock.New()
+
+	multi := backend.NewMultiBackend(backendA, backendB)
+	defer multi.Close()
+
+	ctx := context.Background()
+	cred := &domain.Credential{ID: "cred-new", Name: "New Key"}
+
+	err := multi.CreateCredential(ctx, cred)
+	require.NoError(t, err)
+
+	// Should delegate to first Writer-capable backend (A)
+	c, err := backendA.GetCredential(ctx, "cred-new")
+	require.NoError(t, err)
+	assert.Equal(t, "New Key", c.Name)
+
+	// Should NOT be in B
+	_, err = backendB.GetCredential(ctx, "cred-new")
+	assert.Error(t, err)
+}
+
+func TestMultiBackend_CloseReturnsFirstError(t *testing.T) {
+	backendA := mock.New()
+	backendB := mock.New()
+
+	multi := backend.NewMultiBackend(backendA, backendB)
+
+	// Close should succeed when both backends close without error
+	err := multi.Close()
+	assert.NoError(t, err)
+}
+
+func TestMultiBackend_GetOnePasswordBackend_NotFound(t *testing.T) {
+	// Mock backends don't implement statusGetter, so should return nil
+	backendA := mock.New()
+	backendB := mock.New()
+
+	multi := backend.NewMultiBackend(backendA, backendB)
+	defer multi.Close()
+
+	result := multi.GetOnePasswordBackend()
+	assert.Nil(t, result)
+}
+
+func TestMultiBackend_UpdateProjectDelegation(t *testing.T) {
+	backendA := mock.New()
+	backendA.Seed(nil, []*domain.Project{
+		{ID: "proj1", Name: "Original"},
+	}, nil)
+
+	multi := backend.NewMultiBackend(backendA)
+	defer multi.Close()
+
+	ctx := context.Background()
+	updated := &domain.Project{ID: "proj1", Name: "Updated"}
+
+	err := multi.UpdateProject(ctx, updated)
+	require.NoError(t, err)
+
+	p, err := backendA.GetProject(ctx, "proj1")
+	require.NoError(t, err)
+	assert.Equal(t, "Updated", p.Name)
+}
+
+func TestMultiBackend_DeleteProjectDelegation(t *testing.T) {
+	backendA := mock.New()
+	backendA.Seed(nil, []*domain.Project{
+		{ID: "proj1", Name: "To Delete"},
+	}, nil)
+
+	multi := backend.NewMultiBackend(backendA)
+	defer multi.Close()
+
+	ctx := context.Background()
+	err := multi.DeleteProject(ctx, "proj1")
+	require.NoError(t, err)
+
+	_, err = backendA.GetProject(ctx, "proj1")
+	assert.Error(t, err)
+}
+
+func TestMultiBackend_UpdateCredentialDelegation(t *testing.T) {
+	backendA := mock.New()
+	backendA.Seed(nil, nil, []*domain.Credential{
+		{ID: "cred1", Name: "Original"},
+	})
+
+	multi := backend.NewMultiBackend(backendA)
+	defer multi.Close()
+
+	ctx := context.Background()
+	updated := &domain.Credential{ID: "cred1", Name: "Updated"}
+
+	err := multi.UpdateCredential(ctx, updated)
+	require.NoError(t, err)
+
+	c, err := backendA.GetCredential(ctx, "cred1")
+	require.NoError(t, err)
+	assert.Equal(t, "Updated", c.Name)
+}
+
+func TestMultiBackend_DeleteCredentialDelegation(t *testing.T) {
+	backendA := mock.New()
+	backendA.Seed(nil, nil, []*domain.Credential{
+		{ID: "cred1", Name: "To Delete"},
+	})
+
+	multi := backend.NewMultiBackend(backendA)
+	defer multi.Close()
+
+	ctx := context.Background()
+	err := multi.DeleteCredential(ctx, "cred1")
+	require.NoError(t, err)
+
+	_, err = backendA.GetCredential(ctx, "cred1")
+	assert.Error(t, err)
+}
+
 func TestMultiBackend_PureSshConfigServersNotFiltered(t *testing.T) {
 	// Backend A (ssh-config) has user-authored entry (NOT from ssherpa_config)
 	backendA := mock.New()

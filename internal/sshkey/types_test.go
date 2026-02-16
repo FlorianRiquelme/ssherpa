@@ -43,6 +43,14 @@ func TestDisplayName(t *testing.T) {
 			},
 			expected: "1p:production-key",
 		},
+		{
+			name: "unknown source falls back to filename",
+			key: SSHKey{
+				Filename: "some-key",
+				Source:   KeySource(999),
+			},
+			expected: "some-key",
+		},
 	}
 
 	for _, tt := range tests {

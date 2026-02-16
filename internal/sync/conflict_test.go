@@ -294,6 +294,44 @@ func TestDetectConflicts_EmptySSHConfig(t *testing.T) {
 	assert.Len(t, conflicts, 0, "Expected no conflicts with empty SSH config")
 }
 
+func TestDetectConflicts_WithPortAndIdentityFile(t *testing.T) {
+	tmpDir := t.TempDir()
+	sshConfigPath := filepath.Join(tmpDir, "config")
+
+	// Create SSH config with port and identity file
+	sshConfig := `Host prod-web
+    HostName old.example.com
+    User olduser
+    Port 2222
+    IdentityFile ~/.ssh/id_rsa
+    ProxyJump bastion.example.com
+`
+	err := os.WriteFile(sshConfigPath, []byte(sshConfig), 0600)
+	require.NoError(t, err)
+
+	onePasswordServers := []*domain.Server{
+		{
+			ID:          "srv-001",
+			DisplayName: "prod-web",
+			Host:        "new.example.com",
+			User:        "deploy",
+			Port:        22,
+		},
+	}
+
+	conflicts, err := DetectConflicts(onePasswordServers, sshConfigPath)
+	require.NoError(t, err)
+	require.Len(t, conflicts, 1)
+
+	// Verify the SSH config server was properly converted
+	sshSrv := conflicts[0].SSHConfig
+	assert.Equal(t, "old.example.com", sshSrv.Host)
+	assert.Equal(t, "olduser", sshSrv.User)
+	assert.Equal(t, 2222, sshSrv.Port)
+	assert.Equal(t, "~/.ssh/id_rsa", sshSrv.IdentityFile)
+	assert.Equal(t, "bastion.example.com", sshSrv.Proxy)
+}
+
 func TestDetectConflicts_NonExistentSSHConfig(t *testing.T) {
 	// Create temp directory for test
 	tmpDir := t.TempDir()

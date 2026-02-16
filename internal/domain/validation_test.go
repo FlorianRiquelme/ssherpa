@@ -131,6 +131,25 @@ func TestProjectValidate(t *testing.T) {
 	}
 }
 
+func TestCredentialTypeString(t *testing.T) {
+	tests := []struct {
+		name     string
+		ct       CredentialType
+		expected string
+	}{
+		{name: "key file", ct: CredentialKeyFile, expected: "Key File"},
+		{name: "ssh agent", ct: CredentialSSHAgent, expected: "SSH Agent"},
+		{name: "password", ct: CredentialPassword, expected: "Password"},
+		{name: "unknown", ct: CredentialType(999), expected: "Unknown"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.expected, tt.ct.String())
+		})
+	}
+}
+
 func TestCredentialValidate(t *testing.T) {
 	tests := []struct {
 		name       string
