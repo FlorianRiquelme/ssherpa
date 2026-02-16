@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 8 of 8 (Distribution) — COMPLETE
 Plan: 3 of 3 complete
 Status: Phase 8 Complete — README with GIF-forward presentation, VHS demo tape, enhanced TUI wizard, and verified distribution pipeline ready for v1 release
-Last activity: 2026-02-16 — Completed Phase 08 Plan 03: Professional README with VHS demo tape, enhanced TUI wizard with 1Password vault selection and sample entry creation, verified end-to-end distribution pipeline with cross-platform compatibility fixes.
+Last activity: 2026-02-16 - Completed quick task 1: We need a simple way to show/help users to know which fields they can add in 1password and what impact they have
 
 Progress: [████████████████████████████████████████████████████████████████████████████████████████████████] 100%
 
@@ -162,6 +162,12 @@ Recent decisions affecting current work:
 
 **Cross-platform considerations:**
 - Terminal compatibility matrix needs empirical testing (older terminals, SSH-forwarded, screen/tmux combinations)
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 1 | 1Password field reference help (--fields flag + ? overlay) | 2026-02-16 | 1d26764 | [1-we-need-a-simple-way-to-show-help-users-](./quick/1-we-need-a-simple-way-to-show-help-users-/) |
 
 ## Session Continuity
 
