@@ -53,7 +53,6 @@ brews:
     commit_msg_template: "chore: update formula for {{ .ProjectName }} version {{ .Tag }}"
 
 changelog:
-  use: github
   sort: asc
   filters:
     exclude:
@@ -72,10 +71,8 @@ release:
   header: |
     ## ssherpa {{ .Tag }}
 
-    {{ if .IsPrerelease }}This is a pre-release version.{{ end }}
-
   footer: |
-    **Full Changelog**: https://github.com/florianriquelme/ssherpa/compare/{{ .PreviousTag }}...{{ .Tag }}
+    ---
 
     ---
 
