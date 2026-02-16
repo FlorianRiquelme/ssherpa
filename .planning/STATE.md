@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 8 of 8 (Distribution) — COMPLETE
 Plan: 3 of 3 complete
 Status: Phase 8 Complete — README with GIF-forward presentation, VHS demo tape, enhanced TUI wizard, and verified distribution pipeline ready for v1 release
-Last activity: 2026-02-16 - Completed quick task 1: We need a simple way to show/help users to know which fields they can add in 1password and what impact they have
+Last activity: 2026-02-16 - Completed quick task 2: Track 1Password items by ID to prevent duplicates when renaming
 
 Progress: [████████████████████████████████████████████████████████████████████████████████████████████████] 100%
 
