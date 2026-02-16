@@ -60,6 +60,7 @@ func (b *Backend) SyncFromOnePassword(ctx context.Context) error {
 	}
 
 	// Fetch all tagged servers
+	// Strategy: ListItems for discovery (no field data), then GetItem only for ssherpa-tagged items
 	servers := make([]*domain.Server, 0)
 	var skippedItems []string // Track skipped items for debugging
 	for _, vault := range vaults {
@@ -74,7 +75,15 @@ func (b *Backend) SyncFromOnePassword(ctx context.Context) error {
 				continue
 			}
 
-			server, err := ItemToServer(&item)
+			// op item list only returns metadata (no fields).
+			// Fetch full item with fields via GetItem.
+			fullItem, err := b.client.GetItem(ctx, vault.ID, item.ID)
+			if err != nil {
+				skippedItems = append(skippedItems, item.Title+": failed to fetch: "+err.Error())
+				continue
+			}
+
+			server, err := ItemToServer(fullItem)
 			if err != nil {
 				// Track items that can't be converted (malformed data)
 				// This helps debug why tagged items don't appear in the TUI
