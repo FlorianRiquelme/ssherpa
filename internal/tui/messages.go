@@ -91,9 +91,9 @@ type keyPickerClosedMsg struct{}
 
 // keySelectedMsg is sent when a key is selected from the picker.
 type keySelectedMsg struct {
-	path    string          // Path to the selected key file
-	key     *sshkey.SSHKey  // Selected key (nil if "None" was selected)
-	cleared bool            // True if "None (SSH default)" was selected
+	path    string         // Path to the selected key file
+	key     *sshkey.SSHKey // Selected key (nil if "None" was selected)
+	cleared bool           // True if "None (SSH default)" was selected
 }
 
 // keysDiscoveredMsg is sent after async key discovery completes.

@@ -128,10 +128,10 @@ func (c *CLIClient) ListItems(ctx context.Context, vaultID string) ([]Item, erro
 			ID string `json:"id"`
 		} `json:"vault"`
 		Fields []struct {
-			ID      string  `json:"id"`
-			Label   string  `json:"label"`
-			Type    string  `json:"type"`
-			Value   string  `json:"value"`
+			ID      string `json:"id"`
+			Label   string `json:"label"`
+			Type    string `json:"type"`
+			Value   string `json:"value"`
 			Section *struct {
 				ID string `json:"id"`
 			} `json:"section"`
@@ -193,10 +193,10 @@ func (c *CLIClient) GetItem(ctx context.Context, vaultID, itemID string) (*Item,
 			ID string `json:"id"`
 		} `json:"vault"`
 		Fields []struct {
-			ID      string  `json:"id"`
-			Label   string  `json:"label"`
-			Type    string  `json:"type"`
-			Value   string  `json:"value"`
+			ID      string `json:"id"`
+			Label   string `json:"label"`
+			Type    string `json:"type"`
+			Value   string `json:"value"`
 			Section *struct {
 				ID string `json:"id"`
 			} `json:"section"`

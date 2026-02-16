@@ -11,7 +11,7 @@ import (
 
 // Conflict represents a naming conflict between 1Password and SSH config.
 type Conflict struct {
-	Alias      string         // The SSH host alias
+	Alias       string         // The SSH host alias
 	OnePassword *domain.Server // Server from 1Password
 	SSHConfig   *domain.Server // Server from user's SSH config
 	Winner      string         // Always "onepassword" per requirement
@@ -44,7 +44,7 @@ func DetectConflicts(onePasswordServers []*domain.Server, sshConfigPath string) 
 
 		// Convert SSHHost to domain.Server for comparison
 		srv := sshHostToDomainServer(host)
-		
+
 		// Use lowercase alias as key for case-insensitive matching
 		aliasLower := strings.ToLower(host.Name)
 		sshHostMap[aliasLower] = srv
@@ -54,7 +54,7 @@ func DetectConflicts(onePasswordServers []*domain.Server, sshConfigPath string) 
 	var conflicts []Conflict
 	for _, onepServer := range onePasswordServers {
 		aliasLower := strings.ToLower(onepServer.DisplayName)
-		
+
 		if sshServer, exists := sshHostMap[aliasLower]; exists {
 			// Conflict found
 			conflict := Conflict{

@@ -12,16 +12,16 @@ import (
 
 // MigrationWizard is a Bubbletea model for migrating existing 1Password items.
 type MigrationWizard struct {
-	client    interface{}          // SDK client (will be onepassword.Client when integrated)
-	items     []MigrationCandidate // Discovered unmanaged items
-	selected  map[int]bool         // Selection state for each item
-	cursor    int                  // Cursor position in list
-	step      int                  // Current step: scanning, selecting, migrating, done
-	spinner   spinner.Model        // Loading spinner
-	results   MigrationResults     // Migration results
-	width     int
-	height    int
-	err       error                // Error message if any
+	client   interface{}          // SDK client (will be onepassword.Client when integrated)
+	items    []MigrationCandidate // Discovered unmanaged items
+	selected map[int]bool         // Selection state for each item
+	cursor   int                  // Cursor position in list
+	step     int                  // Current step: scanning, selecting, migrating, done
+	spinner  spinner.Model        // Loading spinner
+	results  MigrationResults     // Migration results
+	width    int
+	height   int
+	err      error // Error message if any
 }
 
 // MigrationCandidate represents a 1Password item that can be migrated.

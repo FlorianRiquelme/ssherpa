@@ -232,7 +232,7 @@ func DiscoverKeys(sshDir string, servers []*domain.Server, identityAgents ...Ide
 // IdentityAgentSource pairs a socket path with its key source type.
 type IdentityAgentSource struct {
 	SocketPath string
-	Source      KeySource
+	Source     KeySource
 }
 
 // CreateMissingKeyEntry creates an SSHKey entry for a key file that doesn't exist.

@@ -10,9 +10,9 @@ import (
 type MockClient struct {
 	mu          sync.RWMutex
 	vaults      map[string]*Vault
-	items       map[string]*Item  // keyed by itemID
-	errors      map[string]error  // configurable errors by operation
-	vaultErrors map[string]error  // configurable errors by vaultID (for ListItems)
+	items       map[string]*Item // keyed by itemID
+	errors      map[string]error // configurable errors by operation
+	vaultErrors map[string]error // configurable errors by vaultID (for ListItems)
 	closed      bool
 }
 

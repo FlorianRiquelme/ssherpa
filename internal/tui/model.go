@@ -74,12 +74,12 @@ type Model struct {
 	lastConnHost  string               // Last connected host from cwd (for preselection)
 
 	// Phase 4 additions:
-	currentProjectID string                           // Detected from git, empty if not in repo
-	projects         []config.ProjectConfig           // Project configs from TOML
-	projectMap       map[string]config.ProjectConfig  // Project ID -> config, for fast lookup
-	picker           *ProjectPicker                   // Project picker overlay (nil when not showing)
-	showingPicker    bool                             // Whether picker is visible
-	configFilePath   string                           // Path to config file for saving
+	currentProjectID string                          // Detected from git, empty if not in repo
+	projects         []config.ProjectConfig          // Project configs from TOML
+	projectMap       map[string]config.ProjectConfig // Project ID -> config, for fast lookup
+	picker           *ProjectPicker                  // Project picker overlay (nil when not showing)
+	showingPicker    bool                            // Whether picker is visible
+	configFilePath   string                          // Path to config file for saving
 
 	// Phase 5 additions:
 	serverForm    *ServerForm    // Add/edit form (nil when not showing)
@@ -88,20 +88,20 @@ type Model struct {
 	statusMsg     string         // Temporary status message (e.g. "Deleted X, press u to undo")
 
 	// Phase 6 additions:
-	opStatus   backend.BackendStatus // Current 1Password status
-	opStatusBar string               // Rendered status bar (cached)
-	appBackend backend.Backend       // Backend interface (nil for sshconfig-only mode)
+	opStatus    backend.BackendStatus // Current 1Password status
+	opStatusBar string                // Rendered status bar (cached)
+	appBackend  backend.Backend       // Backend interface (nil for sshconfig-only mode)
 
 	// Phase 7 additions:
-	discoveredKeys    []sshkey.SSHKey  // All discovered SSH keys (from file/agent/1Password)
-	keyPicker         *SSHKeyPicker    // SSH key picker overlay (nil when not showing)
-	showingKeyPicker  bool             // Whether key picker is visible
-	hostSources       map[string]string // Maps host name to source (e.g., "ssh-config", "1password")
-	detailSource      string           // Source of the currently displayed detail host
+	discoveredKeys   []sshkey.SSHKey   // All discovered SSH keys (from file/agent/1Password)
+	keyPicker        *SSHKeyPicker     // SSH key picker overlay (nil when not showing)
+	showingKeyPicker bool              // Whether key picker is visible
+	hostSources      map[string]string // Maps host name to source (e.g., "ssh-config", "1password")
+	detailSource     string            // Source of the currently displayed detail host
 
 	// Quick-1 additions:
-	showingHelp  bool         // Whether help overlay is visible
-	helpOverlay  *HelpOverlay // Help overlay (nil when not showing)
+	showingHelp bool         // Whether help overlay is visible
+	helpOverlay *HelpOverlay // Help overlay (nil when not showing)
 }
 
 // New creates a new TUI model.
@@ -166,9 +166,9 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 		projectMap:       projectMap,
 		configFilePath:   appConfigPath, // App config path for saving project assignments
 		undoBuffer:       NewUndoBuffer(10),
-		opStatus:    opStatus,   // Initial 1Password status
-		opStatusBar: "",         // Will be rendered on first draw
-		appBackend:  appBackend, // Backend interface (may be nil)
+		opStatus:         opStatus,   // Initial 1Password status
+		opStatusBar:      "",         // Will be rendered on first draw
+		appBackend:       appBackend, // Backend interface (may be nil)
 	}
 }
 
@@ -641,9 +641,9 @@ func (m *Model) rebuildListItems() {
 	}
 
 	// Organize hosts: recently used at top, rest alphabetically
-	var recentHosts []hostWithProject   // Hosts with recent connections (top of list)
-	var otherHosts []hostWithProject    // All other hosts (sorted alphabetically)
-	var wildcards []sshconfig.SSHHost   // Wildcards at bottom
+	var recentHosts []hostWithProject // Hosts with recent connections (top of list)
+	var otherHosts []hostWithProject  // All other hosts (sorted alphabetically)
+	var wildcards []sshconfig.SSHHost // Wildcards at bottom
 
 	for _, idx := range m.filteredIdx {
 		host := m.allHosts[idx]
@@ -1245,10 +1245,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case serverDeletedMsg:
 		// Server deleted successfully - push to undo buffer and reload config
 		m.undoBuffer.Push(UndoEntry{
-			Alias:       msg.alias,
-			ConfigPath:  m.configPath,
-			RawLines:    msg.removedLines,
-			DeletedAt:   time.Now(),
+			Alias:      msg.alias,
+			ConfigPath: m.configPath,
+			RawLines:   msg.removedLines,
+			DeletedAt:  time.Now(),
 		})
 		m.viewMode = ViewList
 		m.deleteConfirm = nil

@@ -459,12 +459,12 @@ func TestUpdateItem(t *testing.T) {
 
 func TestDeleteItem(t *testing.T) {
 	tests := []struct {
-		name     string
-		vaultID  string
-		itemID   string
-		mockErr  error
-		wantErr  bool
-		stderr   []byte
+		name    string
+		vaultID string
+		itemID  string
+		mockErr error
+		wantErr bool
+		stderr  []byte
 	}{
 		{
 			name:    "successful delete",
@@ -544,11 +544,11 @@ func TestMapCLIFieldType(t *testing.T) {
 
 func TestErrorHandling(t *testing.T) {
 	tests := []struct {
-		name     string
-		method   string
-		mockErr  error
-		stderr   string
-		wantErr  bool
+		name    string
+		method  string
+		mockErr error
+		stderr  string
+		wantErr bool
 	}{
 		{
 			name:    "command execution error with stderr",

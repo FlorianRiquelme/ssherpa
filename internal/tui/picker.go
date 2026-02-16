@@ -20,7 +20,7 @@ type ProjectPicker struct {
 	suggestions []string // Project IDs that are auto-suggested
 	width       int
 	height      int
-	creatingNew bool           // Mode: creating a new project
+	creatingNew bool            // Mode: creating a new project
 	nameInput   textinput.Model // For "create new" flow
 }
 

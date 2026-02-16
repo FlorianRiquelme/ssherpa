@@ -8,9 +8,9 @@ import (
 // Build-time variables injected via ldflags.
 // These are set during the build process and default to "dev" values if not set.
 var (
-	Version   = "dev"     // Version string (e.g., "0.1.0")
-	Commit    = "none"    // Git commit hash
-	Date      = "unknown" // Build date (RFC3339 format)
+	Version   = "dev"             // Version string (e.g., "0.1.0")
+	Commit    = "none"            // Git commit hash
+	Date      = "unknown"         // Build date (RFC3339 format)
 	GoVersion = runtime.Version() // Go version used to build (overridable via ldflags)
 )
 
@@ -38,11 +38,12 @@ func Platform() string {
 
 // Detailed returns multi-line version information including all build metadata.
 // Example:
-//   ssherpa 0.1.0
-//   Commit:    abc1234def890
-//   Built:     2026-02-15T10:00:00Z
-//   Go:        go1.25.0
-//   Platform:  darwin/arm64
+//
+//	ssherpa 0.1.0
+//	Commit:    abc1234def890
+//	Built:     2026-02-15T10:00:00Z
+//	Go:        go1.25.0
+//	Platform:  darwin/arm64
 func Detailed() string {
 	return fmt.Sprintf(`ssherpa %s
 Commit:    %s

@@ -13,14 +13,14 @@ import (
 // Backend implements the backendpkg.Backend and backendpkg.Writer interfaces
 // using 1Password as the storage layer.
 type Backend struct {
-	client    Client                // SDK client (real or mock)
-	mu        sync.RWMutex          // Protects cached servers, status, and closed flag
-	servers   []*domain.Server      // Cached servers from last sync
-	closed    bool                  // Backend closed flag
+	client    Client                   // SDK client (real or mock)
+	mu        sync.RWMutex             // Protects cached servers, status, and closed flag
+	servers   []*domain.Server         // Cached servers from last sync
+	closed    bool                     // Backend closed flag
 	status    backendpkg.BackendStatus // Current availability status
-	cachePath string                // Path to TOML cache for fallback
-	poller    *Poller               // Background availability poller
-	lastWrite time.Time             // Last write timestamp for debouncing
+	cachePath string                   // Path to TOML cache for fallback
+	poller    *Poller                  // Background availability poller
+	lastWrite time.Time                // Last write timestamp for debouncing
 }
 
 // Compile-time interface verification

@@ -12,11 +12,11 @@ import (
 // ProjectConfig represents a project in the config file.
 // Projects are stored as TOML array-of-tables: [[project]]
 type ProjectConfig struct {
-	ID            string   `toml:"id"`                         // Project identifier (typically org/repo)
-	Name          string   `toml:"name"`                       // Human-readable project name
-	GitRemoteURLs []string `toml:"git_remote_urls"`            // Git remote URLs for this project
-	Color         string   `toml:"color,omitempty"`            // User-overridden color hex (empty = auto-generate)
-	ServerNames   []string `toml:"server_names,omitempty"`     // SSH config host aliases in this project
+	ID            string   `toml:"id"`                     // Project identifier (typically org/repo)
+	Name          string   `toml:"name"`                   // Human-readable project name
+	GitRemoteURLs []string `toml:"git_remote_urls"`        // Git remote URLs for this project
+	Color         string   `toml:"color,omitempty"`        // User-overridden color hex (empty = auto-generate)
+	ServerNames   []string `toml:"server_names,omitempty"` // SSH config host aliases in this project
 }
 
 // OnePasswordConfig represents 1Password-specific settings.
@@ -27,12 +27,12 @@ type OnePasswordConfig struct {
 
 // Config represents the application configuration.
 type Config struct {
-	Version        int                   `toml:"version"`                        // Config schema version for future migrations
-	Backend        string                `toml:"backend"`                        // Backend identifier: "sshconfig", "onepassword", "both"
-	ReturnToTUI    bool                  `toml:"return_to_tui_after_disconnect"` // Return to TUI after SSH session ends (default: false = exit to shell)
-	MigrationDone  bool                  `toml:"migration_done,omitempty"`       // Whether migration wizard has been completed or skipped
-	OnePassword    OnePasswordConfig     `toml:"onepassword"`                    // 1Password backend settings
-	Projects       []ProjectConfig       `toml:"project"`                        // Projects (TOML array-of-tables: [[project]])
+	Version       int               `toml:"version"`                        // Config schema version for future migrations
+	Backend       string            `toml:"backend"`                        // Backend identifier: "sshconfig", "onepassword", "both"
+	ReturnToTUI   bool              `toml:"return_to_tui_after_disconnect"` // Return to TUI after SSH session ends (default: false = exit to shell)
+	MigrationDone bool              `toml:"migration_done,omitempty"`       // Whether migration wizard has been completed or skipped
+	OnePassword   OnePasswordConfig `toml:"onepassword"`                    // 1Password backend settings
+	Projects      []ProjectConfig   `toml:"project"`                        // Projects (TOML array-of-tables: [[project]])
 }
 
 // DefaultConfig returns a config with sensible defaults.

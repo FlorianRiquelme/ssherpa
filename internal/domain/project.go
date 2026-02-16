@@ -6,7 +6,7 @@ import "time"
 // Server-to-project relationship is many-to-many, tracked on Server side via ProjectIDs.
 type Project struct {
 	ID            string
-	Name          string   // e.g., "payments-api"
+	Name          string // e.g., "payments-api"
 	Description   string
 	GitRemoteURLs []string // one method for project detection
 	CreatedAt     time.Time

@@ -17,9 +17,9 @@ type badgeData struct {
 // hostItem wraps an SSHHost for display in the list.
 // Implements list.Item interface.
 type hostItem struct {
-	host               sshconfig.SSHHost
-	lastConnectedAt    *time.Time  // Timestamp of last connection (nil if never connected)
-	projectBadges      []badgeData // Project badges to render inline
+	host            sshconfig.SSHHost
+	lastConnectedAt *time.Time  // Timestamp of last connection (nil if never connected)
+	projectBadges   []badgeData // Project badges to render inline
 }
 
 // FilterValue returns the value used for filtering/searching.

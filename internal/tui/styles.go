@@ -142,8 +142,8 @@ var (
 				Bold(true)
 
 	pickerHelpStyle = lipgloss.NewStyle().
-				Foreground(secondaryColor).
-				Italic(true)
+			Foreground(secondaryColor).
+			Italic(true)
 
 	pickerLabelStyle = lipgloss.NewStyle().
 				Foreground(secondaryColor).

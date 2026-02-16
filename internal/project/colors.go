@@ -24,7 +24,7 @@ func ProjectColor(projectID string) lipgloss.AdaptiveColor {
 	hash := h.Sum32()
 
 	// Convert hash to hue (0-359 degrees)
-	hue := float64(hash%360) // Modulo 360 for valid hue range
+	hue := float64(hash % 360) // Modulo 360 for valid hue range
 
 	// Fixed saturation and different lightness for light/dark terminals
 	saturation := 0.65

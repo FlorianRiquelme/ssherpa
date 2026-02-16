@@ -11,10 +11,10 @@ import (
 
 // UndoEntry represents a deleted Host block that can be restored.
 type UndoEntry struct {
-	Alias       string    // The host alias that was deleted
-	ConfigPath  string    // Path to the SSH config file
-	RawLines    []string  // The raw text lines that were removed
-	DeletedAt   time.Time // When the delete occurred
+	Alias      string    // The host alias that was deleted
+	ConfigPath string    // Path to the SSH config file
+	RawLines   []string  // The raw text lines that were removed
+	DeletedAt  time.Time // When the delete occurred
 }
 
 // UndoBuffer manages a session-scoped stack of deleted entries.

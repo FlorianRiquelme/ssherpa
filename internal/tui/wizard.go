@@ -16,27 +16,27 @@ import (
 
 // SetupWizard is a Bubbletea model for the first-launch setup flow.
 type SetupWizard struct {
-	step          int              // Current step in the wizard
-	backendChoice string           // Selected backend: "sshconfig", "onepassword", "both"
-	spinner       spinner.Model    // Loading spinner for async operations
-	checking      bool             // Whether we're checking 1Password CLI
-	checkResult   onePasswordCheckResult // Result of 1Password CLI detection
-	cursor        int              // Cursor position for menu selection
-	width         int
-	height        int
-	configPath    string           // Path to save config
-	err           error            // Error message for display
-	runMigration  bool             // Whether user wants to run migration
-	migrationItemCount int         // Number of items found for migration
+	step               int                    // Current step in the wizard
+	backendChoice      string                 // Selected backend: "sshconfig", "onepassword", "both"
+	spinner            spinner.Model          // Loading spinner for async operations
+	checking           bool                   // Whether we're checking 1Password CLI
+	checkResult        onePasswordCheckResult // Result of 1Password CLI detection
+	cursor             int                    // Cursor position for menu selection
+	width              int
+	height             int
+	configPath         string // Path to save config
+	err                error  // Error message for display
+	runMigration       bool   // Whether user wants to run migration
+	migrationItemCount int    // Number of items found for migration
 
 	// Vault selection fields
-	vaults           []vaultInfo   // Available vaults from 1Password
-	selectedVaultIdx int           // Selected vault index in list
+	vaults           []vaultInfo // Available vaults from 1Password
+	selectedVaultIdx int         // Selected vault index in list
 
 	// Sample entry fields
-	creatingSample bool            // Whether we're creating a sample entry
-	sampleCreated  bool            // Whether sample was successfully created
-	sampleError    string          // Error message if sample creation failed
+	creatingSample bool   // Whether we're creating a sample entry
+	sampleCreated  bool   // Whether sample was successfully created
+	sampleError    string // Error message if sample creation failed
 }
 
 type vaultInfo struct {
@@ -45,9 +45,9 @@ type vaultInfo struct {
 }
 
 type onePasswordCheckResult struct {
-	available  bool
-	vaults     []vaultInfo
-	error      string
+	available bool
+	vaults    []vaultInfo
+	error     string
 }
 
 // Wizard steps
@@ -394,7 +394,7 @@ func (w SetupWizard) renderOnePasswordSetup() string {
 	} else {
 		b.WriteString(wizardErrorStyle.Render("  Could not connect to 1Password CLI") + "\n\n")
 		if w.checkResult.error != "" {
-			b.WriteString(wizardDimStyle.Render("  " + w.checkResult.error) + "\n\n")
+			b.WriteString(wizardDimStyle.Render("  "+w.checkResult.error) + "\n\n")
 		}
 		b.WriteString("  Setup instructions:\n")
 		b.WriteString("    1. Install 1Password CLI: https://developer.1password.com/docs/cli/get-started/\n")
