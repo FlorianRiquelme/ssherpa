@@ -8,4 +8,5 @@ dist/
 
 # Planning and docs
 .planning/
+.claude/
 docs/plans/
