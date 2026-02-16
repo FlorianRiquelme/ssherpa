@@ -40,7 +40,7 @@ checksum:
 brews:
   - repository:
       owner: FlorianRiquelme
-      name: ssherpa-brewtap
+      name: homebrew-ssherpa-brewtap
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     directory: Formula
     homepage: "https://github.com/florianriquelme/ssherpa"
