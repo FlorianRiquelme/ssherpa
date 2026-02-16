@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 8 of 8 (Distribution) — COMPLETE
 Plan: 3 of 3 complete
 Status: Phase 8 Complete — README with GIF-forward presentation, VHS demo tape, enhanced TUI wizard, and verified distribution pipeline ready for v1 release
-Last activity: 2026-02-16 - Completed quick task 2: Track 1Password items by ID to prevent duplicates when renaming
+Last activity: 2026-02-16 - Completed quick task 3: Fix search results not responding to shortcut keys
 
 Progress: [████████████████████████████████████████████████████████████████████████████████████████████████] 100%
 
@@ -169,10 +169,11 @@ Recent decisions affecting current work:
 |---|-------------|------|--------|-----------|
 | 1 | 1Password field reference help (--fields flag + ? overlay) | 2026-02-16 | 1d26764 | [1-we-need-a-simple-way-to-show-help-users-](./quick/1-we-need-a-simple-way-to-show-help-users-/) |
 | 2 | Fix duplicate servers on 1Password item rename | 2026-02-16 | eed1526 | [2-track-1password-items-by-id-to-prevent-d](./quick/2-track-1password-items-by-id-to-prevent-d/) |
+| 3 | Fix search results not responding to shortcut keys | 2026-02-16 | 8e2390d | [3-fix-search-results-not-responding-to-sho](./quick/3-fix-search-results-not-responding-to-sho/) |
 
 ## Session Continuity
 
 Last session: 2026-02-16 (Quick task complete)
-Stopped at: Completed quick-2 plan — Fixed duplicate server entries when 1Password items are renamed by filtering ssherpa-generated SSH config mirrors before deduplication. All phases remain complete. Ready for v1 release.
+Stopped at: Completed quick-3 plan — Action and navigation shortcut keys now work on filtered search results instead of being swallowed as text input. All phases remain complete. Ready for v1 release.
 Resume file: None
 Resume command: Project complete — all 8 phases finished. Quick tasks available. Next: Generate demo.gif and create v1.0.0 release tag.
