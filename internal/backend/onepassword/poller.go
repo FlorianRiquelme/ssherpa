@@ -80,8 +80,8 @@ func (p *Poller) poll() {
 	// Get current status before sync
 	oldStatus := p.backend.GetStatus()
 
-	// Attempt sync with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	// Attempt sync with timeout (30s allows time for biometric auth)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	_ = p.backend.SyncFromOnePassword(ctx)
