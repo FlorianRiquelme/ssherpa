@@ -305,3 +305,140 @@ func TestMultiBackend_DeleteServerDelegation(t *testing.T) {
 	_, err = backendA.GetServer(ctx, "srv1")
 	assert.Error(t, err, "Server should be deleted")
 }
+
+func TestMultiBackend_FiltersOutSsherpaGeneratedServers(t *testing.T) {
+	// Backend A (ssh-config) has two servers:
+	// 1. ssherpa-generated mirror (should be filtered out)
+	// 2. user-authored entry (should be kept)
+	backendA := mock.New()
+	backendA.Seed([]*domain.Server{
+		{
+			ID:          "my-server",
+			DisplayName: "my-server",
+			Host:        "1.2.3.4",
+			Source:      "ssh-config",
+			Notes:       "Source: /home/user/.ssh/ssherpa_config:5",
+		},
+		{
+			ID:          "manual-host",
+			DisplayName: "manual-host",
+			Host:        "5.6.7.8",
+			Source:      "ssh-config",
+			Notes:       "Source: /home/user/.ssh/config:10",
+		},
+	}, nil, nil)
+
+	// Backend B (1password) has one server
+	backendB := mock.New()
+	backendB.Seed([]*domain.Server{
+		{
+			ID:          "op-abc123",
+			DisplayName: "my-server",
+			Host:        "1.2.3.4",
+			Source:      "1password",
+		},
+	}, nil, nil)
+
+	// Create multi-backend with A, then B (B has higher priority)
+	multi := backend.NewMultiBackend(backendA, backendB)
+	defer multi.Close()
+
+	// List servers - should get 2 servers (not 3)
+	// "manual-host" from SSH config and "my-server" from 1Password
+	// The ssherpa_config mirror should be filtered out
+	ctx := context.Background()
+	servers, err := multi.ListServers(ctx)
+	require.NoError(t, err)
+	assert.Len(t, servers, 2, "Should return 2 servers after filtering ssherpa-generated entry")
+
+	// Verify which servers are present
+	names := make(map[string]bool)
+	sources := make(map[string]string)
+	for _, srv := range servers {
+		names[srv.DisplayName] = true
+		sources[srv.DisplayName] = srv.Source
+	}
+
+	// Should have "manual-host" from ssh-config (user-authored)
+	assert.True(t, names["manual-host"], "Should include user-authored SSH config entry")
+	assert.Equal(t, "ssh-config", sources["manual-host"])
+
+	// Should have "my-server" from 1password (not the ssherpa_config mirror)
+	assert.True(t, names["my-server"], "Should include 1Password entry")
+	assert.Equal(t, "1password", sources["my-server"], "Should be from 1Password, not ssherpa_config mirror")
+}
+
+func TestMultiBackend_RenamedOnePasswordItemNoDuplicate(t *testing.T) {
+	// Backend A (ssh-config) has stale mirror with OLD name
+	backendA := mock.New()
+	backendA.Seed([]*domain.Server{
+		{
+			ID:          "old-name",
+			DisplayName: "old-name",
+			Host:        "1.2.3.4",
+			Source:      "ssh-config",
+			Notes:       "Source: /home/user/.ssh/ssherpa_config:5",
+		},
+	}, nil, nil)
+
+	// Backend B (1password) has the renamed item with NEW name
+	backendB := mock.New()
+	backendB.Seed([]*domain.Server{
+		{
+			ID:          "op-abc123",
+			DisplayName: "new-name",
+			Host:        "1.2.3.4",
+			Source:      "1password",
+		},
+	}, nil, nil)
+
+	// Create multi-backend with A, then B (B has higher priority)
+	multi := backend.NewMultiBackend(backendA, backendB)
+	defer multi.Close()
+
+	// List servers - should get 1 server with DisplayName="new-name" from 1Password
+	// The stale "old-name" mirror should be filtered out
+	ctx := context.Background()
+	servers, err := multi.ListServers(ctx)
+	require.NoError(t, err)
+	assert.Len(t, servers, 1, "Should return 1 server after filtering stale ssherpa-generated entry")
+
+	// Verify it's the renamed 1Password entry
+	assert.Equal(t, "new-name", servers[0].DisplayName, "Should have new name from 1Password")
+	assert.Equal(t, "1password", servers[0].Source, "Should be from 1Password")
+	assert.Equal(t, "op-abc123", servers[0].ID, "Should have 1Password ID")
+}
+
+func TestMultiBackend_PureSshConfigServersNotFiltered(t *testing.T) {
+	// Backend A (ssh-config) has user-authored entry (NOT from ssherpa_config)
+	backendA := mock.New()
+	backendA.Seed([]*domain.Server{
+		{
+			ID:          "user-host",
+			DisplayName: "user-host",
+			Host:        "9.8.7.6",
+			Source:      "ssh-config",
+			Notes:       "Source: /home/user/.ssh/config:3",
+		},
+	}, nil, nil)
+
+	// Backend B (1password) has no servers
+	backendB := mock.New()
+	backendB.Seed([]*domain.Server{}, nil, nil)
+
+	// Create multi-backend with A, then B
+	multi := backend.NewMultiBackend(backendA, backendB)
+	defer multi.Close()
+
+	// List servers - should get 1 server
+	// User-authored SSH config entries are never filtered
+	ctx := context.Background()
+	servers, err := multi.ListServers(ctx)
+	require.NoError(t, err)
+	assert.Len(t, servers, 1, "Should return user-authored SSH config entry")
+
+	// Verify it's the user-authored entry
+	assert.Equal(t, "user-host", servers[0].DisplayName)
+	assert.Equal(t, "ssh-config", servers[0].Source)
+	assert.Equal(t, "9.8.7.6", servers[0].Host)
+}
