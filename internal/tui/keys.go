@@ -136,7 +136,7 @@ func DefaultKeyMap() KeyMap {
 		),
 		ClearSearch: key.NewBinding(
 			key.WithKeys("esc"),
-			key.WithHelp("esc", "clear search"),
+			key.WithHelp("esc", "exit search"),
 		),
 		ForceQuit: key.NewBinding(
 			key.WithKeys("ctrl+c"),
