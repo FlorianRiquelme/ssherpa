@@ -134,8 +134,8 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 	searchKeys := SearchKeyMap{
 		ClearSearch: keys.ClearSearch,
 	}
-	// Navigation for search mode (includes j/k so they move the cursor instead of typing)
-	searchNavKeys := key.NewBinding(key.WithKeys("up", "down", "j", "k"))
+	// Navigation for search mode (arrow keys only — j/k are typeable letters)
+	searchNavKeys := key.NewBinding(key.WithKeys("up", "down"))
 	helpModel := help.New()
 
 	// Build project map for fast lookup
@@ -953,17 +953,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			if m.searchFocused {
-				// Clear status message on any key press in search mode
-				m.statusMsg = ""
-
-				// Search mode key handling
+				// Search mode key handling — all letter keys flow to the search input.
+				// Action keys (q, a, e, p, d, u, s, g, G, etc.) are NOT intercepted here.
+				// Press Esc to blur search (keeps filter), then action keys work in list mode.
 				switch {
 				case key.Matches(msg, m.keys.ClearSearch):
-					// Esc: clear search and return focus to list
-					m.searchInput.SetValue("")
+					// Esc: exit typing mode, keep filter active
 					m.searchInput.Blur()
 					m.searchFocused = false
-					m.filterHosts() // Show all hosts
 					return m, nil
 
 				case key.Matches(msg, m.keys.Connect):
@@ -977,7 +974,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						return m, m.connectToHost(item.host)
 					}
 
-				// Arrow/j/k navigation in search mode
+				// Arrow navigation in search mode (up/down only, no j/k)
 				case key.Matches(msg, m.searchNavKeys):
 					var cmd tea.Cmd
 					m.list, cmd = m.list.Update(msg)
@@ -995,116 +992,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						m.viewMode = ViewDetail
 					}
 
-				case key.Matches(msg, m.keys.Quit):
-					// q: quit from search mode
-					return m, tea.Quit
-
-				case key.Matches(msg, m.keys.Help):
-					// ?: toggle help overlay from search mode
-					if m.showingHelp {
-						m.showingHelp = false
-						m.helpOverlay = nil
-					} else {
-						overlay := NewHelpOverlay(m.width, m.height)
-						m.helpOverlay = &overlay
-						m.showingHelp = true
-					}
-
-				case key.Matches(msg, m.keys.AddServer):
-					// a: open add server form from search mode
-					form := NewServerForm(m.configPath)
-					if has1PasswordKeys(m.discoveredKeys) {
-						form.fields[4].input.Placeholder = "Default (1Password agent) - Press Enter to select key"
-					}
-					m.serverForm = &form
-					m.viewMode = ViewAdd
-
-				case key.Matches(msg, m.keys.EditServer):
-					// e: open edit server form from search mode
-					selectedItem := m.list.SelectedItem()
-					if selectedItem == nil {
-						return m, nil
-					}
-					if item, ok := selectedItem.(hostItem); ok {
-						form := NewEditServerForm(m.configPath, item.host)
-						m.serverForm = &form
-						m.viewMode = ViewEdit
-					}
-
-				case key.Matches(msg, m.keys.AssignProject):
-					// p: open project picker from search mode
-					selectedItem := m.list.SelectedItem()
-					if selectedItem == nil {
-						return m, nil
-					}
-					if item, ok := selectedItem.(hostItem); ok {
-						m.showingPicker = true
-						picker := m.createPickerForHost(item.host.Name)
-						m.picker = &picker
-					}
-
-				case key.Matches(msg, m.keys.DeleteServer):
-					// d: open delete confirmation from search mode
-					selectedItem := m.list.SelectedItem()
-					if selectedItem == nil {
-						return m, nil
-					}
-					if item, ok := selectedItem.(hostItem); ok {
-						confirm := NewDeleteConfirm(item.host.Name, m.configPath)
-						m.deleteConfirm = &confirm
-						m.viewMode = ViewDelete
-					}
-
-				case key.Matches(msg, m.keys.Undo):
-					// u: undo last delete from search mode
-					if m.undoBuffer.IsEmpty() {
-						return m, nil
-					}
-					entry, ok := m.undoBuffer.Pop()
-					if !ok {
-						return m, nil
-					}
-					return m, func() tea.Msg {
-						err := RestoreHost(entry.ConfigPath, entry.RawLines)
-						if err != nil {
-							return undoErrorMsg{err: err}
-						}
-						return undoCompletedMsg{alias: entry.Alias}
-					}
-
-				case key.Matches(msg, m.keys.SignIn):
-					// s: trigger 1Password sign-in from search mode
-					if m.appBackend != nil {
-						m.statusMsg = "Authenticating with 1Password..."
-						return m, syncBackendWithTimeoutCmd(m.appBackend, 60*time.Second)
-					}
-
-				case key.Matches(msg, m.keys.GoToTop):
-					// g/Home: jump to top from search mode
-					m.list.Select(0)
-
-				case key.Matches(msg, m.keys.GoToBottom):
-					// G/End: jump to bottom from search mode
-					m.list.Select(len(m.list.Items()) - 1)
-
-				case key.Matches(msg, m.keys.HalfPageUp):
-					// Ctrl+u: half page up from search mode
-					listHeight := m.list.Height()
-					halfPage := listHeight / 2
-					for i := 0; i < halfPage; i++ {
-						m.list.CursorUp()
-					}
-
-				case key.Matches(msg, m.keys.HalfPageDown):
-					// Ctrl+d: half page down from search mode
-					listHeight := m.list.Height()
-					halfPage := listHeight / 2
-					for i := 0; i < halfPage; i++ {
-						m.list.CursorDown()
-					}
-
 				default:
-					// Pass all other keys to search input
+					// Pass all other keys to search input (including a, e, p, d, u, s, q, g, etc.)
 					var cmd tea.Cmd
 					m.searchInput, cmd = m.searchInput.Update(msg)
 					cmds = append(cmds, cmd)
@@ -1119,6 +1008,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				// List mode key handling
 				switch {
+				case key.Matches(msg, m.keys.ClearSearch):
+					// Esc in list mode: if filter text exists, clear it
+					if m.searchInput.Value() != "" {
+						m.searchInput.SetValue("")
+						m.filterHosts()
+					}
+
 				case key.Matches(msg, m.keys.Search):
 					// "/" - focus search
 					m.searchFocused = true
@@ -1721,10 +1617,17 @@ Press 'q' to quit
 		// Build main content
 		var mainContent string
 		if m.searchInput.Value() != "" && len(m.filteredIdx) == 0 {
-			// No matches for search query
+			// No matches for search query — context-sensitive hint
+			var noMatchHint string
+			if m.searchFocused {
+				noMatchHint = "Press Esc to exit search"
+			} else {
+				noMatchHint = "Press Esc to clear filter"
+			}
 			mainContent = noMatchesStyle.Render(fmt.Sprintf(
-				"No matches for \"%s\"\n\nPress Esc to clear search",
+				"No matches for \"%s\"\n\n%s",
 				m.searchInput.Value(),
+				noMatchHint,
 			))
 		} else {
 			mainContent = m.list.View()
