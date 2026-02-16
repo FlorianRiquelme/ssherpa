@@ -168,10 +168,11 @@ Recent decisions affecting current work:
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 1 | 1Password field reference help (--fields flag + ? overlay) | 2026-02-16 | 1d26764 | [1-we-need-a-simple-way-to-show-help-users-](./quick/1-we-need-a-simple-way-to-show-help-users-/) |
+| 2 | Fix duplicate servers on 1Password item rename | 2026-02-16 | eed1526 | [2-track-1password-items-by-id-to-prevent-d](./quick/2-track-1password-items-by-id-to-prevent-d/) |
 
 ## Session Continuity
 
 Last session: 2026-02-16 (Quick task complete)
-Stopped at: Completed quick-1 plan — Added --fields CLI flag and ? help overlay with complete 1Password field reference documentation. All phases remain complete. Ready for v1 release.
+Stopped at: Completed quick-2 plan — Fixed duplicate server entries when 1Password items are renamed by filtering ssherpa-generated SSH config mirrors before deduplication. All phases remain complete. Ready for v1 release.
 Resume file: None
 Resume command: Project complete — all 8 phases finished. Quick tasks available. Next: Generate demo.gif and create v1.0.0 release tag.
