@@ -98,6 +98,10 @@ type Model struct {
 	showingKeyPicker  bool             // Whether key picker is visible
 	hostSources       map[string]string // Maps host name to source (e.g., "ssh-config", "1password")
 	detailSource      string           // Source of the currently displayed detail host
+
+	// Quick-1 additions:
+	showingHelp  bool         // Whether help overlay is visible
+	helpOverlay  *HelpOverlay // Help overlay (nil when not showing)
 }
 
 // New creates a new TUI model.
@@ -821,6 +825,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.viewport.SetContent(content)
 		}
 
+		// Update help overlay viewport if showing
+		if m.showingHelp && m.helpOverlay != nil {
+			overlay := NewHelpOverlay(msg.Width, msg.Height)
+			m.helpOverlay = &overlay
+		}
+
 	case configLoadedMsg:
 		m.loading = false
 		m.hosts = msg.hosts
@@ -943,6 +953,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// View-specific key handling
 		switch m.viewMode {
 		case ViewList:
+			// If showing help overlay, handle help-specific keys first
+			if m.showingHelp {
+				switch {
+				case key.Matches(msg, m.keys.Help) || key.Matches(msg, m.keys.ClearSearch):
+					// Close help overlay
+					m.showingHelp = false
+					m.helpOverlay = nil
+					return m, nil
+				default:
+					// Route arrow/scroll keys to help overlay viewport
+					if m.helpOverlay != nil {
+						var cmd tea.Cmd
+						*m.helpOverlay, cmd = m.helpOverlay.Update(msg)
+						cmds = append(cmds, cmd)
+					}
+					return m, tea.Batch(cmds...)
+				}
+			}
+
 			if m.searchFocused {
 				// Search mode key handling
 				switch {
@@ -1140,6 +1169,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					halfPage := listHeight / 2
 					for i := 0; i < halfPage; i++ {
 						m.list.CursorDown()
+					}
+
+				case key.Matches(msg, m.keys.Help):
+					// ?: toggle help overlay
+					if m.showingHelp {
+						m.showingHelp = false
+						m.helpOverlay = nil
+					} else {
+						overlay := NewHelpOverlay(m.width, m.height)
+						m.helpOverlay = &overlay
+						m.showingHelp = true
 					}
 
 				default:
@@ -1662,6 +1702,19 @@ Press 'q' to quit
 				keyPickerView,
 			)
 			return centeredKeyPicker
+		}
+
+		// If showing help overlay, overlay it on top
+		if m.showingHelp && m.helpOverlay != nil {
+			helpOverlayView := m.helpOverlay.View()
+			centeredHelp := lipgloss.Place(
+				m.width,
+				m.height,
+				lipgloss.Center,
+				lipgloss.Center,
+				helpOverlayView,
+			)
+			return centeredHelp
 		}
 
 		return baseView
