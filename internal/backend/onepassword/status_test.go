@@ -276,3 +276,64 @@ func TestGetStatus_ThreadSafe(t *testing.T) {
 		<-done
 	}
 }
+
+func TestSyncFromOnePassword_SkipsInvalidItems(t *testing.T) {
+	mock := NewMockClient()
+
+	// Add vault
+	vaultID := "VAULT-123"
+	mock.AddVault(Vault{
+		ID:   vaultID,
+		Name: "Personal",
+	})
+
+	// Add valid item
+	mock.AddItem(Item{
+		ID:       "VALID-ITEM",
+		Title:    "Valid Server",
+		VaultID:  vaultID,
+		Category: "server",
+		Tags:     []string{"ssherpa"},
+		Fields: []ItemField{
+			{Title: "hostname", Value: "valid.example.com"},
+			{Title: "user", Value: "admin"},
+		},
+	})
+
+	// Add item missing hostname
+	mock.AddItem(Item{
+		ID:       "MISSING-HOST",
+		Title:    "No Hostname Server",
+		VaultID:  vaultID,
+		Category: "server",
+		Tags:     []string{"ssherpa"},
+		Fields: []ItemField{
+			{Title: "user", Value: "admin"},
+		},
+	})
+
+	// Add item missing user
+	mock.AddItem(Item{
+		ID:       "MISSING-USER",
+		Title:    "No User Server",
+		VaultID:  vaultID,
+		Category: "server",
+		Tags:     []string{"ssherpa"},
+		Fields: []ItemField{
+			{Title: "hostname", Value: "test.example.com"},
+		},
+	})
+
+	backend := New(mock)
+
+	// Sync from 1Password
+	ctx := context.Background()
+	err := backend.SyncFromOnePassword(ctx)
+	require.NoError(t, err)
+
+	// Only valid item should be in servers list
+	servers, err := backend.ListServers(ctx)
+	require.NoError(t, err)
+	require.Len(t, servers, 1, "Only valid item should be synced")
+	assert.Equal(t, "valid.example.com", servers[0].Host)
+}

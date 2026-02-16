@@ -2,6 +2,8 @@ package onepassword
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"strings"
 
 	backendpkg "github.com/florianriquelme/ssherpa/internal/backend"
@@ -59,6 +61,7 @@ func (b *Backend) SyncFromOnePassword(ctx context.Context) error {
 
 	// Fetch all tagged servers
 	servers := make([]*domain.Server, 0)
+	var skippedItems []string // Track skipped items for debugging
 	for _, vault := range vaults {
 		items, err := b.client.ListItems(ctx, vault.ID)
 		if err != nil {
@@ -73,11 +76,21 @@ func (b *Backend) SyncFromOnePassword(ctx context.Context) error {
 
 			server, err := ItemToServer(&item)
 			if err != nil {
-				// Skip items that can't be converted (malformed data)
+				// Track items that can't be converted (malformed data)
+				// This helps debug why tagged items don't appear in the TUI
+				skippedItems = append(skippedItems, item.Title+": "+err.Error())
 				continue
 			}
 
 			servers = append(servers, server)
+		}
+	}
+
+	// Report skipped items to help debug missing entries
+	if len(skippedItems) > 0 {
+		fmt.Fprintf(os.Stderr, "Warning: %d items with 'ssherpa' tag skipped due to validation errors:\n", len(skippedItems))
+		for _, msg := range skippedItems {
+			fmt.Fprintf(os.Stderr, "  - %s\n", msg)
 		}
 	}
 

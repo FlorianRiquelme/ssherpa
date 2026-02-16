@@ -60,10 +60,10 @@ func ItemToServer(item *Item) (*domain.Server, error) {
 
 	// Validate required fields
 	if server.Host == "" {
-		return nil, fmt.Errorf("missing required field: hostname")
+		return nil, fmt.Errorf("item %q (id: %s) missing required field: hostname", item.Title, item.ID)
 	}
 	if server.User == "" {
-		return nil, fmt.Errorf("missing required field: user")
+		return nil, fmt.Errorf("item %q (id: %s) missing required field: user", item.Title, item.ID)
 	}
 
 	return server, nil
