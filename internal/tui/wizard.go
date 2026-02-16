@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -399,7 +400,8 @@ func (w SetupWizard) renderOnePasswordSetup() string {
 		b.WriteString("    1. Install 1Password CLI: https://developer.1password.com/docs/cli/get-started/\n")
 		b.WriteString("    2. Install 1Password desktop app\n")
 		b.WriteString("    3. Enable CLI integration in Settings > Developer\n")
-		b.WriteString("    4. Sign in to 1Password desktop app\n\n")
+		b.WriteString("    4. Sign in to 1Password desktop app\n")
+		b.WriteString("    5. If using op outside ssherpa, set OP_BIOMETRIC_UNLOCK_ENABLED=true\n\n")
 		b.WriteString("  Press Enter to use SSH Config only, or Esc to go back")
 	}
 
@@ -585,6 +587,7 @@ func checkOpCLI() tea.Cmd {
 		// Step 2: Verify session is active by listing vaults
 		ctx := context.Background()
 		cmd := exec.CommandContext(ctx, opPath, "vault", "list", "--format", "json")
+		cmd.Env = append(os.Environ(), "OP_BIOMETRIC_UNLOCK_ENABLED=true")
 		output, err := cmd.Output()
 		if err != nil {
 			return onePasswordCheckCompleteMsg{
@@ -647,6 +650,7 @@ func createSampleEntry(vaultID string) tea.Cmd {
 			"--", "hostname=example.example.com", "user=ubuntu",
 			"--format", "json",
 		)
+		cmd.Env = append(os.Environ(), "OP_BIOMETRIC_UNLOCK_ENABLED=true")
 
 		if _, err := cmd.Output(); err != nil {
 			return sampleEntryCreatedMsg{err: fmt.Sprintf("failed to create item: %v", err)}
