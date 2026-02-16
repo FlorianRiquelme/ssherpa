@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 Phase: 8 of 8 (Distribution) — COMPLETE
 Plan: 3 of 3 complete
 Status: Phase 8 Complete — README with GIF-forward presentation, VHS demo tape, enhanced TUI wizard, and verified distribution pipeline ready for v1 release
-Last activity: 2026-02-16 - Completed quick task 3: Fix search results not responding to shortcut keys
+Last activity: 2026-02-16 - Completed quick task 4: Two-phase search Esc blurs then clears
 
 Progress: [████████████████████████████████████████████████████████████████████████████████████████████████] 100%
 
@@ -141,6 +141,8 @@ Recent decisions affecting current work:
 - [Phase 08-03]: renameio/v2/maybe for cross-platform file operations (Windows compatibility via maybe package)
 - [Phase 08-03]: TUI wizard replaces terminal onboarding (single canonical flow, richer UX with vault selection and sample entry creation)
 - [Phase 08-03]: Defer tmux compatibility to future version (known limitation, not blocking v1 release)
+- [Phase quick-4]: Remove all action key handlers from searchFocused block so every letter reaches search input
+- [Phase quick-4]: Two-phase Esc: first press blurs (keeps filter), second press clears filter
 
 ### Pending Todos
 
@@ -170,10 +172,11 @@ Recent decisions affecting current work:
 | 1 | 1Password field reference help (--fields flag + ? overlay) | 2026-02-16 | 1d26764 | [1-we-need-a-simple-way-to-show-help-users-](./quick/1-we-need-a-simple-way-to-show-help-users-/) |
 | 2 | Fix duplicate servers on 1Password item rename | 2026-02-16 | eed1526 | [2-track-1password-items-by-id-to-prevent-d](./quick/2-track-1password-items-by-id-to-prevent-d/) |
 | 3 | Fix search results not responding to shortcut keys | 2026-02-16 | 8e2390d | [3-fix-search-results-not-responding-to-sho](./quick/3-fix-search-results-not-responding-to-sho/) |
+| 4 | Two-phase search: Esc blurs (keeps filter) then clears | 2026-02-16 | 88881f4 | [4-implement-two-phase-search-esc-blurs-but](./quick/4-implement-two-phase-search-esc-blurs-but/) |
 
 ## Session Continuity
 
 Last session: 2026-02-16 (Quick task complete)
-Stopped at: Completed quick-3 plan — Action and navigation shortcut keys now work on filtered search results instead of being swallowed as text input. All phases remain complete. Ready for v1 release.
+Stopped at: Completed quick-4 plan — Two-phase search UX: typing mode lets all letters reach input, Esc blurs (keeps filter for action keys), second Esc clears filter. Ready for v1 release.
 Resume file: None
 Resume command: Project complete — all 8 phases finished. Quick tasks available. Next: Generate demo.gif and create v1.0.0 release tag.
