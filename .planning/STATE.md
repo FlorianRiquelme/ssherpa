@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-14)
 
 ## Current Position
 
-Phase: 8 of 8 (Distribution) — IN PROGRESS
-Plan: 2 of 3 complete
-Status: Phase 8 Plans 01-02 Complete — CLI flags, onboarding, and release automation configured
-Last activity: 2026-02-15 — Completed Phase 08 Plan 01: Version package with ldflags injection, CLI flags (--version, --setup), and first-run onboarding flow with SSH config detection and optional 1Password setup.
+Phase: 8 of 8 (Distribution) — COMPLETE
+Plan: 3 of 3 complete
+Status: Phase 8 Complete — README with GIF-forward presentation, VHS demo tape, enhanced TUI wizard, and verified distribution pipeline ready for v1 release
+Last activity: 2026-02-16 — Completed Phase 08 Plan 03: Professional README with VHS demo tape, enhanced TUI wizard with 1Password vault selection and sample entry creation, verified end-to-end distribution pipeline with cross-platform compatibility fixes.
 
-Progress: [████████████████████████████████████████████████████████████████████████████████████████████████] 98%
+Progress: [████████████████████████████████████████████████████████████████████████████████████████████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19 (plus 06-05 partial: 2/3 tasks)
-- Average duration: 597.4 seconds
-- Total execution time: 3.18 hours
+- Total plans completed: 20 (plus 06-05 partial: 2/3 tasks)
+- Average duration: 597.5 seconds
+- Total execution time: 3.33 hours
 
 **By Phase:**
 
@@ -34,17 +34,17 @@ Progress: [███████████████████████
 | 05    | 3     | 525s  | 175.0s   |
 | 06    | 4     | 1538s | 384.5s   |
 | 07    | 2     | 1554s | 777.0s   |
-| 08    | 2     | 320s  | 160.0s   |
+| 08    | 3     | 920s  | 306.7s   |
 
 **Recent Plans:**
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
-| 08    | 01   | 182s     | 2     | 3     |
+| 08    | 03   | 600s     | 2     | 12    |
 | 08    | 02   | 138s     | 2     | 3     |
+| 08    | 01   | 182s     | 2     | 3     |
 | 07    | 02   | 900s     | 3     | 9     |
 | 07    | 01   | 654s     | 1     | 8     |
-| 06    | 05   | 252s     | 2/3   | 4     |
 
 ## Accumulated Context
 
@@ -135,14 +135,22 @@ Recent decisions affecting current work:
 - [Phase 08-02]: Auto-push Homebrew formula to separate tap repository (TAP_GITHUB_TOKEN enables cross-repo push)
 - [Phase 08-02]: CGO_ENABLED=0 for all builds (pure Go binaries with no C dependencies)
 - [Phase 08-02]: Curl install script verifies SHA256 checksum (security best practice for download integrity)
+- [Phase 08-03]: GIF-forward README with balanced 1Password presentation (lazygit-style, 1Password as one feature among several)
+- [Phase 08-03]: VHS demo tape for reproducible GIF generation (automated, consistent demos)
+- [Phase 08-03]: runtime.Version() over ldflags for GoVersion (simpler, always accurate without injection)
+- [Phase 08-03]: renameio/v2/maybe for cross-platform file operations (Windows compatibility via maybe package)
+- [Phase 08-03]: TUI wizard replaces terminal onboarding (single canonical flow, richer UX with vault selection and sample entry creation)
+- [Phase 08-03]: Defer tmux compatibility to future version (known limitation, not blocking v1 release)
 
 ### Pending Todos
 
 - ~~**Wizard SDK wiring (06-05):**~~ DONE (commit 745339d). Uses service account token via OP_SERVICE_ACCOUNT_TOKEN env var or manual paste.
 - **Re-run E2E checkpoint (06-05 Task 3):** Re-test all 6 scenarios from the checkpoint with real 1Password service account.
-- **Rename tool to ssherpa:** Rename from "ssherpa" to "ssherpa" across codebase, Go module, configs, docs, and Phase 8 distribution plan.
+- ~~**Rename tool to ssherpa:**~~ DONE (commits c9e11ec, edc9385, 2d057ef). Renamed from "sshjesus" to "ssherpa" across Go module, codebase, configs, and docs.
 - ~~**Fix selected server highlight readability:**~~ DONE (commit dd4eea6). AdaptiveColor for selectedStyle/pickerSelectedStyle — dark indigo bg on dark terminals, light indigo bg on light terminals.
 - **Fix 1Password status banner showing unavailable when unlocked:** Banner says 1Password unavailable even when desktop app is unlocked — likely `op` CLI not signed in vs service account token issue.
+- **Generate demo GIF:** Run `vhs scripts/demo.tape` to create demo.gif for README.md
+- **Create v1.0.0 release:** Tag and push v1.0.0 to trigger GitHub Actions release workflow
 
 ### Blockers/Concerns
 
@@ -157,7 +165,7 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-02-15 (Phase 08 in progress)
-Stopped at: Completed 08-01-PLAN.md — CLI flags (--version, --setup) and first-run onboarding flow with SSH config detection. Plans 01-02 complete. Plan 03 remaining (Documentation).
+Last session: 2026-02-16 (Phase 08 complete)
+Stopped at: Completed 08-03-PLAN.md — Professional README with VHS demo tape, enhanced TUI wizard with vault selection and sample entry creation, verified distribution pipeline. Phase 08 complete. Ready for v1 release.
 Resume file: None
-Resume command: `/gsd:execute-phase 08` for Plan 03
+Resume command: Project complete — all 8 phases finished. Next: Generate demo.gif and create v1.0.0 release tag.
