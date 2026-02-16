@@ -39,8 +39,8 @@ checksum:
 
 brews:
   - repository:
-      owner: ssherpa
-      name: homebrew-tap
+      owner: FlorianRiquelme
+      name: ssherpa-brewtap
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     directory: Formula
     homepage: "https://github.com/florianriquelme/ssherpa"
@@ -83,7 +83,7 @@ release:
 
     ### Homebrew
     ```sh
-    brew tap ssherpa/tap
+    brew tap FlorianRiquelme/ssherpa-brewtap
     brew install ssherpa
     ```
 
