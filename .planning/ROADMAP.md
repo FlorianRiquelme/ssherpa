@@ -19,7 +19,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Config Management** - CRUD operations for SSH connections
 - [x] **Phase 6: 1Password Backend** - Credential storage via 1Password SDK
 - [x] **Phase 7: SSH Key Selection** - Select which SSH key to use per connection
-- [ ] **Phase 8: Distribution** - Single binary packaging and release
+- [x] **Phase 8: Distribution** - Single binary packaging and release
 
 ## Phase Details
 
@@ -152,9 +152,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — Version package, CLI flags (--version, --setup), and first-run onboarding
-- [ ] 08-02-PLAN.md — GoReleaser config, GitHub Actions release workflow, and curl install script
-- [ ] 08-03-PLAN.md — README, VHS demo tape, and end-to-end distribution verification
+- [x] 08-01-PLAN.md — Version package, CLI flags (--version, --setup), and first-run onboarding
+- [x] 08-02-PLAN.md — GoReleaser config, GitHub Actions release workflow, and curl install script
+- [x] 08-03-PLAN.md — README, VHS demo tape, and end-to-end distribution verification
 
 ## Progress
 
@@ -170,4 +170,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | 5. Config Management | 3/3 | ✓ Complete | 2026-02-14 |
 | 6. 1Password Backend | 5/5 | ✓ Complete | 2026-02-14 |
 | 7. SSH Key Selection | 2/2 | ✓ Complete | 2026-02-14 |
-| 8. Distribution | 0/3 | Not started | - |
+| 8. Distribution | 3/3 | Complete | 2026-02-16 |
