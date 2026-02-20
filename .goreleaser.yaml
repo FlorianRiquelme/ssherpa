@@ -53,13 +53,7 @@ brews:
     commit_msg_template: "chore: update formula for {{ .ProjectName }} version {{ .Tag }}"
 
 changelog:
-  sort: asc
-  filters:
-    exclude:
-      - '^docs:'
-      - '^test:'
-      - '^chore:'
-      - 'typo'
+  disable: true
 
 release:
   github:
