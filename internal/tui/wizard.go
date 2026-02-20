@@ -29,25 +29,22 @@ type SetupWizard struct {
 	runMigration       bool   // Whether user wants to run migration
 	migrationItemCount int    // Number of items found for migration
 
-	// Vault selection fields
-	vaults           []vaultInfo // Available vaults from 1Password
-	selectedVaultIdx int         // Selected vault index in list
-
-	// Sample entry fields
-	creatingSample bool   // Whether we're creating a sample entry
-	sampleCreated  bool   // Whether sample was successfully created
-	sampleError    string // Error message if sample creation failed
+	// Vault discovery fields
+	vaults       []vaultDiscovery // Available vaults from 1Password
+	totalServers int              // Total ssherpa-tagged servers across all vaults
 }
 
-type vaultInfo struct {
-	ID   string
-	Name string
+type vaultDiscovery struct {
+	ID          string
+	Name        string
+	ServerCount int
 }
 
 type onePasswordCheckResult struct {
-	available bool
-	vaults    []vaultInfo
-	error     string
+	available    bool
+	vaults       []vaultDiscovery
+	totalServers int
+	error        string
 }
 
 // Wizard steps
@@ -55,9 +52,6 @@ const (
 	stepWelcome = iota
 	stepCheckingOnePassword
 	stepOnePasswordSetup
-	stepVaultSelection
-	stepSampleOffer
-	stepCreatingSample
 	stepMigrationOffer
 	stepSummary
 )
@@ -106,16 +100,6 @@ func (w SetupWizard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case stepOnePasswordSetup:
 			return w.updateOnePasswordSetup(msg)
 
-		case stepVaultSelection:
-			return w.updateVaultSelection(msg)
-
-		case stepSampleOffer:
-			return w.updateSampleOffer(msg)
-
-		case stepCreatingSample:
-			// No input while creating
-			return w, nil
-
 		case stepMigrationOffer:
 			return w.updateMigrationOffer(msg)
 
@@ -127,31 +111,18 @@ func (w SetupWizard) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 	case spinner.TickMsg:
-		if w.checking || w.creatingSample {
+		if w.checking {
 			var cmd tea.Cmd
 			w.spinner, cmd = w.spinner.Update(msg)
 			return w, cmd
 		}
 
 	case onePasswordCheckCompleteMsg:
-		// 1Password check completed
 		w.checking = false
 		w.checkResult = onePasswordCheckResult(msg)
 		w.vaults = msg.vaults
-
-		// Advance to the setup screen (shows success or failure)
+		w.totalServers = msg.totalServers
 		w.step = stepOnePasswordSetup
-		return w, nil
-
-	case sampleEntryCreatedMsg:
-		// Sample entry creation completed
-		w.creatingSample = false
-		if msg.err != "" {
-			w.sampleError = msg.err
-		} else {
-			w.sampleCreated = true
-		}
-		w.step = stepSummary
 		return w, nil
 
 	case configSavedMsg:
@@ -203,71 +174,17 @@ func (w SetupWizard) transitionToOpCheck() (tea.Model, tea.Cmd) {
 func (w SetupWizard) updateOnePasswordSetup(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "enter":
-		if w.checkResult.available && len(w.vaults) > 0 {
-			// Proceed to vault selection
-			w.step = stepVaultSelection
-			w.cursor = 0
-		} else if w.checkResult.available {
-			// No vaults found, skip to summary
+		if w.checkResult.available {
 			w.step = stepSummary
 		} else {
-			// Fall back to SSH config only
 			w.backendChoice = "sshconfig"
 			w.step = stepSummary
 		}
 		return w, nil
 	case "esc":
-		// Go back to welcome to choose different backend
 		w.step = stepWelcome
 		w.checkResult = onePasswordCheckResult{}
 		return w, nil
-	}
-	return w, nil
-}
-
-// updateVaultSelection handles input for vault selection.
-func (w SetupWizard) updateVaultSelection(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	switch msg.String() {
-	case "j", "down":
-		if len(w.vaults) > 0 {
-			w.cursor = (w.cursor + 1) % len(w.vaults)
-		}
-	case "k", "up":
-		if len(w.vaults) > 0 {
-			w.cursor = (w.cursor - 1 + len(w.vaults)) % len(w.vaults)
-		}
-	case "enter":
-		if len(w.vaults) > 0 {
-			w.selectedVaultIdx = w.cursor
-			w.step = stepSampleOffer
-			w.cursor = 0
-		}
-	case "esc":
-		w.step = stepOnePasswordSetup
-	}
-	return w, nil
-}
-
-// updateSampleOffer handles input for the sample entry offer.
-func (w SetupWizard) updateSampleOffer(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	switch msg.String() {
-	case "j", "down":
-		w.cursor = (w.cursor + 1) % 2
-	case "k", "up":
-		w.cursor = (w.cursor - 1 + 2) % 2
-	case "enter":
-		if w.cursor == 0 {
-			// Create sample entry
-			vault := w.vaults[w.selectedVaultIdx]
-			w.step = stepCreatingSample
-			w.creatingSample = true
-			return w, tea.Batch(w.spinner.Tick, createSampleEntry(vault.ID))
-		}
-		// Skip sample entry
-		w.step = stepSummary
-	case "esc":
-		w.step = stepVaultSelection
-		w.cursor = w.selectedVaultIdx
 	}
 	return w, nil
 }
@@ -298,12 +215,6 @@ func (w SetupWizard) View() string {
 		return w.renderCheckingOnePassword()
 	case stepOnePasswordSetup:
 		return w.renderOnePasswordSetup()
-	case stepVaultSelection:
-		return w.renderVaultSelection()
-	case stepSampleOffer:
-		return w.renderSampleOffer()
-	case stepCreatingSample:
-		return w.renderCreatingSample()
 	case stepMigrationOffer:
 		return w.renderMigrationOffer()
 	case stepSummary:
@@ -366,7 +277,21 @@ func (w SetupWizard) renderOnePasswordSetup() string {
 		b.WriteString(wizardSuccessStyle.Render("  1Password CLI is ready") + "\n")
 		b.WriteString(fmt.Sprintf("  Found %d vault(s)\n\n", len(w.vaults)))
 
-		// Show entry template
+		if w.totalServers > 0 {
+			b.WriteString("  Auto-discovered ssherpa servers:\n\n")
+			for _, vault := range w.vaults {
+				if vault.ServerCount > 0 {
+					b.WriteString(fmt.Sprintf("    %-20s %d server(s)\n", vault.Name, vault.ServerCount))
+				}
+			}
+			b.WriteString("    " + strings.Repeat("\u2500", 30) + "\n")
+			b.WriteString(fmt.Sprintf("    %-20s %d server(s)\n\n", "Total", w.totalServers))
+		} else {
+			b.WriteString("  No ssherpa-tagged servers found yet.\n")
+			b.WriteString("  Create servers in 1Password with the \"ssherpa\" tag,\n")
+			b.WriteString("  or add them from the ssherpa TUI after setup.\n\n")
+		}
+
 		b.WriteString("  ssherpa stores servers as 1Password items:\n\n")
 
 		templateStyle := lipgloss.NewStyle().
@@ -386,7 +311,7 @@ func (w SetupWizard) renderOnePasswordSetup() string {
 
 		b.WriteString(templateStyle.Render(template) + "\n\n")
 
-		b.WriteString("  Press Enter to select a vault")
+		b.WriteString("  Press Enter to continue")
 	} else {
 		b.WriteString(wizardErrorStyle.Render("  Could not connect to 1Password CLI") + "\n\n")
 		if w.checkResult.error != "" {
@@ -400,76 +325,6 @@ func (w SetupWizard) renderOnePasswordSetup() string {
 		b.WriteString("    5. If using op outside ssherpa, set OP_BIOMETRIC_UNLOCK_ENABLED=true\n\n")
 		b.WriteString("  Press Enter to use SSH Config only, or Esc to go back")
 	}
-
-	return wizardBoxStyle.Render(b.String())
-}
-
-// renderVaultSelection renders the vault selection screen.
-func (w SetupWizard) renderVaultSelection() string {
-	var b strings.Builder
-
-	title := titleStyle.Render("Select Vault")
-	b.WriteString(title + "\n\n")
-
-	b.WriteString("  Choose a vault for ssherpa servers:\n\n")
-
-	for i, vault := range w.vaults {
-		cursor := "  "
-		label := fmt.Sprintf("%-20s", vault.Name)
-		if i == w.cursor {
-			cursor = "> "
-			label = selectedStyle.Render(label)
-		}
-		b.WriteString("  " + cursor + label + "\n")
-	}
-
-	b.WriteString("\n")
-	b.WriteString(wizardDimStyle.Render("  Use j/k to navigate, Enter to select, Esc to go back"))
-
-	return wizardBoxStyle.Render(b.String())
-}
-
-// renderSampleOffer renders the sample entry creation offer.
-func (w SetupWizard) renderSampleOffer() string {
-	var b strings.Builder
-
-	vault := w.vaults[w.selectedVaultIdx]
-
-	title := titleStyle.Render("Create Sample Entry")
-	b.WriteString(title + "\n\n")
-
-	b.WriteString(fmt.Sprintf("  Create a sample server in \"%s\"?\n", vault.Name))
-	b.WriteString("  This verifies the integration works.\n\n")
-
-	options := []string{
-		"Yes, create sample entry",
-		"No, skip",
-	}
-
-	for i, opt := range options {
-		cursor := "  "
-		if i == w.cursor {
-			cursor = "> "
-			opt = selectedStyle.Render(opt)
-		}
-		b.WriteString("  " + cursor + opt + "\n")
-	}
-
-	b.WriteString("\n")
-	b.WriteString(wizardDimStyle.Render("  Use j/k to navigate, Enter to select, Esc to go back"))
-
-	return wizardBoxStyle.Render(b.String())
-}
-
-// renderCreatingSample renders the sample entry creation spinner.
-func (w SetupWizard) renderCreatingSample() string {
-	var b strings.Builder
-
-	title := titleStyle.Render("Creating Sample Entry")
-	b.WriteString(title + "\n\n")
-
-	vault := w.vaults[w.selectedVaultIdx]
-	b.WriteString(fmt.Sprintf("  %s Creating sample server in \"%s\"...\n", w.spinner.View(), vault.Name))
 
 	return wizardBoxStyle.Render(b.String())
 }
@@ -528,17 +383,8 @@ func (w SetupWizard) renderSummary() string {
 		if len(w.vaults) > 0 {
 			b.WriteString(fmt.Sprintf("  Vaults:  %d\n", len(w.vaults)))
 		}
-		if w.selectedVaultIdx < len(w.vaults) {
-			b.WriteString(fmt.Sprintf("  Vault:   %s\n", w.vaults[w.selectedVaultIdx].Name))
-		}
-		if w.sampleCreated {
-			b.WriteString(wizardSuccessStyle.Render("  Sample:  Created \"ssherpa-sample\" entry") + "\n")
-		}
-		if w.sampleError != "" {
-			b.WriteString(wizardErrorStyle.Render(fmt.Sprintf("  Sample:  Failed (%s)", w.sampleError)) + "\n")
-		}
-		if w.runMigration {
-			b.WriteString(fmt.Sprintf("  Migrated: %d items\n", w.migrationItemCount))
+		if w.totalServers > 0 {
+			b.WriteString(fmt.Sprintf("  Servers: %d discovered\n", w.totalServers))
 		}
 	}
 
@@ -571,7 +417,6 @@ var (
 // checkOpCLI verifies that the 1Password CLI is installed and has an active session.
 func checkOpCLI() tea.Cmd {
 	return func() tea.Msg {
-		// Step 1: Check if 'op' binary exists
 		opPath, err := exec.LookPath("op")
 		if err != nil {
 			return onePasswordCheckCompleteMsg{
@@ -580,7 +425,6 @@ func checkOpCLI() tea.Cmd {
 			}
 		}
 
-		// Step 2: Verify session is active by listing vaults
 		ctx := context.Background()
 		cmd := exec.CommandContext(ctx, opPath, "vault", "list", "--format", "json")
 		cmd.Env = append(os.Environ(), "OP_BIOMETRIC_UNLOCK_ENABLED=true")
@@ -592,7 +436,6 @@ func checkOpCLI() tea.Cmd {
 			}
 		}
 
-		// Parse vault list to get names and IDs
 		var cliVaults []struct {
 			ID   string `json:"id"`
 			Name string `json:"name"`
@@ -604,56 +447,55 @@ func checkOpCLI() tea.Cmd {
 			}
 		}
 
-		vaults := make([]vaultInfo, 0, len(cliVaults))
+		vaults := make([]vaultDiscovery, 0, len(cliVaults))
+		totalServers := 0
 		for _, v := range cliVaults {
-			vaults = append(vaults, vaultInfo{ID: v.ID, Name: v.Name})
+			count := countSsherpaItems(opPath, v.ID)
+			vaults = append(vaults, vaultDiscovery{
+				ID:          v.ID,
+				Name:        v.Name,
+				ServerCount: count,
+			})
+			totalServers += count
 		}
 
 		return onePasswordCheckCompleteMsg{
-			available: true,
-			vaults:    vaults,
+			available:    true,
+			vaults:       vaults,
+			totalServers: totalServers,
 		}
 	}
+}
+
+// countSsherpaItems counts items tagged "ssherpa" in a specific vault.
+func countSsherpaItems(opPath, vaultID string) int {
+	ctx := context.Background()
+	cmd := exec.CommandContext(ctx, opPath, "item", "list",
+		"--vault", vaultID,
+		"--tags", "ssherpa",
+		"--format", "json",
+	)
+	cmd.Env = append(os.Environ(), "OP_BIOMETRIC_UNLOCK_ENABLED=true")
+	output, err := cmd.Output()
+	if err != nil {
+		return 0
+	}
+
+	var items []struct {
+		ID string `json:"id"`
+	}
+	if err := json.Unmarshal(output, &items); err != nil {
+		return 0
+	}
+	return len(items)
 }
 
 // onePasswordCheckCompleteMsg is sent when 1Password check completes.
 type onePasswordCheckCompleteMsg struct {
-	available bool
-	vaults    []vaultInfo
-	error     string
-}
-
-// sampleEntryCreatedMsg is sent when sample entry creation completes.
-type sampleEntryCreatedMsg struct {
-	err string
-}
-
-// createSampleEntry creates a sample server entry in the given vault via op CLI.
-func createSampleEntry(vaultID string) tea.Cmd {
-	return func() tea.Msg {
-		opPath, err := exec.LookPath("op")
-		if err != nil {
-			return sampleEntryCreatedMsg{err: "op CLI not found"}
-		}
-
-		ctx := context.Background()
-		cmd := exec.CommandContext(ctx, opPath,
-			"item", "create",
-			"--category", "server",
-			"--vault", vaultID,
-			"--title", "ssherpa-sample",
-			"--tags", "ssherpa",
-			"--", "hostname=example.example.com", "user=ubuntu",
-			"--format", "json",
-		)
-		cmd.Env = append(os.Environ(), "OP_BIOMETRIC_UNLOCK_ENABLED=true")
-
-		if _, err := cmd.Output(); err != nil {
-			return sampleEntryCreatedMsg{err: fmt.Sprintf("failed to create item: %v", err)}
-		}
-
-		return sampleEntryCreatedMsg{}
-	}
+	available    bool
+	vaults       []vaultDiscovery
+	totalServers int
+	error        string
 }
 
 // configSavedMsg is sent when config is saved successfully.
