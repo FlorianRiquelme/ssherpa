@@ -458,7 +458,9 @@ func checkOpCLI() tea.Cmd {
 		vaults := make([]vaultDiscovery, 0, len(cliVaults))
 		totalServers := 0
 		for _, v := range cliVaults {
-			count := countSsherpaItems(ctx, opPath, v.ID)
+			vaultCtx, vaultCancel := context.WithTimeout(context.Background(), 10*time.Second)
+			count := countSsherpaItems(vaultCtx, opPath, v.ID)
+			vaultCancel()
 			vaults = append(vaults, vaultDiscovery{
 				ID:          v.ID,
 				Name:        v.Name,
