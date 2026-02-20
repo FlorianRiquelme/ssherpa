@@ -262,7 +262,7 @@ func (w SetupWizard) renderCheckingOnePassword() string {
 	title := titleStyle.Render("1Password Setup")
 	b.WriteString(title + "\n\n")
 
-	b.WriteString(fmt.Sprintf("  %s Checking 1Password CLI...\n", w.spinner.View()))
+	fmt.Fprintf(&b, "  %s Checking 1Password CLI...\n", w.spinner.View())
 
 	return wizardBoxStyle.Render(b.String())
 }
@@ -276,17 +276,17 @@ func (w SetupWizard) renderOnePasswordSetup() string {
 
 	if w.checkResult.available {
 		b.WriteString(wizardSuccessStyle.Render("  1Password CLI is ready") + "\n")
-		b.WriteString(fmt.Sprintf("  Found %d vault(s)\n\n", len(w.vaults)))
+		fmt.Fprintf(&b, "  Found %d vault(s)\n\n", len(w.vaults))
 
 		if w.totalServers > 0 {
 			b.WriteString("  Auto-discovered ssherpa servers:\n\n")
 			for _, vault := range w.vaults {
 				if vault.ServerCount > 0 {
-					b.WriteString(fmt.Sprintf("    %-20s %d server(s)\n", vault.Name, vault.ServerCount))
+					fmt.Fprintf(&b, "    %-20s %d server(s)\n", vault.Name, vault.ServerCount)
 				}
 			}
 			b.WriteString("    " + strings.Repeat("\u2500", 30) + "\n")
-			b.WriteString(fmt.Sprintf("    %-20s %d server(s)\n\n", "Total", w.totalServers))
+			fmt.Fprintf(&b, "    %-20s %d server(s)\n\n", "Total", w.totalServers)
 		} else {
 			b.WriteString("  No ssherpa-tagged servers found yet.\n")
 			b.WriteString("  Create servers in 1Password with the \"ssherpa\" tag,\n")
@@ -337,7 +337,7 @@ func (w SetupWizard) renderMigrationOffer() string {
 	title := titleStyle.Render("Existing Items Found")
 	b.WriteString(title + "\n\n")
 
-	b.WriteString(fmt.Sprintf("We found %d SSH/Server items in your 1Password vaults\n", w.migrationItemCount))
+	fmt.Fprintf(&b, "We found %d SSH/Server items in your 1Password vaults\n", w.migrationItemCount)
 	b.WriteString("that are not yet managed by ssherpa.\n\n")
 
 	options := []string{
@@ -377,15 +377,15 @@ func (w SetupWizard) renderSummary() string {
 	case "both":
 		backendName = "SSH Config + 1Password"
 	}
-	b.WriteString(fmt.Sprintf("  Backend: %s\n", wizardSuccessStyle.Render(backendName)))
+	fmt.Fprintf(&b, "  Backend: %s\n", wizardSuccessStyle.Render(backendName))
 
 	// Show 1Password details if applicable
 	if w.backendChoice == "onepassword" || w.backendChoice == "both" {
 		if len(w.vaults) > 0 {
-			b.WriteString(fmt.Sprintf("  Vaults:  %d\n", len(w.vaults)))
+			fmt.Fprintf(&b, "  Vaults:  %d\n", len(w.vaults))
 		}
 		if w.totalServers > 0 {
-			b.WriteString(fmt.Sprintf("  Servers: %d discovered\n", w.totalServers))
+			fmt.Fprintf(&b, "  Servers: %d discovered\n", w.totalServers)
 		}
 	}
 
@@ -394,7 +394,7 @@ func (w SetupWizard) renderSummary() string {
 	if configPath == "" {
 		configPath = "~/.config/ssherpa/config.toml"
 	}
-	b.WriteString(fmt.Sprintf("  Config: %s\n", wizardDimStyle.Render(configPath)))
+	fmt.Fprintf(&b, "  Config: %s\n", wizardDimStyle.Render(configPath))
 
 	b.WriteString("\n")
 	if w.err != nil {

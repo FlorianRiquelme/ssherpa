@@ -89,13 +89,13 @@ func renderDetailView(host *sshconfig.SSHHost, source string, width, height int)
 		for _, key := range keys {
 			values := host.AllOptions[key]
 			if len(values) == 1 {
-				b.WriteString(fmt.Sprintf("  %s %s\n",
+				fmt.Fprintf(&b, "  %s %s\n",
 					detailLabelStyle.Render(key+":"),
-					detailValueStyle.Render(values[0])))
+					detailValueStyle.Render(values[0]))
 			} else {
-				b.WriteString(fmt.Sprintf("  %s\n", detailLabelStyle.Render(key+":")))
+				fmt.Fprintf(&b, "  %s\n", detailLabelStyle.Render(key+":"))
 				for _, val := range values {
-					b.WriteString(fmt.Sprintf("    %s\n", detailValueStyle.Render(val)))
+					fmt.Fprintf(&b, "    %s\n", detailValueStyle.Render(val))
 				}
 			}
 		}
