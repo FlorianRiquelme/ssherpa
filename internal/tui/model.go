@@ -117,6 +117,7 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 	l := list.New([]list.Item{}, delegate, 0, 0)
 	l.Title = "SSH Connections"
 	l.SetShowStatusBar(false)
+	l.SetShowHelp(false)
 	l.SetFilteringEnabled(false) // We handle filtering manually with fuzzy search
 
 	// Initialize search input
@@ -1608,7 +1609,7 @@ Press 'q' to quit
 		}
 
 		// Build shortcut footer (context-sensitive)
-		helpView := renderShortcutFooter(m.viewMode, m.searchFocused, m.keys.SignIn.Enabled())
+		helpView := renderShortcutFooter(m.viewMode, m.searchFocused, m.keys.SignIn.Enabled(), !m.undoBuffer.IsEmpty())
 
 		// Build status message if present
 		var statusView string
