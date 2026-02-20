@@ -25,10 +25,12 @@ type KeyMap struct {
 	DeleteServer  key.Binding
 	Undo          key.Binding
 	SignIn        key.Binding
-	Help          key.Binding
-	Quit          key.Binding
-	ClearSearch   key.Binding
-	ForceQuit     key.Binding
+	Help           key.Binding
+	UpdateView     key.Binding // 'U' to view update overlay
+	DismissUpdate  key.Binding // 'x' to dismiss update (only in overlay)
+	Quit           key.Binding
+	ClearSearch    key.Binding
+	ForceQuit      key.Binding
 }
 
 // DefaultKeyMap returns the default key bindings.
@@ -113,6 +115,15 @@ func DefaultKeyMap() KeyMap {
 		Help: key.NewBinding(
 			key.WithKeys("?"),
 			key.WithHelp("?", "help"),
+		),
+		UpdateView: key.NewBinding(
+			key.WithKeys("U"),
+			key.WithHelp("U", "update"),
+			key.WithDisabled(), // Enabled only when update is available
+		),
+		DismissUpdate: key.NewBinding(
+			key.WithKeys("x"),
+			key.WithHelp("x", "dismiss"),
 		),
 		Quit: key.NewBinding(
 			key.WithKeys("q"),
