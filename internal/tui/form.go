@@ -530,7 +530,11 @@ func (f ServerForm) View() string {
 	if f.saving {
 		b.WriteString(formSavingStyle.Render(f.spinner.View() + " Checking hostname..."))
 	} else {
-		b.WriteString(formHelpStyle.Render("tab: next field | ctrl+s: save | esc: cancel"))
+		b.WriteString(renderHintRow([]shortcutHint{
+			{key: "tab", desc: "next field"},
+			{key: "ctrl+s", desc: "save"},
+			{key: "esc", desc: "cancel"},
+		}))
 	}
 
 	return b.String()

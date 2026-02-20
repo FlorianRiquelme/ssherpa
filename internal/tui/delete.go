@@ -156,7 +156,10 @@ func (d DeleteConfirm) View() string {
 	}
 
 	// Footer help
-	footer := deleteInstructionStyle.Render("enter: delete (when confirmed) | esc: cancel")
+	footer := renderHintRow([]shortcutHint{
+		{key: "enter", desc: "delete (when confirmed)"},
+		{key: "esc", desc: "cancel"},
+	})
 
 	// Compose view
 	content := lipgloss.JoinVertical(
