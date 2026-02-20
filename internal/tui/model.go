@@ -8,7 +8,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -65,8 +64,6 @@ type Model struct {
 	allHosts      []sshconfig.SSHHost  // Unfiltered hosts (original order)
 	filteredIdx   []int                // Indices into allHosts after fuzzy filter
 	keys          KeyMap               // Key bindings
-	help          help.Model           // Help footer component
-	searchKeys    SearchKeyMap         // Key bindings for search mode help
 	searchNavKeys key.Binding          // Arrow-only navigation for search mode
 	historyPath   string               // Path to history file
 	returnToTUI   bool                 // Config: return to TUI after SSH (default false)
@@ -131,12 +128,8 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 	keys := DefaultKeyMap()
 	// Enable sign-in keybinding if 1Password needs authentication
 	keys.SignIn.SetEnabled(opStatus == backend.StatusNotSignedIn || opStatus == backend.StatusLocked)
-	searchKeys := SearchKeyMap{
-		ClearSearch: keys.ClearSearch,
-	}
 	// Navigation for search mode (arrow keys only — j/k are typeable letters)
 	searchNavKeys := key.NewBinding(key.WithKeys("up", "down"))
-	helpModel := help.New()
 
 	// Build project map for fast lookup
 	projectMap := make(map[string]config.ProjectConfig)
@@ -155,8 +148,6 @@ func New(configPath, historyPath string, returnToTUI bool, currentProjectID stri
 		searchInput:      searchInput,
 		searchFocused:    false,
 		keys:             keys,
-		help:             helpModel,
-		searchKeys:       searchKeys,
 		searchNavKeys:    searchNavKeys,
 		historyPath:      historyPath,
 		returnToTUI:      returnToTUI,
@@ -1616,13 +1607,8 @@ Press 'q' to quit
 			mainContent = m.list.View()
 		}
 
-		// Build help footer (context-sensitive)
-		var helpView string
-		if m.searchFocused {
-			helpView = m.help.View(m.searchKeys)
-		} else {
-			helpView = m.help.View(m.keys)
-		}
+		// Build shortcut footer (context-sensitive)
+		helpView := renderShortcutFooter(m.viewMode, m.searchFocused, m.keys.SignIn.Enabled())
 
 		// Build status message if present
 		var statusView string
