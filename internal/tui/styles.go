@@ -216,5 +216,4 @@ var (
 				BorderForeground(accentColor).
 				Padding(1, 2).
 				Width(72)
-
 )
