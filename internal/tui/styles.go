@@ -216,4 +216,16 @@ var (
 				BorderForeground(accentColor).
 				Padding(1, 2).
 				Width(72)
+
+	// Update overlay styles
+	updateOverlayStyle = lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(accentColor).
+				Padding(1, 2).
+				Width(72)
+
+	// Update hint style (shown in list view when update is available)
+	updateHintStyle = lipgloss.NewStyle().
+			Foreground(accentColor).
+			Italic(true)
 )
