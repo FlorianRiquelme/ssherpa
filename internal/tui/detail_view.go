@@ -54,9 +54,9 @@ func renderDetailView(host *sshconfig.SSHHost, source string, width, height int)
 
 	writeField := func(label, value string) {
 		if value != "" {
-			b.WriteString(fmt.Sprintf("  %s %s\n",
+			fmt.Fprintf(&b, "  %s %s\n",
 				detailLabelStyle.Render(label+":"),
-				detailValueStyle.Render(value)))
+				detailValueStyle.Render(value))
 		}
 	}
 
@@ -67,9 +67,9 @@ func renderDetailView(host *sshconfig.SSHHost, source string, width, height int)
 	// Identity files
 	// TODO: Enhance with key type, fingerprint, and source badge when discoveredKeys are available
 	if len(host.IdentityFile) > 0 {
-		b.WriteString(fmt.Sprintf("  %s\n", detailLabelStyle.Render("IdentityFile:")))
+		fmt.Fprintf(&b, "  %s\n", detailLabelStyle.Render("IdentityFile:"))
 		for _, file := range host.IdentityFile {
-			b.WriteString(fmt.Sprintf("    %s\n", detailValueStyle.Render(file)))
+			fmt.Fprintf(&b, "    %s\n", detailValueStyle.Render(file))
 		}
 	}
 
@@ -89,13 +89,13 @@ func renderDetailView(host *sshconfig.SSHHost, source string, width, height int)
 		for _, key := range keys {
 			values := host.AllOptions[key]
 			if len(values) == 1 {
-				b.WriteString(fmt.Sprintf("  %s %s\n",
+				fmt.Fprintf(&b, "  %s %s\n",
 					detailLabelStyle.Render(key+":"),
-					detailValueStyle.Render(values[0])))
+					detailValueStyle.Render(values[0]))
 			} else {
-				b.WriteString(fmt.Sprintf("  %s\n", detailLabelStyle.Render(key+":")))
+				fmt.Fprintf(&b, "  %s\n", detailLabelStyle.Render(key+":"))
 				for _, val := range values {
-					b.WriteString(fmt.Sprintf("    %s\n", detailValueStyle.Render(val)))
+					fmt.Fprintf(&b, "    %s\n", detailValueStyle.Render(val))
 				}
 			}
 		}

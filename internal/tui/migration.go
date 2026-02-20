@@ -195,7 +195,7 @@ func (m MigrationWizard) renderScanning() string {
 	title := titleStyle.Render("Migration Wizard")
 	b.WriteString(title + "\n\n")
 
-	b.WriteString(fmt.Sprintf("  %s Scanning 1Password vaults for SSH items...\n", m.spinner.View()))
+	fmt.Fprintf(&b, "  %s Scanning 1Password vaults for SSH items...\n", m.spinner.View())
 
 	return wizardBoxStyle.Render(b.String())
 }
@@ -259,9 +259,9 @@ func (m MigrationWizard) renderSelecting() string {
 	b.WriteString(wizardDimStyle.Render("Space: toggle, a: select all, n: deselect all\n"))
 	b.WriteString(wizardDimStyle.Render("Enter: migrate selected, Esc: skip\n"))
 	b.WriteString("\n")
-	b.WriteString(fmt.Sprintf("%s/%s selected",
+	fmt.Fprintf(&b, "%s/%s selected",
 		wizardSuccessStyle.Render(fmt.Sprintf("%d", selectedCount)),
-		fmt.Sprintf("%d", len(m.items))))
+		fmt.Sprintf("%d", len(m.items)))
 
 	return wizardBoxStyle.Render(b.String())
 }
@@ -280,7 +280,7 @@ func (m MigrationWizard) renderMigrating() string {
 		}
 	}
 
-	b.WriteString(fmt.Sprintf("  %s Migrating %d items...\n", m.spinner.View(), selectedCount))
+	fmt.Fprintf(&b, "  %s Migrating %d items...\n", m.spinner.View(), selectedCount)
 
 	return wizardBoxStyle.Render(b.String())
 }
@@ -297,14 +297,14 @@ func (m MigrationWizard) renderDone() string {
 	} else if len(m.items) == 0 {
 		b.WriteString(wizardDimStyle.Render("No unmanaged SSH items found in 1Password\n"))
 	} else {
-		b.WriteString(fmt.Sprintf("  Migrated:  %s items\n", wizardSuccessStyle.Render(fmt.Sprintf("%d", m.results.Migrated))))
-		b.WriteString(fmt.Sprintf("  Skipped:   %d items\n", m.results.Skipped))
+		fmt.Fprintf(&b, "  Migrated:  %s items\n", wizardSuccessStyle.Render(fmt.Sprintf("%d", m.results.Migrated)))
+		fmt.Fprintf(&b, "  Skipped:   %d items\n", m.results.Skipped)
 		if len(m.results.Errors) > 0 {
-			b.WriteString(fmt.Sprintf("  Errors:    %s items\n", wizardErrorStyle.Render(fmt.Sprintf("%d", len(m.results.Errors)))))
+			fmt.Fprintf(&b, "  Errors:    %s items\n", wizardErrorStyle.Render(fmt.Sprintf("%d", len(m.results.Errors))))
 			b.WriteString("\n")
 			b.WriteString(wizardErrorStyle.Render("Errors:\n"))
 			for _, errMsg := range m.results.Errors {
-				b.WriteString(fmt.Sprintf("  - %s\n", errMsg))
+				fmt.Fprintf(&b, "  - %s\n", errMsg)
 			}
 		}
 	}
