@@ -1688,7 +1688,8 @@ Press 'q' to quit
 			return m.list.View()
 		}
 
-		baseView := m.viewport.View()
+		helpView := renderShortcutFooter(m.viewMode, m.searchFocused, m.keys.SignIn.Enabled(), !m.undoBuffer.IsEmpty())
+		baseView := lipgloss.JoinVertical(lipgloss.Left, m.viewport.View(), helpView)
 
 		// If showing key picker, overlay it on top
 		if m.showingKeyPicker && m.keyPicker != nil {
