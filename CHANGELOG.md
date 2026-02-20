@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Auto-update notifications when a new GitHub release is available
+- Scrollable changelog overlay showing all changes between installed and latest version
+- In-app update with Homebrew detection and direct binary replacement
+- SHA256 checksum verification for binary downloads
+- Update check result caching (24h) to minimize API calls
+- Dismissable update notifications (per version)
+
 ## [0.2.0] - 2026-02-20
 
 ### Added
