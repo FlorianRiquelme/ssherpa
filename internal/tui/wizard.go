@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -414,6 +415,11 @@ var (
 	wizardErrorStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("9"))  // Red
 )
 
+// opEnv returns os environment variables with biometric unlock enabled for 1Password CLI.
+func opEnv() []string {
+	return append(os.Environ(), "OP_BIOMETRIC_UNLOCK_ENABLED=true")
+}
+
 // checkOpCLI verifies that the 1Password CLI is installed and has an active session.
 func checkOpCLI() tea.Cmd {
 	return func() tea.Msg {
@@ -425,9 +431,11 @@ func checkOpCLI() tea.Cmd {
 			}
 		}
 
-		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
 		cmd := exec.CommandContext(ctx, opPath, "vault", "list", "--format", "json")
-		cmd.Env = append(os.Environ(), "OP_BIOMETRIC_UNLOCK_ENABLED=true")
+		cmd.Env = opEnv()
 		output, err := cmd.Output()
 		if err != nil {
 			return onePasswordCheckCompleteMsg{
@@ -450,7 +458,7 @@ func checkOpCLI() tea.Cmd {
 		vaults := make([]vaultDiscovery, 0, len(cliVaults))
 		totalServers := 0
 		for _, v := range cliVaults {
-			count := countSsherpaItems(opPath, v.ID)
+			count := countSsherpaItems(ctx, opPath, v.ID)
 			vaults = append(vaults, vaultDiscovery{
 				ID:          v.ID,
 				Name:        v.Name,
@@ -468,14 +476,13 @@ func checkOpCLI() tea.Cmd {
 }
 
 // countSsherpaItems counts items tagged "ssherpa" in a specific vault.
-func countSsherpaItems(opPath, vaultID string) int {
-	ctx := context.Background()
+func countSsherpaItems(ctx context.Context, opPath, vaultID string) int {
 	cmd := exec.CommandContext(ctx, opPath, "item", "list",
 		"--vault", vaultID,
 		"--tags", "ssherpa",
 		"--format", "json",
 	)
-	cmd.Env = append(os.Environ(), "OP_BIOMETRIC_UNLOCK_ENABLED=true")
+	cmd.Env = opEnv()
 	output, err := cmd.Output()
 	if err != nil {
 		return 0
