@@ -19,7 +19,7 @@ import (
 type installMethod int
 
 const (
-	installBinary   installMethod = iota
+	installBinary installMethod = iota
 	installHomebrew
 )
 

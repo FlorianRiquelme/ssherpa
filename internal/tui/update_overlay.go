@@ -17,7 +17,7 @@ type UpdateOverlay struct {
 	height         int
 	currentVersion string
 	latestVersion  string
-	updating       bool  // True while update is in progress
+	updating       bool // True while update is in progress
 	updateErr      error
 }
 

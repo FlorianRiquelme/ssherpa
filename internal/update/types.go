@@ -21,8 +21,8 @@ type CacheData struct {
 
 // VersionChanges represents a single release's changelog entries.
 type VersionChanges struct {
-	Version  string           // e.g., "0.3.0"
-	Date     string           // e.g., "2026-02-20"
+	Version  string // e.g., "0.3.0"
+	Date     string // e.g., "2026-02-20"
 	Sections []ChangeSection
 }
 
