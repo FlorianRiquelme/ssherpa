@@ -7,6 +7,7 @@ import (
 	"github.com/florianriquelme/ssherpa/internal/backend"
 	"github.com/florianriquelme/ssherpa/internal/sshconfig"
 	"github.com/florianriquelme/ssherpa/internal/sshkey"
+	"github.com/florianriquelme/ssherpa/internal/update"
 )
 
 // configLoadedMsg is sent after async SSH config parsing completes.
@@ -91,4 +92,22 @@ type hostKeyUpdatedMsg struct {
 // formRequestKeyPickerMsg is sent when the form requests the key picker to open.
 type formRequestKeyPickerMsg struct {
 	currentKeyPath string
+}
+
+// updateAvailableMsg is sent when the async update check finds a new version.
+type updateAvailableMsg struct {
+	info *update.UpdateInfo
+}
+
+// updateDismissedMsg is sent when the user dismisses an update notification.
+type updateDismissedMsg struct {
+	version string
+}
+
+// updateStartedMsg is sent when the user confirms an update.
+type updateStartedMsg struct{}
+
+// updateFinishedMsg is sent when the update process completes or fails.
+type updateFinishedMsg struct {
+	err error
 }

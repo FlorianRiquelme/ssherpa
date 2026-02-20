@@ -14,7 +14,7 @@ type shortcutHint struct {
 
 // renderShortcutFooter renders a context-aware multi-line shortcut footer.
 // It shows different shortcuts depending on the current view mode and state.
-func renderShortcutFooter(mode ViewMode, searchFocused bool, signInEnabled bool, hasUndo bool) string {
+func renderShortcutFooter(mode ViewMode, searchFocused bool, signInEnabled bool, hasUndo bool, hasUpdate bool) string {
 	switch {
 	case mode == ViewList && searchFocused:
 		return renderHintRows([][]shortcutHint{
@@ -49,6 +49,9 @@ func renderShortcutFooter(mode ViewMode, searchFocused bool, signInEnabled bool,
 		}
 		if hasUndo {
 			row2 = append(row2, shortcutHint{key: "u", desc: "undo"})
+		}
+		if hasUpdate {
+			row2 = append(row2, shortcutHint{key: "U", desc: "update"})
 		}
 		if signInEnabled {
 			row2 = append(row2, shortcutHint{key: "s", desc: "authenticate"})
