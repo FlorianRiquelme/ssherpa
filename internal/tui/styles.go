@@ -212,6 +212,17 @@ var (
 				Foreground(secondaryColor).
 				Italic(true)
 
+	// Shortcut footer styles
+	shortcutKeyStyle = lipgloss.NewStyle().
+				Foreground(accentColor).
+				Bold(true)
+
+	shortcutDescStyle = lipgloss.NewStyle().
+				Foreground(secondaryColor)
+
+	shortcutSepStyle = lipgloss.NewStyle().
+				Foreground(secondaryColor)
+
 	// Help overlay styles
 	helpOverlayStyle = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
