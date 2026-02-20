@@ -23,6 +23,8 @@ import (
 	"github.com/florianriquelme/ssherpa/internal/ssh"
 	"github.com/florianriquelme/ssherpa/internal/sshconfig"
 	"github.com/florianriquelme/ssherpa/internal/sshkey"
+	"github.com/florianriquelme/ssherpa/internal/update"
+	"github.com/florianriquelme/ssherpa/internal/version"
 	"github.com/sahilm/fuzzy"
 )
 
@@ -99,6 +101,11 @@ type Model struct {
 	// Quick-1 additions:
 	showingHelp bool         // Whether help overlay is visible
 	helpOverlay *HelpOverlay // Help overlay (nil when not showing)
+
+	// Auto-update additions:
+	updateAvailable *update.UpdateInfo // Non-nil when a new version is available
+	updateOverlay   *UpdateOverlay     // Changelog overlay (nil when hidden)
+	showingUpdate   bool               // Whether update overlay is visible
 }
 
 // New creates a new TUI model.
@@ -170,6 +177,7 @@ func (m Model) Init() tea.Cmd {
 		m.spinner.Tick,
 		loadHistoryCmd(m.historyPath),
 		discoverKeysCmd(nil), // Async SSH key discovery (re-runs after hosts load)
+		checkForUpdateCmd(),  // Async update check against GitHub releases
 	}
 
 	// Load from backend if available, otherwise fallback to SSH config
@@ -927,6 +935,31 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
+			// If showing update overlay, handle update-specific keys first
+			if m.showingUpdate && m.updateOverlay != nil {
+				switch {
+				case key.Matches(msg, m.keys.ClearSearch): // Esc: close overlay
+					m.showingUpdate = false
+					m.updateOverlay = nil
+					return m, nil
+				case key.Matches(msg, m.keys.Connect): // Enter: start update
+					if !m.updateOverlay.updating {
+						m.updateOverlay.updating = true
+						return m, performUpdateCmd(m.updateAvailable.LatestVersion)
+					}
+					return m, nil
+				case key.Matches(msg, m.keys.DismissUpdate): // x: dismiss
+					ver := m.updateAvailable.LatestVersion
+					return m, dismissUpdateCmd(ver)
+				default:
+					// Route scroll keys to overlay viewport
+					var cmd tea.Cmd
+					*m.updateOverlay, cmd = m.updateOverlay.Update(msg)
+					cmds = append(cmds, cmd)
+					return m, tea.Batch(cmds...)
+				}
+			}
+
 			if m.searchFocused {
 				// Search mode key handling — all letter keys flow to the search input.
 				// Action keys (q, a, e, p, d, u, s, g, G, etc.) are NOT intercepted here.
@@ -1078,6 +1111,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						confirm := NewDeleteConfirm(item.host.Name, m.configPath)
 						m.deleteConfirm = &confirm
 						m.viewMode = ViewDelete
+					}
+
+				case key.Matches(msg, m.keys.UpdateView):
+					// 'U': open update overlay
+					if m.updateAvailable != nil {
+						overlay := NewUpdateOverlay(
+							m.width, m.height,
+							version.Short(),
+							m.updateAvailable.LatestVersion,
+							m.updateAvailable.Changes,
+						)
+						m.updateOverlay = &overlay
+						m.showingUpdate = true
 					}
 
 				case key.Matches(msg, m.keys.Undo):
@@ -1351,6 +1397,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, loadBackendServersCmd(m.appBackend)
 		}
 		return m, loadConfigCmd(m.configPath)
+
+	case updateAvailableMsg:
+		if msg.info != nil {
+			m.updateAvailable = msg.info
+			// Enable the UpdateView keybinding
+			m.keys.UpdateView.SetEnabled(true)
+		}
+
+	case updateDismissedMsg:
+		m.updateAvailable = nil
+		m.showingUpdate = false
+		m.updateOverlay = nil
+		m.keys.UpdateView.SetEnabled(false)
+
+	case updateFinishedMsg:
+		// Only reached on error (success exec's the new binary)
+		if m.updateOverlay != nil {
+			m.updateOverlay.updating = false
+			m.updateOverlay.updateErr = msg.err
+		}
 	}
 
 	return m, tea.Batch(cmds...)
@@ -1609,7 +1675,7 @@ Press 'q' to quit
 		}
 
 		// Build shortcut footer (context-sensitive)
-		helpView := renderShortcutFooter(m.viewMode, m.searchFocused, m.keys.SignIn.Enabled(), !m.undoBuffer.IsEmpty())
+		helpView := renderShortcutFooter(m.viewMode, m.searchFocused, m.keys.SignIn.Enabled(), !m.undoBuffer.IsEmpty(), m.updateAvailable != nil)
 
 		// Build status message if present
 		var statusView string
@@ -1633,6 +1699,14 @@ Press 'q' to quit
 
 		if statusView != "" {
 			parts = append(parts, statusView)
+		}
+
+		// Update hint (shown when a new version is available)
+		if m.updateAvailable != nil {
+			updateHintView := updateHintStyle.Render(
+				fmt.Sprintf(" Update available: v%s — press U to view", m.updateAvailable.LatestVersion),
+			)
+			parts = append(parts, updateHintView)
 		}
 
 		parts = append(parts, helpView)
@@ -1681,6 +1755,19 @@ Press 'q' to quit
 			return centeredHelp
 		}
 
+		// If showing update overlay, overlay it on top
+		if m.showingUpdate && m.updateOverlay != nil {
+			updateView := m.updateOverlay.View()
+			centeredUpdate := lipgloss.Place(
+				m.width,
+				m.height,
+				lipgloss.Center,
+				lipgloss.Center,
+				updateView,
+			)
+			return centeredUpdate
+		}
+
 		return baseView
 
 	case ViewDetail:
@@ -1688,7 +1775,7 @@ Press 'q' to quit
 			return m.list.View()
 		}
 
-		helpView := renderShortcutFooter(m.viewMode, m.searchFocused, m.keys.SignIn.Enabled(), !m.undoBuffer.IsEmpty())
+		helpView := renderShortcutFooter(m.viewMode, m.searchFocused, m.keys.SignIn.Enabled(), !m.undoBuffer.IsEmpty(), m.updateAvailable != nil)
 		baseView := lipgloss.JoinVertical(lipgloss.Left, m.viewport.View(), helpView)
 
 		// If showing key picker, overlay it on top
