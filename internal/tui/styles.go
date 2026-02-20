@@ -81,11 +81,6 @@ var (
 			Italic(true).
 			Padding(1, 0)
 
-	// Status bar style
-	statusBarStyle = lipgloss.NewStyle().
-			Foreground(secondaryColor).
-			Italic(true)
-
 	// Separator line style
 	separatorStyle = lipgloss.NewStyle().
 			Foreground(borderColor)
@@ -125,10 +120,6 @@ var (
 				Foreground(lipgloss.AdaptiveColor{Light: "#16A34A", Dark: "#4ADE80"}).
 				Bold(true)
 
-	pickerHelpStyle = lipgloss.NewStyle().
-			Foreground(secondaryColor).
-			Italic(true)
-
 	pickerLabelStyle = lipgloss.NewStyle().
 				Foreground(secondaryColor).
 				Bold(true)
@@ -153,10 +144,6 @@ var (
 	formDnsWarningStyle = lipgloss.NewStyle().
 				Foreground(lipgloss.AdaptiveColor{Light: "#D97706", Dark: "#FBBF24"}). // Amber
 				Italic(true)
-
-	formHelpStyle = lipgloss.NewStyle().
-			Foreground(secondaryColor).
-			Italic(true)
 
 	formSavingStyle = lipgloss.NewStyle().
 			Foreground(accentColor)
@@ -212,6 +199,17 @@ var (
 				Foreground(secondaryColor).
 				Italic(true)
 
+	// Shortcut footer styles
+	shortcutKeyStyle = lipgloss.NewStyle().
+				Foreground(accentColor).
+				Bold(true)
+
+	shortcutDescStyle = lipgloss.NewStyle().
+				Foreground(secondaryColor)
+
+	shortcutSepStyle = lipgloss.NewStyle().
+				Foreground(secondaryColor)
+
 	// Help overlay styles
 	helpOverlayStyle = lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
@@ -219,7 +217,4 @@ var (
 				Padding(1, 2).
 				Width(72)
 
-	helpFooterStyle = lipgloss.NewStyle().
-			Foreground(secondaryColor).
-			Italic(true)
 )

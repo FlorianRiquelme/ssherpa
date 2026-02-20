@@ -3,7 +3,6 @@ package tui
 import "github.com/charmbracelet/bubbles/key"
 
 // KeyMap defines all key bindings for the TUI.
-// Implements help.KeyMap interface for automatic help text generation.
 type KeyMap struct {
 	// Navigation
 	Up           key.Binding
@@ -30,21 +29,6 @@ type KeyMap struct {
 	Quit          key.Binding
 	ClearSearch   key.Binding
 	ForceQuit     key.Binding
-}
-
-// ShortHelp returns the key bindings shown in the mini help view (list mode).
-func (k KeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.Connect, k.Details, k.Search, k.AddServer, k.EditServer, k.DeleteServer, k.Help, k.SignIn, k.Quit}
-}
-
-// FullHelp returns the key bindings shown in the full help view.
-func (k KeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{
-		{k.Up, k.Down, k.PageUp, k.PageDown},                    // Navigation group
-		{k.HalfPageUp, k.HalfPageDown, k.GoToTop, k.GoToBottom}, // Advanced navigation
-		{k.Connect, k.Details, k.Search, k.AssignProject, k.SelectKey, k.AddServer, k.EditServer, k.DeleteServer, k.Quit}, // Actions group
-		{k.Undo, k.Help, k.SignIn}, // Additional actions
-	}
 }
 
 // DefaultKeyMap returns the default key bindings.
@@ -143,19 +127,4 @@ func DefaultKeyMap() KeyMap {
 			// No help text - hidden from help display
 		),
 	}
-}
-
-// SearchKeyMap provides key bindings for search mode help display.
-type SearchKeyMap struct {
-	ClearSearch key.Binding
-}
-
-// ShortHelp returns the key bindings for search mode mini help.
-func (k SearchKeyMap) ShortHelp() []key.Binding {
-	return []key.Binding{k.ClearSearch}
-}
-
-// FullHelp returns the key bindings for search mode full help.
-func (k SearchKeyMap) FullHelp() [][]key.Binding {
-	return [][]key.Binding{{k.ClearSearch}}
 }

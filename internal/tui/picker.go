@@ -211,8 +211,11 @@ func (p ProjectPicker) View() string {
 
 	// Help text
 	b.WriteString("\n")
-	help := pickerHelpStyle.Render("↑/k ↓/j: navigate • enter: toggle • esc: close")
-	b.WriteString(help)
+	b.WriteString(renderHintRow([]shortcutHint{
+		{key: "↑/k ↓/j", desc: "navigate"},
+		{key: "enter", desc: "toggle"},
+		{key: "esc", desc: "close"},
+	}))
 
 	// Wrap in border
 	content := b.String()
@@ -235,8 +238,10 @@ func (p ProjectPicker) viewCreatingNew() string {
 	b.WriteString(p.nameInput.View())
 	b.WriteString("\n\n")
 
-	help := pickerHelpStyle.Render("enter: create • esc: cancel")
-	b.WriteString(help)
+	b.WriteString(renderHintRow([]shortcutHint{
+		{key: "enter", desc: "create"},
+		{key: "esc", desc: "cancel"},
+	}))
 
 	content := b.String()
 	bordered := pickerBorderStyle.Render(content)

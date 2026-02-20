@@ -37,7 +37,10 @@ func (h HelpOverlay) Update(msg tea.Msg) (HelpOverlay, tea.Cmd) {
 
 // View renders the help overlay with border and footer.
 func (h HelpOverlay) View() string {
-	footer := helpFooterStyle.Render("Esc or ?: close | ↑/↓: scroll")
+	footer := renderHintRow([]shortcutHint{
+		{key: "esc/?", desc: "close"},
+		{key: "↑/↓", desc: "scroll"},
+	})
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
 		h.viewport.View(),

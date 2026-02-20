@@ -163,8 +163,11 @@ func (p SSHKeyPicker) View() string {
 
 	// Help text
 	b.WriteString("\n")
-	help := pickerHelpStyle.Render("up/k down/j: navigate • enter: select • esc: cancel")
-	b.WriteString(help)
+	b.WriteString(renderHintRow([]shortcutHint{
+		{key: "↑/k ↓/j", desc: "navigate"},
+		{key: "enter", desc: "select"},
+		{key: "esc", desc: "cancel"},
+	}))
 
 	// Wrap in border
 	content := b.String()
