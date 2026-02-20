@@ -81,11 +81,6 @@ var (
 			Italic(true).
 			Padding(1, 0)
 
-	// Status bar style
-	statusBarStyle = lipgloss.NewStyle().
-			Foreground(secondaryColor).
-			Italic(true)
-
 	// Separator line style
 	separatorStyle = lipgloss.NewStyle().
 			Foreground(borderColor)
